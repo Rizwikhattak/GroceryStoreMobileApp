@@ -1,13 +1,29 @@
 import CategorySlider from "@/components/CategorySlider";
+import FeatureProductsList from "@/components/FeatureProductsList";
 import PromoSlider from "@/components/PromoSlider";
 import SearchInput from "@/components/SearchInput";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
+import { getFeaturedProducts } from "@/store/actions/productsSlice";
 import { Link } from "expo-router";
 import { ArrowRight, ChevronRight } from "lucide-react-native";
+import { useEffect } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 export default function Index() {
+  const products = useSelector((state) => state.products);
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const fetchFeaturedProducts = async () => {
+      try {
+        await dispatch(getFeaturedProducts()).unwrap();
+      } catch (err) {
+        console.log("Error fetching prods", err);
+      }
+    };
+    fetchFeaturedProducts();
+  }, [dispatch]);
   return (
     <View className="flex-1 bg-light-100">
       <ScrollView
@@ -46,10 +62,11 @@ export default function Index() {
         <View className="mt-4">
           <PromoSlider />
         </View>
- 
+
         <View className="mt-4">
           <CategorySlider />
         </View>
+        <FeatureProductsList />
       </ScrollView>
     </View>
   );

@@ -3,15 +3,13 @@
   "compilerOptions": {
     "strict": true,
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
     "**/*.ts",
     "**/*.tsx",
     "nativewind-env.d.ts",
-    "store/reducers/authSltce.js"
-  ]
+    "store/reducers/authSlice.js"
+, "store/actions/authActions.js", "store/store.js"  ]
 }

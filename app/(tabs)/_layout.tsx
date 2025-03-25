@@ -3,6 +3,7 @@ import React from "react";
 import { Tabs } from "expo-router";
 import { images } from "@/constants/images";
 import { icons } from "@/constants/icons";
+// import ProtectedRoute from "@/components/ProtectedRoute";
 const TabIcon = ({
   focused,
   icon,
@@ -47,6 +48,7 @@ const TabIcon = ({
 };
 const _layout = () => {
   return (
+    // <ProtectedRoute>
     <Tabs
       screenOptions={{
         tabBarShowLabel: false,
@@ -108,7 +110,7 @@ const _layout = () => {
               focused={focused}
               icon={icons.cart}
               title="Cart"
-              customViewStyle="bg-primary-100 size-24 absolute -top-16 z-10 border-4 border-light-100 shadow-lg"
+              customViewStyle="bg-primary-100 size-20 absolute -top-16 z-10 border-4 border-light-100 shadow-lg"
               customIconStyle="size-9"
               customTintColor="#ffff"
             />
@@ -136,6 +138,7 @@ const _layout = () => {
         }}
       />
     </Tabs>
+    // </ProtectedRoute>
   );
 };
 
