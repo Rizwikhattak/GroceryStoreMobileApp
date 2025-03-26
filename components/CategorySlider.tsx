@@ -44,7 +44,10 @@ const CategorySlider = () => {
   };
   return (
     <View>
-      <View className="mt-4 flex-row items-center justify-between">
+      <View
+        className="mt-20 flex-row items-center justify-between"
+        style={{ marginBottom: 20 }}
+      >
         <Text className="text-xl font-semibold text-customblue-700">
           Categories
         </Text>
@@ -52,7 +55,7 @@ const CategorySlider = () => {
           <ChevronRight color="#888" size={20} />
         </TouchableOpacity>
       </View>
-      <View className="mt-4">
+      <View>
         <FlatList
           ref={flatListRef}
           horizontal
@@ -61,6 +64,7 @@ const CategorySlider = () => {
           renderItem={renderItem}
           keyExtractor={(item, index) => index.toString()}
           // contentContainerStyle={{ paddingHorizontal: 16 }}
+          style={{ zIndex: 10 }}
         />
       </View>
     </View>
@@ -76,6 +80,12 @@ const styles = StyleSheet.create({
     marginRight: 12,
     justifyContent: "center",
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
+    marginVertical: 10,
   },
   icon: {
     width: 32,

@@ -33,15 +33,14 @@ export default function Index() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           minHeight: "100%",
-          paddingBottom: 30,
+          paddingBottom: 40,
           paddingTop: 30,
+          overflow: "visible",
         }}
       >
         <View className="flex-row items-center justify-center gap-1">
-          <Text className="text-2xl font-semibold text-primary-700">
-            Premium
-          </Text>
-          <Text className="text-2xl font-semibold">Meats</Text>
+          <Text className="text-3xl font-bold text-primary-700">Premium</Text>
+          <Text className="text-3xl font-bold">Meats</Text>
         </View>
         <View className="mt-10 flex-row items-center justify-between gap-1">
           <View className="flex-row items-center justify-between">
@@ -58,17 +57,19 @@ export default function Index() {
             />
           </View>
         </View>
-        <View className="mt-4">
+        <View className="my-6">
           <SearchInput />
         </View>
         <View className="mt-4">
           <PromoSlider />
         </View>
 
-        <View className="mt-4">
+        <View className="mt-10">
           <CategorySlider />
         </View>
-        <FeatureProductsList />
+        <View className="mt-10">
+          <FeatureProductsList />
+        </View>
       </ScrollView>
     </View>
   );

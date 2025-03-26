@@ -1,4 +1,4 @@
-import { View, Text, ImageBackground, Image } from "react-native";
+import { View, Text, ImageBackground, Image, Pressable } from "react-native";
 import React from "react";
 import { Tabs } from "expo-router";
 import { images } from "@/constants/images";
@@ -20,7 +20,9 @@ const TabIcon = ({
         <Image
           source={icon}
           tintColor="#4ab7b6"
-          className={`size-7 ${customIconStyle}`}
+          className={`${
+            title === "Home" ? "h-10 w-10" : "size-7"
+          } ${customIconStyle}`}
         />
       </View>
       // <ImageBackground
@@ -58,6 +60,12 @@ const _layout = () => {
           justifyContent: "center",
           alignItems: "center",
         },
+        tabBarButton: (props) => (
+          <Pressable
+            {...props}
+            android_ripple={{ color: "transparent" }} // Android: transparent ripple
+          />
+        ),
         tabBarStyle: {
           backgroundColor: "#ffffff",
           // borderRadius: 50,
@@ -81,7 +89,7 @@ const _layout = () => {
               focused={focused}
               icon={icons.home}
               title="Home"
-              customIconStyle="size-7"
+              customIconStyle="size-8"
             />
           ),
         }}
@@ -110,7 +118,7 @@ const _layout = () => {
               focused={focused}
               icon={icons.cart}
               title="Cart"
-              customViewStyle="bg-primary-100 h-24 w-24 absolute -top-16 z-10 border-4 border-light-100 shadow-lg"
+              customViewStyle="bg-primary-100 h-20 w-20 absolute -top-16 z-10 border-4 border-light-100 shadow-lg"
               customIconStyle="size-9"
               customTintColor="#ffff"
             />

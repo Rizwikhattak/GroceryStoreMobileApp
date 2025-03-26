@@ -2,6 +2,8 @@ import { Stack } from "expo-router";
 import "./globals.css";
 import { Provider } from "react-redux";
 import { store } from "../store/store";
+import "react-native-svg";
+
 export default function RootLayout() {
   return (
     <Provider store={store}>

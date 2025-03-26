@@ -13,6 +13,7 @@ import {
 import { useSelector } from "react-redux";
 import Constants from "expo-constants";
 import { Ionicons } from "@expo/vector-icons";
+import SectionHeader from "./SectionHeader";
 
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
@@ -130,11 +131,7 @@ const FeatureProductsList = () => {
   // Main render
   return (
     <View style={styles.container}>
-      <View style={styles.headerContainer}>
-        <Text style={styles.sectionTitle}>Popular Deals</Text>
-        {/* <Ionicons name="chevron-forward" size={20} color="#888" /> */}
-      </View>
-
+      <SectionHeader title="Popular Deals" />
       {products.isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6B6B" />
@@ -146,6 +143,7 @@ const FeatureProductsList = () => {
           keyExtractor={(item) => item._id.toString()}
           numColumns={2}
           columnWrapperStyle={styles.columnWrapper}
+          contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
           scrollEnabled={false}
         />
@@ -160,9 +158,7 @@ const FeatureProductsList = () => {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 20,
-    marginBottom: 16,
-    paddingHorizontal: 16,
+    paddingBottom: 10,
   },
   headerContainer: {
     flexDirection: "row",
@@ -191,19 +187,22 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     justifyContent: "space-between",
+    paddingHorizontal: 4,
   },
   card: {
-    width: "48%",
+    width: "47%",
     backgroundColor: "white",
     borderRadius: 12,
     marginBottom: 16,
+    marginTop: 10,
+    marginHorizontal: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 2, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 20,
+    elevation: 7,
     position: "relative",
-    overflow: "hidden",
+    overflow: "visible", // This is important to prevent shadow clipping
   },
   favoriteButton: {
     position: "absolute",
@@ -217,6 +216,7 @@ const styles = StyleSheet.create({
     left: 0,
     backgroundColor: "#FF6B6B",
     paddingHorizontal: 8,
+    borderTopStartRadius: 10,
     paddingVertical: 4,
     borderBottomRightRadius: 8,
     zIndex: 5,
@@ -274,7 +274,7 @@ const styles = StyleSheet.create({
   quantityButton: {
     width: 35,
     height: 35,
-    borderRadius: 10,
+    borderRadius: 12,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -305,6 +305,9 @@ const styles = StyleSheet.create({
     color: "#FF9F1C",
     fontWeight: "500",
     fontSize: 13,
+  },
+  listContainer: {
+    paddingHorizontal: 4,
   },
 });
 

@@ -6,12 +6,12 @@ const SearchInput = () => {
 
   return (
     <View
-      className="flex-row items-center bg-gray-200 h-10 px-5 py-2 gap-2 "
+      className="flex-row items-center bg-gray-200 h-16 px-5 py-2 gap-2 "
       style={{
         borderRadius: 10,
       }}
     >
-      <Search color="#888" size={20} />
+      <Search color="#888" size={18} />
       <TextInput
         placeholder="Search Anything..."
         placeholderTextColor="#888"

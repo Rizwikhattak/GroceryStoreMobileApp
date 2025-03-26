@@ -4,7 +4,9 @@
     "strict": true,
     "jsx": "react-native",
     "paths": {
-      "@/*": ["./*"]
+      "@/*": [
+        "./*"
+      ]
     }
   },
   "include": [
@@ -13,6 +15,8 @@
     "nativewind-env.d.ts",
     "store/reducers/authSlice.js",
     "store/actions/authActions.js",
-    "store/store.js"
+    "store/store.js",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ]
 }

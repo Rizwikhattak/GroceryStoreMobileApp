@@ -8,10 +8,18 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+
+    "owner": "rizwi4529",
+    "extra": {
+      "eas": {
+        "projectId": "239519f7-3585-4908-b8c3-66b4724a0e74"
+      }
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
+      "package": "com.premiummeats.grocerystore",
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/logo.png",
         "backgroundColor": "#ffffff"
