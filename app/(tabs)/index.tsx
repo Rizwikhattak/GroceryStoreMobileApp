@@ -13,6 +13,8 @@ import { useDispatch, useSelector } from "react-redux";
 
 export default function Index() {
   const products = useSelector((state) => state.products);
+  const user = useSelector((state) => state.auth);
+  console.log(user);
   const dispatch = useDispatch();
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
@@ -31,7 +33,7 @@ export default function Index() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{
           minHeight: "100%",
-          paddingBottom: 10,
+          paddingBottom: 30,
           paddingTop: 30,
         }}
       >
@@ -45,7 +47,7 @@ export default function Index() {
           <View className="flex-row items-center justify-between">
             <Text className="text-xl font-semibold">Welcome ,</Text>
             <Text className="text-xl font-semibold text-primary-700">
-              Rizwan
+              {user.data.first_name}
             </Text>
           </View>
           <View className="justify-center size-10 items-center rounded-full bg-gray-200">

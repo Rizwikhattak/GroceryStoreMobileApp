@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import { useState } from "react";
 import {
   View,
   Text,
@@ -6,12 +8,14 @@ import {
   TouchableOpacity,
   FlatList,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import { useSelector } from "react-redux";
 import Constants from "expo-constants";
 import { Ionicons } from "@expo/vector-icons";
 
-const { apiUrl } = Constants.expoConfig.extra;
+const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
+
 const FeatureProductsList = () => {
   const products = useSelector((state) => state.products);
   const [quantities, setQuantities] = useState({});
@@ -35,69 +39,57 @@ const FeatureProductsList = () => {
   };
 
   // Render each product item
-  const renderProductItem = ({ item, index }) => {
+  const renderProductItem = ({ item }) => {
     const quantity = quantities[item._id] || 0;
     const isFavorite = favorites[item._id] || false;
-    const hasDiscount = item.discount && item.discount > 0;
-    console.log("Photo url", `${apiUrl}${item.photo}`);
+    const hasDiscount = item.promotion_value && item.promotion_value > 0;
+
     return (
-      <View className="w-[48%] bg-white rounded-xl border border-gray-100 overflow-hidden mb-4">
+      <View style={styles.card}>
         {/* Favorite Button */}
         <TouchableOpacity
-          className="absolute top-2 right-2 z-10"
+          style={styles.favoriteButton}
           onPress={() => toggleFavorite(item._id)}
         >
-          <View className="w-8 h-8 rounded-full bg-white items-center justify-center shadow-sm">
-            <Ionicons
-              name={isFavorite ? "heart" : "heart-outline"}
-              size={18}
-              color={isFavorite ? "#FF3B30" : "#888"}
-            />
-          </View>
+          <Ionicons
+            name={isFavorite ? "heart" : "heart-outline"}
+            size={20}
+            color={isFavorite ? "#FF6B6B" : "#BDBDBD"}
+          />
         </TouchableOpacity>
 
         {/* Discount Label */}
-        {hasDiscount && (
-          <View className="absolute top-0 left-0 bg-red-500 z-10 px-2 py-1 rounded-br-lg">
-            <Text className="text-white text-xs font-bold">
-              {item.discount}% OFF
-            </Text>
+        {item.promotion_status === "active" && (
+          <View style={styles.discountTag}>
+            <Text style={styles.discountText}>{item.promotion_value}% OFF</Text>
           </View>
         )}
 
         {/* Product Image */}
-        <View className="h-28 w-full items-center justify-center p-2">
+        <View style={styles.imageContainer}>
           <Image
             source={{
               uri:
                 `${apiUrl}products/photo/${item.photo}` ||
                 "https://via.placeholder.com/150",
             }}
-            className="h-24 w-24"
+            style={styles.productImage}
             resizeMode="contain"
           />
         </View>
 
         {/* Product Details */}
-        <View className="p-3">
-          <Text className="text-gray-800 font-medium mb-1" numberOfLines={1}>
+        <View style={styles.detailsContainer}>
+          <Text style={styles.productName} numberOfLines={1}>
             {item.name}
           </Text>
 
-          <View className="flex-row items-center justify-between mb-2">
-            <Text className="text-gray-900 font-bold">{item.price} $</Text>
+          <View style={styles.priceRatingContainer}>
+            <Text style={styles.priceText}>{item.sale_price} $</Text>
 
             {item.rating && (
-              <View className="flex-row items-center">
-                <Text
-                  className={`text-xs mr-1 ${
-                    parseFloat(item.rating) >= 4.5
-                      ? "text-red-500"
-                      : "text-gray-500"
-                  }`}
-                >
-                  {item.rating}
-                </Text>
+              <View style={styles.ratingContainer}>
+                <Text style={styles.ratingText}>{item.rating}</Text>
                 <Ionicons name="star" size={12} color="#FFD700" />
               </View>
             )}
@@ -105,29 +97,29 @@ const FeatureProductsList = () => {
 
           {/* Action Buttons */}
           {quantity > 0 ? (
-            <View className="flex-row items-center justify-between">
+            <View style={styles.quantityContainer}>
               <TouchableOpacity
-                className="w-8 h-8 rounded-full bg-red-400 items-center justify-center"
-                onPress={() => updateQuantity(item.id, -1)}
+                style={[styles.quantityButton, styles.decrementButton]}
+                onPress={() => updateQuantity(item._id, -1)}
               >
-                <Text className="text-white font-bold text-lg">-</Text>
+                <Text style={styles.quantityButtonText}>-</Text>
               </TouchableOpacity>
 
-              <Text className="text-gray-800 font-medium">{quantity}</Text>
+              <Text style={styles.quantityText}>{quantity}</Text>
 
               <TouchableOpacity
-                className="w-8 h-8 rounded-full bg-teal-500 items-center justify-center"
-                onPress={() => updateQuantity(item.id, 1)}
+                style={[styles.quantityButton, styles.incrementButton]}
+                onPress={() => updateQuantity(item._id, 1)}
               >
-                <Text className="text-white font-bold text-lg">+</Text>
+                <Text style={styles.quantityButtonText}>+</Text>
               </TouchableOpacity>
             </View>
           ) : (
             <TouchableOpacity
-              className="h-9 rounded-lg border border-orange-400 items-center justify-center"
-              onPress={() => updateQuantity(item.id, 1)}
+              style={styles.addToCartButton}
+              onPress={() => updateQuantity(item._id, 1)}
             >
-              <Text className="text-orange-400 font-medium">Add to cart</Text>
+              <Text style={styles.addToCartText}>Add to cart</Text>
             </TouchableOpacity>
           )}
         </View>
@@ -137,39 +129,183 @@ const FeatureProductsList = () => {
 
   // Main render
   return (
-    <View className="mb-4">
-      <View className="flex-row items-center justify-between px-5 mb-4">
-        <Text className="text-lg font-semibold text-gray-800">
-          Popular Deals
-        </Text>
-        <TouchableOpacity>
-          <Ionicons name="chevron-forward" size={20} color="#888" />
-        </TouchableOpacity>
+    <View style={styles.container}>
+      <View style={styles.headerContainer}>
+        <Text style={styles.sectionTitle}>Popular Deals</Text>
+        {/* <Ionicons name="chevron-forward" size={20} color="#888" /> */}
       </View>
 
       {products.isLoading ? (
-        <View className="h-40 items-center justify-center">
-          <ActivityIndicator size="large" color="#FF3B30" />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color="#FF6B6B" />
         </View>
       ) : products.data && products.data.length > 0 ? (
-        <View className="px-5">
-          <FlatList
-            data={products.data}
-            renderItem={renderProductItem}
-            keyExtractor={(item) => item._id.toString()}
-            numColumns={2}
-            columnWrapperStyle={{ justifyContent: "space-between" }}
-            showsVerticalScrollIndicator={false}
-            scrollEnabled={false}
-          />
-        </View>
+        <FlatList
+          data={products.data}
+          renderItem={renderProductItem}
+          keyExtractor={(item) => item._id.toString()}
+          numColumns={2}
+          columnWrapperStyle={styles.columnWrapper}
+          showsVerticalScrollIndicator={false}
+          scrollEnabled={false}
+        />
       ) : (
-        <View className="h-40 items-center justify-center px-5">
-          <Text className="text-gray-500">No products available</Text>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyText}>No products available</Text>
         </View>
       )}
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    marginTop: 20,
+    marginBottom: 16,
+    paddingHorizontal: 16,
+  },
+  headerContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#333",
+  },
+  loadingContainer: {
+    height: 160,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  emptyContainer: {
+    height: 160,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 20,
+  },
+  emptyText: {
+    color: "#888",
+  },
+  columnWrapper: {
+    justifyContent: "space-between",
+  },
+  card: {
+    width: "48%",
+    backgroundColor: "white",
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+    position: "relative",
+    overflow: "hidden",
+  },
+  favoriteButton: {
+    position: "absolute",
+    top: 8,
+    right: 8,
+    zIndex: 10,
+  },
+  discountTag: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    backgroundColor: "#FF6B6B",
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderBottomRightRadius: 8,
+    zIndex: 5,
+  },
+  discountText: {
+    color: "white",
+    fontSize: 10,
+    fontWeight: "bold",
+  },
+  imageContainer: {
+    height: 120,
+    width: "100%",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 12,
+  },
+  productImage: {
+    height: 100,
+    width: "100%",
+  },
+  detailsContainer: {
+    padding: 12,
+  },
+  productName: {
+    color: "#333",
+    fontWeight: "500",
+    marginBottom: 6,
+    fontSize: 14,
+  },
+  priceRatingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 12,
+  },
+  priceText: {
+    color: "#333",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  ratingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  ratingText: {
+    fontSize: 12,
+    marginRight: 2,
+    color: "#888",
+  },
+  quantityContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  quantityButton: {
+    width: 35,
+    height: 35,
+    borderRadius: 10,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  decrementButton: {
+    backgroundColor: "#FF6B6B",
+  },
+  incrementButton: {
+    backgroundColor: "#4ECDC4",
+  },
+  quantityButtonText: {
+    color: "white",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  quantityText: {
+    color: "#333",
+    fontWeight: "500",
+  },
+  addToCartButton: {
+    height: 36,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#FF9F1C",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  addToCartText: {
+    color: "#FF9F1C",
+    fontWeight: "500",
+    fontSize: 13,
+  },
+});
 
 export default FeatureProductsList;

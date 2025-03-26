@@ -110,7 +110,7 @@ const _layout = () => {
               focused={focused}
               icon={icons.cart}
               title="Cart"
-              customViewStyle="bg-primary-100 size-20 absolute -top-16 z-10 border-4 border-light-100 shadow-lg"
+              customViewStyle="bg-primary-100 h-24 w-24 absolute -top-16 z-10 border-4 border-light-100 shadow-lg"
               customIconStyle="size-9"
               customTintColor="#ffff"
             />
