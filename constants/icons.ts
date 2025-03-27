@@ -1,20 +1,13 @@
-import home from "@/assets/icons/home-icon.png";
-import dashboard from "@/assets/icons/dashboard-icon.png";
-import heart from "@/assets/icons/heart-icon.png";
-import profile from "@/assets/icons/profile-icon.png";
-import bell from "@/assets/icons/bell-icon.png";
-import sprout from "@/assets/icons/sprout-icon.png";
-import meat from "@/assets/icons/meat-icon.png";
-import packing from "@/assets/icons/package-icon.png";
-import plant from "@/assets/icons/plant-icon.png";
-import cart from "@/assets/icons/cart-icon.png";
-import search from "@/assets/icons/search.png";
-import person from "@/assets/icons/person.png";
-import logo from "@/assets/icons/logo.png";
-import save from "@/assets/icons/save.png";
-import star from "@/assets/icons/star.png";
-import play from "@/assets/icons/play.png";
-import arrow from "@/assets/icons/arrow.png";
+import home from "@/assets/icons/homeicon.png";
+import dashboard from "@/assets/icons/dashboardicon.png";
+import heart from "@/assets/icons/hearticon.png";
+import profile from "@/assets/icons/profileicon.png";
+import bell from "@/assets/icons/bellicon.png";
+import sprout from "@/assets/icons/sprouticon.png";
+import meat from "@/assets/icons/meaticon.png";
+import packing from "@/assets/icons/packageicon.png";
+import plant from "@/assets/icons/planticon.png";
+import cart from "@/assets/icons/carticon.png";
 
 export const icons = {
   home,
@@ -27,11 +20,4 @@ export const icons = {
   plant,
   packing,
   cart,
-  search,
-  person,
-  logo,
-  save,
-  star,
-  play,
-  arrow,
 };

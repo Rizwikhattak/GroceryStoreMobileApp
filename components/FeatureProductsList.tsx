@@ -14,6 +14,7 @@ import { useSelector } from "react-redux";
 import Constants from "expo-constants";
 import { Ionicons } from "@expo/vector-icons";
 import SectionHeader from "./SectionHeader";
+import { primary } from "@/constants/colors";
 
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
@@ -75,7 +76,7 @@ const FeatureProductsList = () => {
                 "https://via.placeholder.com/150",
             }}
             style={styles.productImage}
-            resizeMode="contain"
+            resizeMode="cover"
           />
         </View>
 
@@ -187,7 +188,6 @@ const styles = StyleSheet.create({
   },
   columnWrapper: {
     justifyContent: "space-between",
-    paddingHorizontal: 4,
   },
   card: {
     width: "47%",
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
     shadowRadius: 20,
     elevation: 7,
     position: "relative",
-    overflow: "visible", // This is important to prevent shadow clipping
+    overflow: "visible", // Prevents shadow clipping
   },
   favoriteButton: {
     position: "absolute",
@@ -227,15 +227,17 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   imageContainer: {
-    height: 120,
     width: "100%",
-    alignItems: "center",
-    justifyContent: "center",
-    padding: 12,
+    height: 120, // Fixed height for uniformity
+    overflow: "hidden",
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
   },
   productImage: {
-    height: 100,
     width: "100%",
+    height: "100%",
+    borderTopRightRadius: 10,
+    borderTopLeftRadius: 10,
   },
   detailsContainer: {
     padding: 12,
@@ -279,10 +281,12 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   decrementButton: {
-    backgroundColor: "#FF6B6B",
+    backgroundColor: primary,
+    // backgroundColor: "#FF6B6B",
   },
   incrementButton: {
-    backgroundColor: "#4ECDC4",
+    backgroundColor: primary,
+    // backgroundColor: "#4ECDC4",
   },
   quantityButtonText: {
     color: "white",
@@ -297,12 +301,14 @@ const styles = StyleSheet.create({
     height: 36,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#FF9F1C",
+    borderColor: primary,
+    // borderColor: "#FF9F1C",
     alignItems: "center",
     justifyContent: "center",
   },
   addToCartText: {
-    color: "#FF9F1C",
+    color: primary,
+    // color: "#FF9F1C",
     fontWeight: "500",
     fontSize: 13,
   },

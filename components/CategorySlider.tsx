@@ -10,16 +10,22 @@ import {
 } from "react-native";
 import { icons } from "@/constants/icons";
 import { ChevronRight } from "lucide-react-native";
+import { primary } from "@/constants/colors";
 
 const { width: screenWidth } = Dimensions.get("window");
 const itemWidth = screenWidth * 0.25;
 
 const data = [
-  { title: "Groceries", icon: icons.sprout, bgColor: "#4ab7b6" },
-  { title: "Meet & Poultry", icon: icons.meat, bgColor: "#4b9dcb" },
-  { title: "Packing", icon: icons.packing, bgColor: "#bb6e9c" },
-  { title: "Category 4", icon: icons.plant, bgColor: "#a187d9" },
-  { title: "Item 5", icon: icons.sprout, bgColor: "#4ab7b6" },
+  { title: "Groceries", icon: icons.sprout, bgColor: primary },
+  { title: "Meet & Poultry", icon: icons.meat, bgColor: primary },
+  { title: "Packing", icon: icons.packing, bgColor: primary },
+  { title: "Category 4", icon: icons.plant, bgColor: primary },
+  { title: "Item 5", icon: icons.sprout, bgColor: primary },
+  // { title: "Groceries", icon: icons.sprout, bgColor: "#4ab7b6" },
+  // { title: "Meet & Poultry", icon: icons.meat, bgColor: "#4b9dcb" },
+  // { title: "Packing", icon: icons.packing, bgColor: "#bb6e9c" },
+  // { title: "Category 4", icon: icons.plant, bgColor: "#a187d9" },
+  // { title: "Item 5", icon: icons.sprout, bgColor: "#4ab7b6" },
 ];
 
 const CategorySlider = () => {

@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -50,7 +51,7 @@ const LoginScreen = () => {
           className="flex-1 px-6"
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{
-            paddingTop: 60,
+            paddingTop: 80,
             paddingBottom: 40,
           }}
         >
@@ -124,8 +125,13 @@ const LoginScreen = () => {
               console.log("onPress Triggered");
               handleLogin();
             }}
+            disabled={auth.isLoading} // Optional: disable button while loading
           >
-            <Text className="text-white font-bold text-lg">Sign In</Text>
+            {auth.isLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text className="text-white font-bold text-lg">Sign In</Text>
+            )}
           </TouchableOpacity>
 
           {/* Divider */}

@@ -5,7 +5,7 @@ export default {
   expo: {
     name: "GroceryStore",
     slug: "GroceryStore",
-    owner: "rizwi4529",
+    owner: "moaaz4529",
     userInterfaceStyle: "automatic",
     version: "1.0.0",
     orientation: "portrait",
@@ -13,7 +13,9 @@ export default {
     scheme: "myapp",
     newArchEnabled: false,
     extra: {
-      eas: { projectId: "239519f7-3585-4908-b8c3-66b4724a0e74" },
+      eas: {
+        projectId: "c0458020-197c-4e3e-8378-145d9ed1897a",
+      },
       apiUrl: process.env.API_URL || "https://default.api.url",
     },
     ios: {
