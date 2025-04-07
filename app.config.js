@@ -11,7 +11,7 @@ export default {
     orientation: "portrait",
     icon: "./assets/images/logo.png",
     scheme: "myapp",
-    newArchEnabled: false,
+    newArchEnabled: true,
     extra: {
       eas: {
         projectId: "c0458020-197c-4e3e-8378-145d9ed1897a",

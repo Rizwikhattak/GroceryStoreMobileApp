@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { loginUser } from "../actions/authActions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Toast } from "toastify-react-native";
 
 const initialState = {
   isLoading: false,
@@ -36,6 +37,10 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
+        Toast.error(
+          "Invalid Credentials,Enter valid email and password",
+          "bottom"
+        );
       });
   },
 });

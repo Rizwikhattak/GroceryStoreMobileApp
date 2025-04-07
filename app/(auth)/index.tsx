@@ -17,6 +17,7 @@ import { Link, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
 import { StoreState } from "@/store/store";
 import { loginUser } from "@/store/actions/authActions";
+import { Toast } from "toastify-react-native";
 const LoginScreen = () => {
   const auth = useSelector((state: StoreState) => state.auth);
   const dispatch = useDispatch();
@@ -27,9 +28,11 @@ const LoginScreen = () => {
   const handleLogin = async () => {
     try {
       console.log("Response fetched 1");
+
       const response = await dispatch(
         loginUser(JSON.stringify({ email, password }))
       ).unwrap();
+
       console.log("Response fetched", response);
       if (response?.user) {
         router.replace("/(tabs)");

@@ -15,13 +15,17 @@ import Constants from "expo-constants";
 import { Ionicons } from "@expo/vector-icons";
 import SectionHeader from "./SectionHeader";
 import { primary } from "@/constants/colors";
+import { updateCartQuantity } from "@/store/reducers/productsSlice";
 
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 const FeatureProductsList = () => {
   const products = useSelector((state) => state.products);
   const [quantities, setQuantities] = useState({});
-
+  const cartState = useSelector((state) => state.products.cartState);
+  console.log("cartState", cartState);
+  console.log("products", products);
+  // const dispatch = useDispatch();
   // Handle quantity changes
   const updateQuantity = (id, change) => {
     setQuantities((prev) => {
@@ -42,7 +46,7 @@ const FeatureProductsList = () => {
 
   // Render each product item
   const renderProductItem = ({ item }) => {
-    const quantity = quantities[item._id] || 0;
+    const quantity = cartState[item._id] || 0;
     const isFavorite = favorites[item._id] || false;
     const hasDiscount = item.promotion_value && item.promotion_value > 0;
 
@@ -102,7 +106,7 @@ const FeatureProductsList = () => {
             <View style={styles.quantityContainer}>
               <TouchableOpacity
                 style={[styles.quantityButton, styles.decrementButton]}
-                onPress={() => updateQuantity(item._id, -1)}
+                onPress={() => updateCartQuantity({ id: item._id, change: -1 })}
               >
                 <Text style={styles.quantityButtonText}>-</Text>
               </TouchableOpacity>
@@ -111,7 +115,7 @@ const FeatureProductsList = () => {
 
               <TouchableOpacity
                 style={[styles.quantityButton, styles.incrementButton]}
-                onPress={() => updateQuantity(item._id, 1)}
+                onPress={() => updateCartQuantity({ id: item._id, change: 1 })}
               >
                 <Text style={styles.quantityButtonText}>+</Text>
               </TouchableOpacity>
@@ -119,7 +123,7 @@ const FeatureProductsList = () => {
           ) : (
             <TouchableOpacity
               style={styles.addToCartButton}
-              onPress={() => updateQuantity(item._id, 1)}
+              onPress={() => updateCartQuantity({ id: item._id, change: 1 })}
             >
               <Text style={styles.addToCartText}>Add to cart</Text>
             </TouchableOpacity>

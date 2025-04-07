@@ -2,7 +2,6 @@ import { createAsyncThunk } from "@reduxjs/toolkit";
 import { API_COMMON } from "../../utils/ApiCommon";
 import { loginAPI } from "@/constants/apis";
 
-
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (data, { rejectWithValue }) => {
@@ -16,6 +15,8 @@ export const loginUser = createAsyncThunk(
       );
       return response;
     } catch (err) {
+      console.log("err", err);
+
       return rejectWithValue(err?.message || "Error in login");
     }
   }

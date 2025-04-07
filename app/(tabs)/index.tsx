@@ -1,9 +1,9 @@
 "use client";
 
-import CategorySlider from "@/components/CategorySlider";
-import FeatureProductsList from "@/components/FeatureProductsList";
-import PromoSlider from "@/components/PromoSlider";
-import SearchInput from "@/components/SearchInput";
+import CategorySlider from "@/components/ui/CategorySlider";
+import FeatureProductsList from "@/components/ui/FeatureProductsList";
+import PromoSlider from "@/components/ui/PromoSlider";
+import SearchInput from "@/components/ui/SearchInput";
 import { primary } from "@/constants/colors";
 import { icons } from "@/constants/icons";
 import { getFeaturedProducts } from "@/store/actions/productsActions";

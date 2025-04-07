@@ -1,17 +1,21 @@
 import { Stack } from "expo-router";
 import "./globals.css";
 import { Provider } from "react-redux";
-import { store } from "../store/store";
+import { persistor, store } from "../store/store";
 import "react-native-svg";
-
+import { useEffect } from "react";
+import ToastManager from "toastify-react-native";
+import { PersistGate } from "redux-persist/integration/react";
 export default function RootLayout() {
   return (
     <Provider store={store}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        {/* <Stack.Screen name="/items/[id]" options={{ headerShown: false }} /> */}
-      </Stack>
+      <PersistGate loading={null} persistor={persistor}>
+        <ToastManager />
+        <Stack>
+          <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        </Stack>
+      </PersistGate>
     </Provider>
   );
 }

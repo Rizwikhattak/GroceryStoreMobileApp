@@ -134,6 +134,9 @@ const _layout = () => {
           options={{
             title: "Cart",
             headerShown: false,
+            tabBarStyle: {
+              display: "none",
+            },
             tabBarIcon: ({ focused }) => (
               <TabIcon
                 focused={focused}
