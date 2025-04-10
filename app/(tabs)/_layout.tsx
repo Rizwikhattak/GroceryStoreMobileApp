@@ -164,6 +164,9 @@ const _layout = () => {
           options={{
             title: "profile",
             headerShown: false,
+            tabBarStyle: {
+              display: "none",
+            },
             tabBarIcon: ({ focused }) => (
               <TabIcon focused={focused} icon={icons.profile} title="Profile" />
             ),

@@ -1,12 +1,16 @@
 "use client";
 
 import CategorySlider from "@/components/ui/CategorySlider";
-import FeatureProductsList from "@/components/ui/FeatureProductsList";
+import ProductsList from "@/components/ui/ProductsList";
 import PromoSlider from "@/components/ui/PromoSlider";
 import SearchInput from "@/components/ui/SearchInput";
+import SectionHeader from "@/components/ui/SectionHeader";
 import { primary } from "@/constants/colors";
 import { icons } from "@/constants/icons";
-import { getFeaturedProducts } from "@/store/actions/productsActions";
+import {
+  getAllFeaturedProducts,
+  getFeaturedProducts,
+} from "@/store/actions/productsActions";
 import { useEffect } from "react";
 import {
   Image,
@@ -20,12 +24,29 @@ import {
   StyleSheet,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+// import AsyncStorage from "@react-native-async-storage/async-storage";
+
+// const checkPersistedData = async () => {
+//   try {
+//     const data = await AsyncStorage.getItem("persist:root");
+//     if (data !== null) {
+//       // Data is stored. Note that it's a JSON string.
+//       console.log("Persisted data:", JSON.parse(data));
+//     } else {
+//       console.log("No persisted data found");
+//     }
+//   } catch (error) {
+//     console.error("Error reading persisted data:", error);
+//   }
+// };
+
+// checkPersistedData();
 
 export default function Index() {
-  const products = useSelector((state) => state.products);
-  const user = useSelector((state) => state.auth);
+  const user = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
-
+  const products = useSelector((state: any) => state.products.featuredProducts);
+  console.log("userrrr", user);
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
@@ -36,7 +57,6 @@ export default function Index() {
     };
     fetchFeaturedProducts();
   }, [dispatch]);
-
   // Function to dismiss keyboard when tapping outside of input
   const dismissKeyboard = () => {
     Keyboard.dismiss();
@@ -107,7 +127,15 @@ export default function Index() {
           </View>
 
           <View className="mt-10">
-            <FeatureProductsList />
+            <SectionHeader
+              title="Featured Products"
+              onViewAll={() =>
+                dispatch(
+                  getAllFeaturedProducts({ limit: products.pagination.total })
+                )
+              }
+            />
+            <ProductsList products={products} />
           </View>
         </ScrollView>
       </View>

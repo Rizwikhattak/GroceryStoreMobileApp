@@ -27,21 +27,15 @@ const LoginScreen = () => {
   const [secureTextEntry, setSecureTextEntry] = useState(true);
   const handleLogin = async () => {
     try {
-      console.log("Response fetched 1");
-
       const response = await dispatch(
         loginUser(JSON.stringify({ email, password }))
       ).unwrap();
 
-      console.log("Response fetched", response);
       if (response?.user) {
         router.replace("/(tabs)");
       } else {
-        console.log("Why are u such a nigga");
       }
-    } catch (err) {
-      console.log("Error in login ", err);
-    }
+    } catch (err) {}
   };
   return (
     <KeyboardAvoidingView
@@ -125,7 +119,6 @@ const LoginScreen = () => {
             className="bg-red-500 h-14 rounded-lg items-center justify-center mt-8"
             activeOpacity={0.8}
             onPress={() => {
-              console.log("onPress Triggered");
               handleLogin();
             }}
             disabled={auth.isLoading} // Optional: disable button while loading
