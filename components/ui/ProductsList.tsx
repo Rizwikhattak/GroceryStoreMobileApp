@@ -24,7 +24,6 @@ import {
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 const ProductsList = ({ products }) => {
-
   const dispatch = useDispatch();
   const [quantities, setQuantities] = useState({});
   const cartState = useSelector((state: any) => state.products.cartState);
@@ -51,7 +50,6 @@ const ProductsList = ({ products }) => {
 
   // Render each product item
   const renderProductItem = ({ item }) => {
-
     const quantity =
       cartState.find((cartItem: any) => cartItem._id === item._id)
         ?.orderQuantity || 0;
@@ -157,11 +155,11 @@ const ProductsList = ({ products }) => {
   // Main render
   return (
     <View style={styles.container}>
-      {products.isLoading ? (
+      {products?.isLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF6B6B" />
         </View>
-      ) : products.data && products.data.length > 0 ? (
+      ) : products?.data && products?.data.length > 0 ? (
         <FlatList
           data={products.data}
           renderItem={renderProductItem}

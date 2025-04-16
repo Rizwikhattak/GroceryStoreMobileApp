@@ -23,6 +23,13 @@ export const API_COMMON = async (
             : await axiosJSON.patch(URL, DATA);
         return response.data;
       }
+      case "put": {
+        const response =
+          type === "form"
+            ? await axiosForm.put(URL, DATA)
+            : await axiosJSON.put(URL, DATA);
+        return response.data;
+      }
       case "getAll": {
         const response = await axiosJSON.get(URL);
         return response.data;

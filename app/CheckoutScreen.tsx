@@ -313,13 +313,13 @@ const CheckoutScreen = ({ route, navigation }) => {
 
           <View style={styles.summaryRow}>
             <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>{subtotal}</Text>
+            <Text style={styles.summaryValue}>{subtotal} $</Text>
           </View>
 
           {deliveryMethod === "delivery" && (
             <View style={styles.summaryRow}>
               <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>{deliveryFee}</Text>
+              <Text style={styles.summaryValue}>{deliveryFee} $</Text>
             </View>
           )}
 
@@ -327,7 +327,7 @@ const CheckoutScreen = ({ route, navigation }) => {
 
           <View style={styles.summaryRow}>
             <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>{cartTotal}</Text>
+            <Text style={styles.totalValue}>{cartTotal} $</Text>
           </View>
         </View>
 

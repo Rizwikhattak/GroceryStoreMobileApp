@@ -1,6 +1,10 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { API_COMMON } from "../../utils/ApiCommon";
-import { loginAPI } from "@/constants/apis";
+import {
+  loginAPI,
+  REGISTRATION_CREDIT_API,
+  REGISTRATION_STEP_API,
+} from "@/constants/apis";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const loginUser = createAsyncThunk(
@@ -19,6 +23,65 @@ export const loginUser = createAsyncThunk(
       console.log("err", err);
 
       return rejectWithValue(err?.message || "Error in login");
+    }
+  }
+);
+export const registrationStep1 = createAsyncThunk(
+  "auth/registrationStep1",
+  async (data, { rejectWithValue }) => {
+    try {
+      const response = await API_COMMON(
+        "auth",
+        "form",
+        REGISTRATION_STEP_API,
+        "Error in Registration",
+        data
+      );
+      return response;
+    } catch (err) {
+      console.log("err", err);
+
+      return rejectWithValue(err?.message || "Error in Registration");
+    }
+  }
+);
+export const registrationStep2 = createAsyncThunk(
+  "auth/registrationStep2",
+  async (data, { rejectWithValue }) => {
+    try {
+      console.log("Woww what a data", data);
+      const response = await API_COMMON(
+        "put",
+        "json",
+        `${REGISTRATION_STEP_API}${data._id}`,
+        "Error in Registration",
+        data.formData
+      );
+      return response;
+    } catch (err) {
+      console.log("err", err);
+
+      return rejectWithValue(err?.message || "Error in Registration");
+    }
+  }
+);
+export const registrationStep3 = createAsyncThunk(
+  "auth/registrationStep3",
+  async (data, { rejectWithValue }) => {
+    try {
+      console.log("Woww what a data", data);
+      const response = await API_COMMON(
+        "put",
+        "json",
+        `${REGISTRATION_CREDIT_API}${data._id}`,
+        "Error in Registration",
+        data.formData
+      );
+      return response;
+    } catch (err) {
+      console.log("err", err);
+
+      return rejectWithValue(err?.message || "Error in Registration");
     }
   }
 );

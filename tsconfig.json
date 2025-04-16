@@ -3,14 +3,17 @@
   "compilerOptions": {
     "strict": true,
     "jsx": "react-native",
+    "moduleResolution": "node", // <-- Add this if not present
+    "allowSyntheticDefaultImports": true, //new
+    "esModuleInterop": true, //new
     "paths": {
-      "@/*": [
-        "./*"
-      ]
+      "@/*": ["./*"]
     }
   },
   "include": [
     "**/*.ts",
+    "**/*.js",
+    "**/*.jsx",
     "**/*.tsx",
     "nativewind-env.d.ts",
     "store/reducers/authSlice.js",
