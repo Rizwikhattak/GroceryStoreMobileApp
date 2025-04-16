@@ -3,6 +3,8 @@ import {
   checkAuthStatus,
   loginUser,
   registrationStep1,
+  registrationStep2,
+  registrationStep3,
 } from "../actions/authActions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Toast } from "toastify-react-native";
@@ -43,7 +45,7 @@ const authSlice = createSlice({
       .addCase(loginUser.fulfilled, (state, action) => {
         state.data = action.payload.user;
         state.token = action.payload.token;
-        // storeTokenToStorage(action.payload.token);
+        storeTokenToStorage(action.payload.token);
         state.isAuthenticated = true;
         state.isLoading = false;
         state.error = null;
@@ -70,6 +72,48 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(registrationStep1.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+        Toast.error(
+          "Invalid Credentials,Enter valid email and password",
+          "bottom"
+        );
+      })
+      .addCase(registrationStep2.pending, (state, action) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registrationStep2.fulfilled, (state, action) => {
+        // state.data = action.payload.user;
+        console.log("Response", action.payload);
+        // state.token = action.payload.token;
+        // storeTokenToStorage(action.payload.token);
+        // state.isAuthenticated = true;
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(registrationStep2.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+        Toast.error(
+          "Invalid Credentials,Enter valid email and password",
+          "bottom"
+        );
+      })
+      .addCase(registrationStep3.pending, (state, action) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(registrationStep3.fulfilled, (state, action) => {
+        // state.data = action.payload.user;
+        console.log("Response", action.payload);
+        // state.token = action.payload.token;
+        // storeTokenToStorage(action.payload.token);
+        // state.isAuthenticated = true;
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(registrationStep3.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
         Toast.error(

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,24 +14,44 @@ import {
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useDispatch, useSelector } from "react-redux";
+import { getCustomerDetails } from "@/store/actions/customerActions";
 
 const ProfileScreen = () => {
+  const dispatch = useDispatch();
+  const customer = useSelector((state: any) => state.customers);
+  const customerData = customer?.data;
+  const auth = useSelector((state: any) => state.auth);
   const [activeTab, setActiveTab] = useState("orders");
   const router = useRouter();
   // Orders tab state
   const [orderStatus, setOrderStatus] = useState("All");
-
   // Account settings state
-  const [firstName, setFirstName] = useState("Kamran");
-  const [lastName, setLastName] = useState("Khan");
-  const [email, setEmail] = useState("info@premiummeat.co.nz");
-  const [phone, setPhone] = useState("0220274555");
+  const [firstName, setFirstName] = useState(
+    customerData?.first_name || "Kamran"
+  );
+  const [lastName, setLastName] = useState(customerData?.last_name || "Khan");
+  const [email, setEmail] = useState(
+    customerData?.email || "info@premiummeat.co.nz"
+  );
+  const [phone, setPhone] = useState(customerData?.phone || "0220274555");
   const [address, setAddress] = useState(
-    "54 Stoddard Road, Wesley, Auckland 1108, New Zealand"
+    customerData?.address ||
+      "54 Stoddard Road, Wesley, Auckland 1108, New Zealand"
   );
   const [password, setPassword] = useState("********");
   const [activeSettingsTab, setActiveSettingsTab] = useState("profile");
-
+  useEffect(() => {
+    const fetchCustomerDetails = async () => {
+      try {
+        console.log("idL", auth.data._id);
+        await dispatch(getCustomerDetails(auth.data._id)).unwrap();
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCustomerDetails();
+  }, [dispatch]);
   // Sample orders data
   const orders = [
     {
@@ -269,162 +289,170 @@ const ProfileScreen = () => {
     />
   );
 
-  const renderSettingsTab = () => (
-    <View style={styles.tabContent}>
-      <View style={styles.settingsTabs}>
-        <TouchableOpacity
-          style={[
-            styles.settingsTab,
-            activeSettingsTab === "profile" && styles.activeSettingsTab,
-          ]}
-          onPress={() => setActiveSettingsTab("profile")}
-        >
-          <Text
+  const renderSettingsTab = () => {
+    console.log("customersssss", customer.data);
+    return (
+      <View style={styles.tabContent}>
+        <View style={styles.settingsTabs}>
+          <TouchableOpacity
             style={[
-              styles.settingsTabText,
-              activeSettingsTab === "profile" && styles.activeSettingsTabText,
+              styles.settingsTab,
+              activeSettingsTab === "profile" && styles.activeSettingsTab,
             ]}
+            onPress={() => setActiveSettingsTab("profile")}
           >
-            Profile Settings
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.settingsTab,
-            activeSettingsTab === "business" && styles.activeSettingsTab,
-          ]}
-          onPress={() => setActiveSettingsTab("business")}
-        >
-          <Text
-            style={[
-              styles.settingsTabText,
-              activeSettingsTab === "business" && styles.activeSettingsTabText,
-            ]}
-          >
-            Business Detail
-          </Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={[
-            styles.settingsTab,
-            activeSettingsTab === "credit" && styles.activeSettingsTab,
-          ]}
-          onPress={() => setActiveSettingsTab("credit")}
-        >
-          <Text
-            style={[
-              styles.settingsTabText,
-              activeSettingsTab === "credit" && styles.activeSettingsTabText,
-            ]}
-          >
-            Credit Reference
-          </Text>
-        </TouchableOpacity>
-      </View>
-
-      {activeSettingsTab === "profile" && (
-        <ScrollView style={styles.settingsForm}>
-          <View style={styles.formRow}>
-            <View style={styles.formColumn}>
-              <Text style={styles.formLabel}>First Name</Text>
-              <TextInput
-                style={styles.formInput}
-                value={firstName}
-                onChangeText={setFirstName}
-                placeholder="Enter first name"
-              />
-            </View>
-            <View style={styles.formColumn}>
-              <Text style={styles.formLabel}>Last Name</Text>
-              <TextInput
-                style={styles.formInput}
-                value={lastName}
-                onChangeText={setLastName}
-                placeholder="Enter last name"
-              />
-            </View>
-          </View>
-
-          <View style={styles.formRow}>
-            <View style={styles.formColumn}>
-              <Text style={styles.formLabel}>Email</Text>
-              <TextInput
-                style={styles.formInput}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter email"
-                keyboardType="email-address"
-              />
-            </View>
-            <View style={styles.formColumn}>
-              <Text style={styles.formLabel}>Phone</Text>
-              <TextInput
-                style={styles.formInput}
-                value={phone}
-                onChangeText={setPhone}
-                placeholder="Enter phone number"
-                keyboardType="phone-pad"
-              />
-            </View>
-          </View>
-
-          <View style={styles.formFullRow}>
-            <Text style={styles.formLabel}>Address</Text>
-            <TextInput
-              style={styles.formInput}
-              value={address}
-              onChangeText={setAddress}
-              placeholder="Enter address"
-              multiline
-              numberOfLines={2}
-            />
-          </View>
-
-          <View style={styles.formFullRow}>
-            <Text style={styles.formLabel}>Password</Text>
-            <TextInput
-              style={styles.formInput}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter password"
-              secureTextEntry
-            />
-          </View>
-
-          <View style={styles.formFullRow}>
-            <Text style={styles.formLabel}>Driver License</Text>
-            <TouchableOpacity style={styles.uploadButton}>
-              <Ionicons name="cloud-upload-outline" size={20} color="#f44336" />
-              <Text style={styles.uploadButtonText}>Upload License</Text>
-            </TouchableOpacity>
-            <Text style={styles.uploadNote}>No file chosen</Text>
-          </View>
-
-          <TouchableOpacity style={styles.saveButton}>
-            <Text style={styles.saveButtonText}>Save Changes</Text>
+            <Text
+              style={[
+                styles.settingsTabText,
+                activeSettingsTab === "profile" && styles.activeSettingsTabText,
+              ]}
+            >
+              Profile Settings
+            </Text>
           </TouchableOpacity>
-        </ScrollView>
-      )}
-
-      {activeSettingsTab === "business" && (
-        <View style={styles.comingSoonContainer}>
-          <Ionicons name="business-outline" size={60} color="#f44336" />
-          <Text style={styles.comingSoonText}>
-            Business Details Coming Soon
-          </Text>
+          <TouchableOpacity
+            style={[
+              styles.settingsTab,
+              activeSettingsTab === "business" && styles.activeSettingsTab,
+            ]}
+            onPress={() => setActiveSettingsTab("business")}
+          >
+            <Text
+              style={[
+                styles.settingsTabText,
+                activeSettingsTab === "business" &&
+                  styles.activeSettingsTabText,
+              ]}
+            >
+              Business Detail
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.settingsTab,
+              activeSettingsTab === "credit" && styles.activeSettingsTab,
+            ]}
+            onPress={() => setActiveSettingsTab("credit")}
+          >
+            <Text
+              style={[
+                styles.settingsTabText,
+                activeSettingsTab === "credit" && styles.activeSettingsTabText,
+              ]}
+            >
+              Credit Reference
+            </Text>
+          </TouchableOpacity>
         </View>
-      )}
 
-      {activeSettingsTab === "credit" && (
-        <View style={styles.comingSoonContainer}>
-          <Ionicons name="card-outline" size={60} color="#f44336" />
-          <Text style={styles.comingSoonText}>
-            Credit Reference Coming Soon
-          </Text>
-        </View>
-      )}
-    </View>
-  );
+        {activeSettingsTab === "profile" && (
+          <ScrollView style={styles.settingsForm}>
+            <View style={styles.formRow}>
+              <View style={styles.formColumn}>
+                <Text style={styles.formLabel}>First Name</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={firstName}
+                  onChangeText={setFirstName}
+                  placeholder="Enter first name"
+                />
+              </View>
+              <View style={styles.formColumn}>
+                <Text style={styles.formLabel}>Last Name</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={lastName}
+                  onChangeText={setLastName}
+                  placeholder="Enter last name"
+                />
+              </View>
+            </View>
+
+            <View style={styles.formRow}>
+              <View style={styles.formColumn}>
+                <Text style={styles.formLabel}>Email</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter email"
+                  keyboardType="email-address"
+                />
+              </View>
+              <View style={styles.formColumn}>
+                <Text style={styles.formLabel}>Phone</Text>
+                <TextInput
+                  style={styles.formInput}
+                  value={phone}
+                  onChangeText={setPhone}
+                  placeholder="Enter phone number"
+                  keyboardType="phone-pad"
+                />
+              </View>
+            </View>
+
+            <View style={styles.formFullRow}>
+              <Text style={styles.formLabel}>Address</Text>
+              <TextInput
+                style={styles.formInput}
+                value={address}
+                onChangeText={setAddress}
+                placeholder="Enter address"
+                multiline
+                numberOfLines={2}
+              />
+            </View>
+
+            <View style={styles.formFullRow}>
+              <Text style={styles.formLabel}>Password</Text>
+              <TextInput
+                style={styles.formInput}
+                value={password}
+                onChangeText={setPassword}
+                placeholder="Enter password"
+                secureTextEntry
+              />
+            </View>
+
+            <View style={styles.formFullRow}>
+              <Text style={styles.formLabel}>Driver License</Text>
+              <TouchableOpacity style={styles.uploadButton}>
+                <Ionicons
+                  name="cloud-upload-outline"
+                  size={20}
+                  color="#f44336"
+                />
+                <Text style={styles.uploadButtonText}>Upload License</Text>
+              </TouchableOpacity>
+              <Text style={styles.uploadNote}>No file chosen</Text>
+            </View>
+
+            <TouchableOpacity style={styles.saveButton}>
+              <Text style={styles.saveButtonText}>Save Changes</Text>
+            </TouchableOpacity>
+          </ScrollView>
+        )}
+
+        {activeSettingsTab === "business" && (
+          <View style={styles.comingSoonContainer}>
+            <Ionicons name="business-outline" size={60} color="#f44336" />
+            <Text style={styles.comingSoonText}>
+              Business Details Coming Soon
+            </Text>
+          </View>
+        )}
+
+        {activeSettingsTab === "credit" && (
+          <View style={styles.comingSoonContainer}>
+            <Ionicons name="card-outline" size={60} color="#f44336" />
+            <Text style={styles.comingSoonText}>
+              Credit Reference Coming Soon
+            </Text>
+          </View>
+        )}
+      </View>
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
