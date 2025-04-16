@@ -8,6 +8,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -21,9 +22,10 @@ import { signupStep1, signupStep1Data } from "@/utils/FormValidationScheemas";
 import InputCommon from "@/components/ui/FormCommons";
 import { Toast } from "toastify-react-native";
 import { registrationStep1 } from "@/store/actions/authActions";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 const SignupScreen = () => {
   const dispatch = useDispatch();
+  const auth = useSelector((state: any) => state.auth);
   const router = useRouter();
   const [formData, setFormData] = useState({
     first_name: "",
@@ -395,9 +397,13 @@ const SignupScreen = () => {
             activeOpacity={0.8}
             onPress={handleFormSubmit}
           >
-            <Text className="text-white font-bold text-lg">
-              Save & Continue
-            </Text>
+            {auth.isLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text className="text-white font-bold text-lg">
+                Save & Continue
+              </Text>
+            )}
           </TouchableOpacity>
 
           {/* Login Link */}

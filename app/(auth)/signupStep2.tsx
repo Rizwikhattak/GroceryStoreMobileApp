@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -21,9 +22,10 @@ import {
   registrationStep1,
   registrationStep2,
 } from "@/store/actions/authActions";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const SigupStep2 = () => {
+  const auth = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
   const { _id } = useLocalSearchParams();
@@ -290,9 +292,13 @@ const SigupStep2 = () => {
             activeOpacity={0.8}
             onPress={handleFormSubmit}
           >
-            <Text className="text-white font-bold text-lg">
-              Save & Continue
-            </Text>
+            {auth.isLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text className="text-white font-bold text-lg">
+                Save & Continue
+              </Text>
+            )}
           </TouchableOpacity>
 
           {/* Already have an account? (Adjust as needed) */}

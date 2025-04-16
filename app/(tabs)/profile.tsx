@@ -20,7 +20,6 @@ import { getCustomerDetails } from "@/store/actions/customerActions";
 const ProfileScreen = () => {
   const dispatch = useDispatch();
   const customer = useSelector((state: any) => state.customers);
-  const customerData = customer?.data;
   const auth = useSelector((state: any) => state.auth);
   const [activeTab, setActiveTab] = useState("orders");
   const router = useRouter();
@@ -28,15 +27,15 @@ const ProfileScreen = () => {
   const [orderStatus, setOrderStatus] = useState("All");
   // Account settings state
   const [firstName, setFirstName] = useState(
-    customerData?.first_name || "Kamran"
+    customer?.data?.first_name || "Kamran"
   );
-  const [lastName, setLastName] = useState(customerData?.last_name || "Khan");
+  const [lastName, setLastName] = useState(customer?.data?.last_name || "Khan");
   const [email, setEmail] = useState(
-    customerData?.email || "info@premiummeat.co.nz"
+    customer?.data?.email || "info@premiummeat.co.nz"
   );
-  const [phone, setPhone] = useState(customerData?.phone || "0220274555");
+  const [phone, setPhone] = useState(customer?.data?.phone || "0220274555");
   const [address, setAddress] = useState(
-    customerData?.address ||
+    customer?.data?.address ||
       "54 Stoddard Road, Wesley, Auckland 1108, New Zealand"
   );
   const [password, setPassword] = useState("********");
@@ -484,8 +483,10 @@ const ProfileScreen = () => {
           </TouchableOpacity>
         </View>
         <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>Kamran Khan</Text>
-          <Text style={styles.profileEmail}>info@premiummeat.co.nz</Text>
+          <Text style={styles.profileName}>
+            {customer?.data?.first_name} {customer?.data?.last_name}
+          </Text>
+          <Text style={styles.profileEmail}>{customer?.data?.email}</Text>
         </View>
       </View>
 

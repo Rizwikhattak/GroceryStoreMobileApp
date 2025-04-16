@@ -7,6 +7,7 @@ import {
   KeyboardAvoidingView,
   Platform,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -17,10 +18,11 @@ import {
   registrationStep2,
   registrationStep3,
 } from "@/store/actions/authActions";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 const SigupStep3 = () => {
   const dispatch = useDispatch();
+  const auth = useSelector((state: any) => state.auth);
   const router = useRouter();
   const { _id } = useLocalSearchParams();
   console.log("Received woww _id:", _id);
@@ -262,9 +264,13 @@ const SigupStep3 = () => {
             activeOpacity={0.8}
             onPress={handleFormSubmit}
           >
-            <Text className="text-white font-bold text-lg">
-              Save & Continue
-            </Text>
+            {auth.isLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text className="text-white font-bold text-lg">
+                Create Account
+              </Text>
+            )}
           </TouchableOpacity>
 
           {/* Already have an account? */}
