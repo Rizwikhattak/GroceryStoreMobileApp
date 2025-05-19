@@ -24,6 +24,8 @@ import InputCommon from "@/components/ui/FormCommons";
 import { Toast } from "toastify-react-native";
 import { registrationStep1 } from "@/store/actions/authActions";
 import { useDispatch, useSelector } from "react-redux";
+import { primary } from "@/constants/colors";
+import Logo from "../../assets/images/premium-meats-logo.svg";
 
 const SignupScreen = () => {
   const dispatch = useDispatch();
@@ -149,10 +151,11 @@ const SignupScreen = () => {
         >
           {/* Logo and Title */}
           <View style={styles.headerContainer}>
-            <Text style={styles.titleText}>
+            {/* <Text style={styles.titleText}>
               <Text style={styles.premiumText}>Premium</Text>
               <Text style={styles.meatText}> Meat</Text>
-            </Text>
+            </Text> */}
+            <Logo width={300} height={80} />
             <Text style={styles.subtitleText}>Create your account</Text>
           </View>
 
@@ -401,7 +404,7 @@ const styles = StyleSheet.create({
     marginBottom: 8, // mb-2
   },
   premiumText: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
   },
   meatText: {
     color: "#000000", // text-black
@@ -409,6 +412,7 @@ const styles = StyleSheet.create({
   subtitleText: {
     color: "#6b7280", // text-gray-500
     fontSize: 16, // text-base
+    marginTop: 8,
   },
   formContainer: {
     gap: 16, // space-y-4
@@ -423,7 +427,7 @@ const styles = StyleSheet.create({
     fontSize: 16, // text-base
   },
   requiredAsterisk: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
   },
   inputContainer: {
     flexDirection: "row", // flex-row
@@ -457,7 +461,7 @@ const styles = StyleSheet.create({
     color: "#9ca3af", // text-gray-400
   },
   browseButton: {
-    backgroundColor: "#ef4444", // bg-red-500
+    backgroundColor: primary, // bg-red-500
     paddingHorizontal: 12, // px-3
     paddingVertical: 6, // py-1.5
     borderRadius: 6, // rounded-md
@@ -481,7 +485,7 @@ const styles = StyleSheet.create({
     marginLeft: "auto", // ml-auto
   },
   signupButton: {
-    backgroundColor: "#ef4444", // bg-red-500
+    backgroundColor: primary, // bg-red-500
     height: 50, // h-14
     borderRadius: 8, // rounded-lg
     alignItems: "center", // items-center
@@ -502,7 +506,7 @@ const styles = StyleSheet.create({
     color: "#4b5563", // text-gray-600
   },
   loginLinkText: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
     fontWeight: "500", // font-medium
   },
 });

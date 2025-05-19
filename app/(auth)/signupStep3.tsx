@@ -20,6 +20,8 @@ import {
   registrationStep3,
 } from "@/store/actions/authActions";
 import { useDispatch, useSelector } from "react-redux";
+import { primary } from "@/constants/colors";
+import Logo from "../../assets/images/premium-meats-logo.svg";
 
 const SigupStep3 = () => {
   const dispatch = useDispatch();
@@ -95,10 +97,11 @@ const SigupStep3 = () => {
         >
           {/* Heading */}
           <View style={styles.headerContainer}>
-            <Text style={styles.titleText}>
+            {/* <Text style={styles.titleText}>
               <Text style={styles.premiumText}>Premium</Text>
               <Text style={styles.meatText}> Meat</Text>
-            </Text>
+            </Text> */}
+            <Logo width={300} height={80} />
             <Text style={styles.subtitleText}>Credit Reference (Step 3/3)</Text>
           </View>
 
@@ -306,7 +309,7 @@ const styles = StyleSheet.create({
     marginBottom: 8, // mb-2
   },
   premiumText: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
   },
   meatText: {
     color: "#000000", // text-black
@@ -314,6 +317,7 @@ const styles = StyleSheet.create({
   subtitleText: {
     color: "#6b7280", // text-gray-500
     fontSize: 16, // text-base
+    marginTop: 8,
   },
   referenceContainer: {
     gap: 16, // space-y-4
@@ -338,7 +342,7 @@ const styles = StyleSheet.create({
     fontSize: 16, // text-base
   },
   requiredAsterisk: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
   },
   inputContainer: {
     flexDirection: "row", // flex-row
@@ -368,7 +372,7 @@ const styles = StyleSheet.create({
     fontSize: 14, // text-sm
   },
   createAccountButton: {
-    backgroundColor: "#ef4444", // bg-red-500
+    backgroundColor: primary, // bg-red-500
     height: 56, // h-14
     borderRadius: 8, // rounded-lg
     alignItems: "center", // items-center
@@ -389,7 +393,7 @@ const styles = StyleSheet.create({
     color: "#4b5563", // text-gray-600
   },
   loginLinkText: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
     fontWeight: "500", // font-medium
   },
 });

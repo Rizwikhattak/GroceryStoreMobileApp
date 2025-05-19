@@ -54,3 +54,27 @@ export const getAllProducts = createAsyncThunk(
     }
   }
 );
+export const getProducts = createAsyncThunk(
+  "products/getProducts",
+  async (
+    { category_slug = null, sub_category = null },
+    { rejectWithValue }
+  ) => {
+    try {
+      const response = await API_COMMON(
+        "getAll",
+        "json",
+        sub_category !== null
+          ? `${PRODUCTS_API}?sub_category=${sub_category}`
+          : category_slug !== null
+          ? `${PRODUCTS_API}?category_slug=${category_slug}`
+          : `${PRODUCTS_API}`,
+        "Error in fetching products",
+        null
+      );
+      return response;
+    } catch (err) {
+      return rejectWithValue(err?.message || "Error in fetching products");
+    }
+  }
+);

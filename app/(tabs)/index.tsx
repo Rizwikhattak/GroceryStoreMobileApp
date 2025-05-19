@@ -24,6 +24,9 @@ import {
   StyleSheet,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
+import Logo from "../../assets/images/premium-meats-logo.svg";
+import AppText from "@/components/ui/AppText";
+
 // import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // const checkPersistedData = async () => {
@@ -77,24 +80,29 @@ export default function Index() {
         >
           {/* Title section - can be wrapped with TouchableOpacity to dismiss keyboard */}
           <TouchableOpacity activeOpacity={1} onPress={dismissKeyboard}>
-            <View style={styles.titleContainer}>
+            {/* <View style={styles.titleContainer}>
               <Text style={styles.premiumText}>Premium</Text>
               <Text style={styles.meatsText}>Meats</Text>
-            </View>
+            </View> */}
+            <Logo
+              width={200}
+              height={80}
+              style={{ alignSelf: "center", marginTop: 20 }}
+            />
           </TouchableOpacity>
 
           {/* Welcome section */}
           <View style={styles.welcomeSection}>
             <TouchableOpacity activeOpacity={1} onPress={dismissKeyboard}>
               <View style={styles.welcomeTextContainer}>
-                <Text style={styles.welcomeText}>Welcome, </Text>
-                <Text style={styles.welcomeNameText}>
+                <AppText style={styles.welcomeText}>Welcome, </AppText>
+                <AppText variant="bold" style={styles.welcomeNameText}>
                   {user.data.first_name}
-                </Text>
+                </AppText>
               </View>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={dismissKeyboard}>
+            {/* <TouchableOpacity onPress={dismissKeyboard}>
               <View style={styles.notificationButton}>
                 <Image
                   source={icons.bell}
@@ -103,7 +111,7 @@ export default function Index() {
                   style={styles.notificationIcon}
                 />
               </View>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
 
           {/* Search input */}
@@ -172,7 +180,7 @@ const styles = StyleSheet.create({
     // default color (e.g., black) unless you specify otherwise
   },
   welcomeSection: {
-    marginTop: 40, // mt-10 equivalent
+    marginTop: 25, // mt-10 equivalent
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -186,6 +194,7 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 20, // text-xl equivalent
     fontWeight: "600", // font-semibold equivalent
+    fontFamily: "Optima-regular",
   },
   welcomeNameText: {
     fontSize: 20, // text-xl equivalent

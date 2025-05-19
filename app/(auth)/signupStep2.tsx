@@ -24,6 +24,8 @@ import {
   registrationStep2,
 } from "@/store/actions/authActions";
 import { useDispatch, useSelector } from "react-redux";
+import { primary } from "@/constants/colors";
+import Logo from "../../assets/images/premium-meats-logo.svg";
 
 const SigupStep2 = () => {
   const auth = useSelector((state: any) => state.auth);
@@ -110,10 +112,11 @@ const SigupStep2 = () => {
         >
           {/* Heading (you can rename to "Business Details" if desired) */}
           <View style={styles.headerContainer}>
-            <Text style={styles.titleText}>
+            {/* <Text style={styles.titleText}>
               <Text style={styles.premiumText}>Premium</Text>
               <Text style={styles.meatText}> Meat</Text>
-            </Text>
+            </Text> */}
+            <Logo width={300} height={100} />
             <Text style={styles.subtitleText}>Business Details (Step 2/3)</Text>
           </View>
 
@@ -328,7 +331,7 @@ const styles = StyleSheet.create({
     marginBottom: 8, // mb-2
   },
   premiumText: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
   },
   meatText: {
     color: "#000000", // text-black
@@ -336,6 +339,7 @@ const styles = StyleSheet.create({
   subtitleText: {
     color: "#6b7280", // text-gray-500
     fontSize: 16, // text-base
+    marginTop: 8,
   },
   formContainer: {
     gap: 16, // space-y-4
@@ -350,7 +354,7 @@ const styles = StyleSheet.create({
     fontSize: 16, // text-base
   },
   requiredAsterisk: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
   },
   inputContainer: {
     flexDirection: "row", // flex-row
@@ -376,7 +380,7 @@ const styles = StyleSheet.create({
     marginBottom: 12, // mb-3
   },
   continueButton: {
-    backgroundColor: "#ef4444", // bg-red-500
+    backgroundColor: primary, // bg-red-500
     height: 50, // h-14
     borderRadius: 8, // rounded-lg
     alignItems: "center", // items-center
@@ -397,7 +401,7 @@ const styles = StyleSheet.create({
     color: "#4b5563", // text-gray-600
   },
   loginLinkText: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
     fontWeight: "500", // font-medium
   },
 });

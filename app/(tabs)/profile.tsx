@@ -33,6 +33,7 @@ const ProfileScreen = () => {
   const [email, setEmail] = useState(
     customer?.data?.email || "info@premiummeat.co.nz"
   );
+  const [showFilters, setShowFilters] = useState(false);
   const [phone, setPhone] = useState(customer?.data?.phone || "0220274555");
   const [address, setAddress] = useState(
     customer?.data?.address ||
@@ -51,6 +52,16 @@ const ProfileScreen = () => {
     };
     fetchCustomerDetails();
   }, [dispatch]);
+  const toggleFilters = () => {
+    const toValue = showFilters ? 0 : 1;
+    setShowFilters(!showFilters);
+
+    // Animated.timing(filterAnimation, {
+    //   toValue,
+    //   duration: 300,
+    //   useNativeDriver: false,
+    // }).start();
+  };
   // Sample orders data
   const orders = [
     {
@@ -190,83 +201,98 @@ const ProfileScreen = () => {
 
   const renderOrdersTab = () => (
     <View style={styles.tabContent}>
-      <View style={styles.filterSection}>
-        <Text style={styles.filterLabel}>Status</Text>
-        <View style={styles.statusButtons}>
-          <TouchableOpacity
-            style={[
-              styles.statusButton,
-              orderStatus === "All" && styles.activeStatusButton,
-            ]}
-            onPress={() => setOrderStatus("All")}
-          >
-            <Text
+      <TouchableOpacity
+        style={styles.filterToggleButton}
+        onPress={toggleFilters}
+      >
+        <Text style={styles.filterToggleText}>
+          {showFilters ? "Hide Filters" : "Show Filters"}
+        </Text>
+        <Ionicons
+          name={showFilters ? "chevron-up" : "chevron-down"}
+          size={18}
+          color="#f44336"
+        />
+      </TouchableOpacity>
+      {showFilters && (
+        <View style={styles.filterSection}>
+          <Text style={styles.filterLabel}>Status</Text>
+          <View style={styles.statusButtons}>
+            <TouchableOpacity
               style={[
-                styles.statusButtonText,
-                orderStatus === "All" && styles.activeStatusButtonText,
+                styles.statusButton,
+                orderStatus === "All" && styles.activeStatusButton,
               ]}
+              onPress={() => setOrderStatus("All")}
             >
-              All
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={[
+                  styles.statusButtonText,
+                  orderStatus === "All" && styles.activeStatusButtonText,
+                ]}
+              >
+                All
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.statusButton,
-              orderStatus === "Pending" && styles.activeStatusButton,
-            ]}
-            onPress={() => setOrderStatus("Pending")}
-          >
-            <Text
+            <TouchableOpacity
               style={[
-                styles.statusButtonText,
-                orderStatus === "Pending" && styles.activeStatusButtonText,
+                styles.statusButton,
+                orderStatus === "Pending" && styles.activeStatusButton,
               ]}
+              onPress={() => setOrderStatus("Pending")}
             >
-              Pending
-            </Text>
-          </TouchableOpacity>
+              <Text
+                style={[
+                  styles.statusButtonText,
+                  orderStatus === "Pending" && styles.activeStatusButtonText,
+                ]}
+              >
+                Pending
+              </Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.statusButton,
-              orderStatus === "Completed" && styles.activeStatusButton,
-            ]}
-            onPress={() => setOrderStatus("Completed")}
-          >
-            <Text
+            <TouchableOpacity
               style={[
-                styles.statusButtonText,
-                orderStatus === "Completed" && styles.activeStatusButtonText,
+                styles.statusButton,
+                orderStatus === "Completed" && styles.activeStatusButton,
               ]}
+              onPress={() => setOrderStatus("Completed")}
             >
-              Completed
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.dateFilters}>
-          <View style={styles.dateFilter}>
-            <Text style={styles.dateFilterLabel}>From</Text>
-            <TouchableOpacity style={styles.datePickerButton}>
-              <Text style={styles.datePickerText}>01/01/2025</Text>
-              <Ionicons name="calendar-outline" size={20} color="#666" />
+              <Text
+                style={[
+                  styles.statusButtonText,
+                  orderStatus === "Completed" && styles.activeStatusButtonText,
+                ]}
+              >
+                Completed
+              </Text>
             </TouchableOpacity>
           </View>
 
-          <View style={styles.dateFilter}>
-            <Text style={styles.dateFilterLabel}>To</Text>
-            <TouchableOpacity style={styles.datePickerButton}>
-              <Text style={styles.datePickerText}>31/12/2025</Text>
-              <Ionicons name="calendar-outline" size={20} color="#666" />
-            </TouchableOpacity>
-          </View>
-        </View>
+          <View style={styles.dateFilters}>
+            <View style={styles.dateFilter}>
+              <Text style={styles.dateFilterLabel}>From</Text>
+              <TouchableOpacity style={styles.datePickerButton}>
+                <Text style={styles.datePickerText}>01/01/2025</Text>
+                <Ionicons name="calendar-outline" size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
 
-        <TouchableOpacity style={styles.applyFilterButton}>
-          <Text style={styles.applyFilterText}>Apply Filters</Text>
-        </TouchableOpacity>
-      </View>
+            <View style={styles.dateFilter}>
+              <Text style={styles.dateFilterLabel}>To</Text>
+              <TouchableOpacity style={styles.datePickerButton}>
+                <Text style={styles.datePickerText}>31/12/2025</Text>
+                <Ionicons name="calendar-outline" size={20} color="#666" />
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          <TouchableOpacity style={styles.applyFilterButton}>
+            <Text style={styles.applyFilterText}>Apply Filters</Text>
+          </TouchableOpacity>
+        </View>
+      )}
 
       <FlatList
         data={orders}
@@ -571,6 +597,20 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  filterToggleButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#eee",
+  },
+  filterToggleText: {
+    fontSize: 14,
+    color: "#f44336",
+    fontWeight: "500",
+    marginRight: 4,
   },
   header: {
     flexDirection: "row",

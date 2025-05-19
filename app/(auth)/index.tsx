@@ -19,6 +19,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { StoreState } from "@/store/store";
 import { loginUser } from "@/store/actions/authActions";
 import { Toast } from "toastify-react-native";
+import Logo from "../../assets/images/premium-meats-logo.svg";
+import { primary } from "@/constants/colors";
 
 const LoginScreen = () => {
   const auth = useSelector((state: StoreState) => state.auth);
@@ -55,10 +57,12 @@ const LoginScreen = () => {
         >
           {/* Logo and Title */}
           <View style={styles.headerContainer}>
-            <Text style={styles.titleText}>
+            {/* <Text style={styles.titleText}>
               <Text style={styles.premiumText}>Premium</Text>
               <Text style={styles.meatText}> Meat</Text>
-            </Text>
+            </Text> */}
+            <Logo width={300} height={80} />
+
             <Text style={styles.subtitleText}>Sign in to your account</Text>
           </View>
 
@@ -168,6 +172,16 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#ffffff", // bg-white
   },
+  ImageContainer: {
+    flex: 1,
+    padding: 10,
+  },
+  image: {
+    width: "100%", // takes full width of parent
+    height: undefined,
+    aspectRatio: 16 / 9, // maintain aspect ratio
+    borderRadius: 10,
+  },
   scrollView: {
     flex: 1,
     paddingHorizontal: 24, // px-6
@@ -186,7 +200,7 @@ const styles = StyleSheet.create({
     marginBottom: 8, // mb-2
   },
   premiumText: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
   },
   meatText: {
     color: "#000000", // text-black
@@ -194,6 +208,7 @@ const styles = StyleSheet.create({
   subtitleText: {
     color: "#6b7280", // text-gray-500
     fontSize: 16, // text-base
+    marginTop: 8,
   },
   formContainer: {
     marginTop: 24, // mt-6
@@ -226,11 +241,11 @@ const styles = StyleSheet.create({
     marginTop: 20, // part of space-y-5
   },
   forgotPasswordText: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
     fontWeight: "500", // font-medium
   },
   loginButton: {
-    backgroundColor: "#ef4444", // bg-red-500
+    backgroundColor: primary, // bg-red-500
     height: 50, // h-14
     borderRadius: 8, // rounded-lg
     alignItems: "center", // items-center
@@ -278,7 +293,7 @@ const styles = StyleSheet.create({
     color: "#4b5563", // text-gray-600
   },
   signupLinkText: {
-    color: "#ef4444", // text-red-500
+    color: primary, // text-red-500
     fontWeight: "500", // font-medium
   },
 });

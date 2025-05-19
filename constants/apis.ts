@@ -10,3 +10,5 @@ export const GET_CUSTOMER_DETAILS_API = "customer_by_user/";
 export const fetchFeturedProductsAPI = "featured-products/";
 export const fetchCategoriesApi = "categories/";
 export const PRODUCTS_API = "products/";
+
+export const SUB_CATEGORIES_API = "subcategories/";

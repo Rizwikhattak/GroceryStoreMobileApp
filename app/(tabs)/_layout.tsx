@@ -125,15 +125,16 @@ const _layout = () => {
           }}
         />
         <Tabs.Screen
-          name="dashboard"
+          name="liked"
           options={{
-            title: "Dashboard",
+            title: "Liked",
             headerShown: false,
             tabBarIcon: ({ focused }) => (
               <TabIcon
                 focused={focused}
-                icon={icons.dashboard}
-                title="Dashboard"
+                icon={icons.heart}
+                title="Liked"
+                // customIconStyle="largeIcon"
               />
             ),
           }}
@@ -159,19 +160,24 @@ const _layout = () => {
           }}
         />
         <Tabs.Screen
-          name="liked"
+          name="notifications"
           options={{
-            title: "Liked",
+            title: "Notification",
             headerShown: false,
             tabBarIcon: ({ focused }) => (
-              <TabIcon focused={focused} icon={icons.heart} title="Liked" />
+              <TabIcon
+                focused={focused}
+                icon={icons.bell}
+                title="Notification"
+                // customIconStyle="largeIcon"
+              />
             ),
           }}
         />
         <Tabs.Screen
           name="profile"
           options={{
-            title: "profile",
+            title: "Profile",
             headerShown: false,
             tabBarStyle: {
               display: "none",
@@ -217,7 +223,7 @@ const styles = StyleSheet.create({
     height: 36, // size-9
   },
   cartButton: {
-    backgroundColor: "#ef4444", // bg-[#ef4444]
+    backgroundColor: primary, // bg-[#ef4444]
     height: 80, // h-20
     width: 80, // w-20
     position: "absolute", // absolute

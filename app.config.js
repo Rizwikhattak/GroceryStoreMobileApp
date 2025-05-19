@@ -44,6 +44,12 @@ export default {
           backgroundColor: "#ffffff",
         },
       ],
+      [
+        "expo-font",
+        {
+          fonts: ["./assets/fonts/OPTIMA.TTF"],
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,

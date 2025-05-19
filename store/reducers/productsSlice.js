@@ -3,6 +3,7 @@ import {
   getAllFeaturedProducts,
   getAllProducts,
   getFeaturedProducts,
+  getProducts,
 } from "../actions/productsActions";
 const initialState = {
   isLoading: false,
@@ -73,25 +74,40 @@ const productsSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
+      .addCase(getProducts.pending, (state, action) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getProducts.fulfilled, (state, action) => {
+        const data = action.payload.list;
+        state.data = data;
+        state.pagination = action.payload.pagination;
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(getProducts.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+      })
       .addCase(getFeaturedProducts.pending, (state, action) => {
         state.featuredProducts.isLoading = true;
         state.featuredProducts.error = null;
       })
       .addCase(getFeaturedProducts.fulfilled, (state, action) => {
         const data = action.payload.list;
+        state.featuredProducts.data = data;
+        // state.featuredProducts.data = data.filter(
+        //   (item, index) =>
+        //     item._id !== "66c835b2989abcf543ea9693" &&
+        //     item._id !== "66c855776e4212fbdec483d2"
+        // );
 
-        state.featuredProducts.data = data.filter(
-          (item, index) =>
-            item._id !== "66c835b2989abcf543ea9693" &&
-            item._id !== "66c855776e4212fbdec483d2"
-        );
-        // state.featuredProducts.data = data;
         state.featuredProducts.pagination = action.payload.pagination;
         state.featuredProducts.isLoading = false;
         state.featuredProducts.error = null;
       })
       .addCase(getFeaturedProducts.rejected, (state, action) => {
-        state.featuredProductsisLoading = false;
+        state.isLoading = false;
         state.featuredProducts.error = action.payload;
       })
       .addCase(getAllFeaturedProducts.pending, (state, action) => {

@@ -15,6 +15,8 @@ import Constants from "expo-constants";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllCategories } from "@/store/actions/categoriesActions";
 import { useNavigation, useRouter } from "expo-router";
+import AppText from "@/components/ui/AppText";
+import { setSelectedCategory } from "@/store/reducers/categoriesSlice";
 
 const { width: screenWidth } = Dimensions.get("window");
 const itemWidth = screenWidth * 0.25;
@@ -38,9 +40,13 @@ const CategorySlider = () => {
   const renderItem = ({ item }: any) => (
     <TouchableOpacity
       style={styles.item}
-      onPress={() => router.push(`/Category/${item._id}`)}
+      // onPress={() => router.push(`/Category/${item._id}`)}
+      onPress={() => {
+        dispatch(setSelectedCategory(item));
+        router.push(`/Category/${item.name}`);
+      }}
     >
-      <Text style={styles.label}>{item.name}</Text>
+      <AppText style={styles.label}>{item.name}</AppText>
     </TouchableOpacity>
     // <View style={styles.item}>
     //   {console.log(`${apiUrl}categories/photo/${item.photo}`)}

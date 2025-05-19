@@ -9,6 +9,8 @@ import { PersistGate } from "redux-persist/integration/react";
 import { checkAuthStatus } from "@/store/actions/authActions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import CheckoutScreen from "@/app/CheckoutScreen";
+import * as SplashScreen from "expo-splash-screen";
+import { useFonts } from "expo-font";
 
 // Create a wrapper component to use Redux hooks
 function AppContent() {
@@ -23,6 +25,27 @@ function AppContent() {
     dispatch(checkAuthStatus());
   }, [dispatch]);
 
+  const [fontsLoaded] = useFonts({
+    "Optima-regular": require("../assets/fonts/OptimaLTPro-Medium.otf"),
+
+    "Optima-bold": require("../assets/fonts/OptimaLTPro-Bold.otf"),
+
+    "Optima-semi-bold": require("../assets/fonts/OptimaLTPro-DemiBold.otf"),
+
+    "Optima-medium": require("../assets/fonts/OptimaLTPro-Medium.otf"),
+
+    // "Poppins-Bold": require("./assets/fonts/Poppins-Bold.ttf"),
+  });
+
+  useEffect(() => {
+    if (fontsLoaded) {
+      SplashScreen.hideAsync();
+    }
+  }, [fontsLoaded]);
+
+  if (!fontsLoaded) {
+    return null; // Optionally render a loading indicator
+  }
   return (
     <>
       <ToastManager />
@@ -39,6 +62,7 @@ function AppContent() {
           redirect={isAuthenticated}
         />
         <Stack.Screen name="Checkout" options={{ headerShown: false }} />
+        <Stack.Screen name="Category" options={{ headerShown: false }} />
       </Stack>
     </>
   );

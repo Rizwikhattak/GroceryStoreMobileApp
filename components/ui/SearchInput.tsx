@@ -16,14 +16,9 @@ const SearchInput = () => {
         onChangeText={setSearchText}
         style={styles.input}
       />
-      <TouchableOpacity
-        onPress={() => {
-          /* Handle voice search */
-        }}
-      >
-        {/* <Mic color="#4ab7b6" size={20} /> */}
+      {/* <TouchableOpacity>
         <Mic color={primary} size={20} />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </View>
   );
 };
