@@ -13,9 +13,9 @@ export default {
     scheme: "myapp",
     newArchEnabled: true,
     extra: {
-      eas: {
-        projectId: "c0458020-197c-4e3e-8378-145d9ed1897a",
-      },
+      // eas: {
+      //   projectId: "c0458020-197c-4e3e-8378-145d9ed1897a",
+      // },
       apiUrl: process.env.API_URL || "https://default.api.url",
     },
     ios: {

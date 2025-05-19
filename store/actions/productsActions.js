@@ -9,6 +9,7 @@ export const getFeaturedProducts = createAsyncThunk(
         "getAll",
         "json",
         `${fetchFeturedProductsAPI}?skip=30`,
+        // `${fetchFeturedProductsAPI}`,
         "Error in fetching products",
         data
       );

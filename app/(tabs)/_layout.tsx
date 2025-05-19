@@ -1,6 +1,13 @@
 "use client";
 
-import { View, Image, Pressable, Keyboard, Platform } from "react-native";
+import {
+  View,
+  Image,
+  Pressable,
+  Keyboard,
+  Platform,
+  StyleSheet,
+} from "react-native";
 import { useEffect, useState } from "react";
 import { Tabs } from "expo-router";
 import { icons } from "@/constants/icons";
@@ -12,34 +19,41 @@ const TabIcon = ({
   focused,
   icon,
   title,
-  customViewStyle = "",
-  customIconStyle = "",
+  customViewStyle = null,
+  customIconStyle = null,
   customTintColor = "#c5c5c5",
 }: any) => {
   if (focused) {
     return (
       <View
-        className={`size-full justify-center items-center mt-4 rounded-full ${customViewStyle}`}
+        style={[
+          styles.tabIconContainer,
+          customViewStyle && styles[customViewStyle],
+        ]}
       >
         <Image
           source={icon}
           // tintColor="#4ab7b6"
           tintColor={title === "Cart" ? "#ffff" : primary}
-          className={`${
-            title === "Home" ? "h-10 w-10" : "size-7"
-          } ${customIconStyle}`}
+          style={[
+            title === "Home" ? styles.homeIcon : styles.icon,
+            customIconStyle && styles[customIconStyle],
+          ]}
         />
       </View>
     );
   }
   return (
     <View
-      className={`size-full justify-center items-center mt-4 rounded-full ${customViewStyle}`}
+      style={[
+        styles.tabIconContainer,
+        customViewStyle && styles[customViewStyle],
+      ]}
     >
       <Image
         source={icon}
         tintColor={customTintColor}
-        className={`size-5 ${customIconStyle}`}
+        style={[styles.smallIcon, customIconStyle && styles[customIconStyle]]}
       />
     </View>
   );
@@ -77,12 +91,7 @@ const _layout = () => {
       <Tabs
         screenOptions={{
           tabBarShowLabel: false,
-          tabBarItemStyle: {
-            width: "100%",
-            height: "100%",
-            justifyContent: "center",
-            alignItems: "center",
-          },
+          tabBarItemStyle: styles.tabBarItem,
           tabBarButton: (props) => (
             <Pressable
               {...props}
@@ -110,7 +119,7 @@ const _layout = () => {
                 focused={focused}
                 icon={icons.home}
                 title="Home"
-                customIconStyle="size-8"
+                customIconStyle="largeIcon"
               />
             ),
           }}
@@ -142,8 +151,8 @@ const _layout = () => {
                 focused={focused}
                 icon={icons.cart}
                 title="Cart"
-                customViewStyle="bg-[#ef4444] h-20 w-20 absolute -top-16 z-10 border-4 border-light-100 shadow-lg"
-                customIconStyle="size-9"
+                customViewStyle="cartButton"
+                customIconStyle="extraLargeIcon"
                 customTintColor="#ffff"
               />
             ),
@@ -174,9 +183,63 @@ const _layout = () => {
         />
       </Tabs>
     </>
-
     // </ProtectedRoute>
   );
 };
+
+const styles = StyleSheet.create({
+  tabIconContainer: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+    marginTop: 16, // mt-4
+    borderRadius: 9999, // rounded-full
+  },
+  homeIcon: {
+    height: 40, // h-10
+    width: 40, // w-10
+  },
+  icon: {
+    width: 28, // size-7
+    height: 28, // size-7
+  },
+  smallIcon: {
+    width: 20, // size-5
+    height: 20, // size-5
+  },
+  largeIcon: {
+    width: 32, // size-8
+    height: 32, // size-8
+  },
+  extraLargeIcon: {
+    width: 36, // size-9
+    height: 36, // size-9
+  },
+  cartButton: {
+    backgroundColor: "#ef4444", // bg-[#ef4444]
+    height: 80, // h-20
+    width: 80, // w-20
+    position: "absolute", // absolute
+    top: -64, // -top-16
+    zIndex: 10, // z-10
+    borderWidth: 4, // border-4
+    borderColor: "#f9fafb", // border-light-100
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 5,
+    },
+    shadowOpacity: 0.34,
+    shadowRadius: 6.27,
+    elevation: 10, // shadow-lg equivalent
+  },
+  tabBarItem: {
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+});
 
 export default _layout;

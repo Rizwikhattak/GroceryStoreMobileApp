@@ -85,6 +85,7 @@ const productsSlice = createSlice({
             item._id !== "66c835b2989abcf543ea9693" &&
             item._id !== "66c855776e4212fbdec483d2"
         );
+        // state.featuredProducts.data = data;
         state.featuredProducts.pagination = action.payload.pagination;
         state.featuredProducts.isLoading = false;
         state.featuredProducts.error = null;

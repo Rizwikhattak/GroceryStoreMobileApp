@@ -65,68 +65,62 @@ export default function Index() {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={{ flex: 1 }}
-      className="bg-light-100"
+      style={styles.keyboardAvoidingView}
     >
-      <View className="flex-1">
+      <View style={styles.container}>
         <ScrollView
-          className="flex-1 px-5"
+          style={styles.scrollView}
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="on-drag"
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            minHeight: "100%",
-            paddingBottom: 80, // Add extra padding at bottom to account for tab bar
-            paddingTop: 50,
-            overflow: "visible",
-          }}
+          contentContainerStyle={styles.scrollViewContent}
         >
           {/* Title section - can be wrapped with TouchableOpacity to dismiss keyboard */}
           <TouchableOpacity activeOpacity={1} onPress={dismissKeyboard}>
-            <View style={styles.container}>
+            <View style={styles.titleContainer}>
               <Text style={styles.premiumText}>Premium</Text>
               <Text style={styles.meatsText}>Meats</Text>
             </View>
           </TouchableOpacity>
 
           {/* Welcome section */}
-          <View className="mt-10 flex-row items-center justify-between gap-1">
+          <View style={styles.welcomeSection}>
             <TouchableOpacity activeOpacity={1} onPress={dismissKeyboard}>
-              <View className="flex-row items-center justify-between">
-                <Text className="text-xl font-semibold">Welcome ,</Text>
-                <Text className="text-xl font-semibold text-primary-700">
+              <View style={styles.welcomeTextContainer}>
+                <Text style={styles.welcomeText}>Welcome, </Text>
+                <Text style={styles.welcomeNameText}>
                   {user.data.first_name}
                 </Text>
               </View>
             </TouchableOpacity>
 
             <TouchableOpacity onPress={dismissKeyboard}>
-              <View className="justify-center size-10 items-center rounded-full bg-gray-200">
+              <View style={styles.notificationButton}>
                 <Image
                   source={icons.bell}
                   // tintColor="#ea7173"
                   tintColor={primary}
-                  className="size-5 rounded-full"
+                  style={styles.notificationIcon}
                 />
               </View>
             </TouchableOpacity>
           </View>
 
           {/* Search input */}
-          <View className="my-6">
+          <View style={styles.searchContainer}>
             <SearchInput />
           </View>
 
           {/* DO NOT wrap sliders with TouchableWithoutFeedback */}
-          <View className="mt-4">
+          <View style={styles.promoSliderContainer}>
             <PromoSlider />
           </View>
 
-          <View className="mt-10">
+          <View style={styles.categorySliderContainer}>
             <CategorySlider />
           </View>
 
-          <View className="mt-10">
+          <View style={styles.featuredProductsContainer}>
             <SectionHeader
               title="Featured Products"
               onViewAll={() =>
@@ -142,9 +136,26 @@ export default function Index() {
     </KeyboardAvoidingView>
   );
 }
+
 const styles = StyleSheet.create({
+  keyboardAvoidingView: {
+    flex: 1,
+  },
   container: {
-    // Container styles if needed
+    flex: 1,
+    backgroundColor: "#f9fafb", // bg-light-100 equivalent
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 20, // px-5 equivalent
+  },
+  scrollViewContent: {
+    minHeight: "100%",
+    paddingBottom: 80, // Add extra padding at bottom to account for tab bar
+    paddingTop: 50,
+    overflow: "visible",
+  },
+  titleContainer: {
     flexDirection: "row",
     justifyContent: "center",
     alignItems: "center",
@@ -159,5 +170,51 @@ const styles = StyleSheet.create({
     fontSize: 30, // equivalent to text-3xl
     fontWeight: "bold", // equivalent to font-bold
     // default color (e.g., black) unless you specify otherwise
+  },
+  welcomeSection: {
+    marginTop: 40, // mt-10 equivalent
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 4,
+  },
+  welcomeTextContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  welcomeText: {
+    fontSize: 20, // text-xl equivalent
+    fontWeight: "600", // font-semibold equivalent
+  },
+  welcomeNameText: {
+    fontSize: 20, // text-xl equivalent
+    fontWeight: "600", // font-semibold equivalent
+    color: primary, // text-primary-700 equivalent
+  },
+  notificationButton: {
+    justifyContent: "center",
+    width: 40, // size-10 equivalent
+    height: 40, // size-10 equivalent
+    alignItems: "center",
+    borderRadius: 20, // rounded-full equivalent
+    backgroundColor: "#e5e7eb", // bg-gray-200 equivalent
+  },
+  notificationIcon: {
+    width: 20, // size-5 equivalent
+    height: 20, // size-5 equivalent
+    borderRadius: 10, // rounded-full equivalent
+  },
+  searchContainer: {
+    marginVertical: 24, // my-6 equivalent
+  },
+  promoSliderContainer: {
+    marginTop: 16, // mt-4 equivalent
+  },
+  categorySliderContainer: {
+    marginTop: 40, // mt-10 equivalent
+  },
+  featuredProductsContainer: {
+    marginTop: 40, // mt-10 equivalent
   },
 });

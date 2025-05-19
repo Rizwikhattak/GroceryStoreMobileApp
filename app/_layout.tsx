@@ -13,7 +13,9 @@ import CheckoutScreen from "@/app/CheckoutScreen";
 // Create a wrapper component to use Redux hooks
 function AppContent() {
   const dispatch = useDispatch();
-  const isAuthenticated = useSelector((state) => state.auth.isAuthenticated);
+  const isAuthenticated = useSelector(
+    (state: any) => state.auth.isAuthenticated
+  );
   // AsyncStorage.removeItem("Authorization");
 
   useEffect(() => {

@@ -8,6 +8,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -42,7 +43,7 @@ const SigupStep2 = () => {
     account_payable_phone: "",
   });
 
-  // If you’re still using react-hook-form + zod, update your default values:
+  // If you're still using react-hook-form + zod, update your default values:
   const initialState = {
     business_name: "",
     business_mobile: "",
@@ -98,54 +99,49 @@ const SigupStep2 = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1"
+      style={styles.keyboardAvoidingView}
     >
       <StatusBar style="dark" />
-      <View className="flex-1 bg-white">
+      <View style={styles.container}>
         <ScrollView
-          className="flex-1 px-6"
+          style={styles.scrollView}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingTop: 50,
-            paddingBottom: 40,
-          }}
+          contentContainerStyle={styles.scrollViewContent}
         >
-          {/* Heading (you can rename to “Business Details” if desired) */}
-          <View className="items-center mb-6">
-            <Text className="text-3xl font-bold mb-2">
-              <Text className="text-red-500">Premium</Text>
-              <Text className="text-black"> Meat</Text>
+          {/* Heading (you can rename to "Business Details" if desired) */}
+          <View style={styles.headerContainer}>
+            <Text style={styles.titleText}>
+              <Text style={styles.premiumText}>Premium</Text>
+              <Text style={styles.meatText}> Meat</Text>
             </Text>
-            <Text className="text-gray-500 text-base">
-              Business Details (Step 2/3)
-            </Text>
+            <Text style={styles.subtitleText}>Business Details (Step 2/3)</Text>
           </View>
 
           {/* FORM FIELDS */}
-          <View className="space-y-4">
+          <View style={styles.formContainer}>
             {/* Business Name */}
             <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Business Name <Text className="text-red-500">*</Text>
+              <Text style={styles.inputLabel}>
+                Business Name <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="briefcase-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter your business name"
                   placeholderTextColor="#888"
                   value={formData.business_name}
                   onChangeText={(text) => updateFormData("business_name", text)}
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
 
             {/* Business Phone */}
-            <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Business Phone <Text className="text-red-500">*</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>
+                Business Phone <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="call-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter your business phone"
@@ -155,17 +151,17 @@ const SigupStep2 = () => {
                     updateFormData("business_mobile", text)
                   }
                   keyboardType="phone-pad"
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
 
             {/* Delivery Address */}
-            <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Delivery Address <Text className="text-red-500">*</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>
+                Delivery Address <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="location-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter your delivery address"
@@ -174,17 +170,17 @@ const SigupStep2 = () => {
                   onChangeText={(text) =>
                     updateFormData("delivery_address", text)
                   }
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
 
             {/* Business Email */}
-            <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Business Email <Text className="text-red-500">*</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>
+                Business Email <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="mail-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter your business email"
@@ -195,17 +191,17 @@ const SigupStep2 = () => {
                   }
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
 
             {/* Company Number */}
-            <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Company Number <Text className="text-red-500">*</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>
+                Company Number <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="document-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter your company number"
@@ -214,22 +210,18 @@ const SigupStep2 = () => {
                   onChangeText={(text) =>
                     updateFormData("company_number", text)
                   }
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
 
             {/* Accounts Payable */}
-            <View>
-              <Text className="text-lg font-semibold mt-4 mb-2">
-                Accounts Payable
-              </Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.sectionTitle}>Accounts Payable</Text>
               {/* Contact Name */}
-              <View className="mb-3">
-                <Text className="text-gray-700 mb-1 font-medium text-base">
-                  Contact Name
-                </Text>
-                <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.accountsPayableField}>
+                <Text style={styles.inputLabel}>Contact Name</Text>
+                <View style={styles.inputContainer}>
                   <Ionicons name="person-outline" size={20} color="#888" />
                   <TextInput
                     placeholder="Enter contact name"
@@ -238,17 +230,15 @@ const SigupStep2 = () => {
                     onChangeText={(text) =>
                       updateFormData("account_payable_name", text)
                     }
-                    className="flex-1 ml-3 text-base text-black"
+                    style={styles.textInput}
                   />
                 </View>
               </View>
 
               {/* Contact Email */}
-              <View className="mb-3">
-                <Text className="text-gray-700 mb-1 font-medium text-base">
-                  Contact Email
-                </Text>
-                <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.accountsPayableField}>
+                <Text style={styles.inputLabel}>Contact Email</Text>
+                <View style={styles.inputContainer}>
                   <Ionicons name="mail-outline" size={20} color="#888" />
                   <TextInput
                     placeholder="Enter contact email"
@@ -259,17 +249,15 @@ const SigupStep2 = () => {
                     }
                     keyboardType="email-address"
                     autoCapitalize="none"
-                    className="flex-1 ml-3 text-base text-black"
+                    style={styles.textInput}
                   />
                 </View>
               </View>
 
               {/* Contact Phone */}
-              <View className="mb-3">
-                <Text className="text-gray-700 mb-1 font-medium text-base">
-                  Contact Phone
-                </Text>
-                <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.accountsPayableField}>
+                <Text style={styles.inputLabel}>Contact Phone</Text>
+                <View style={styles.inputContainer}>
                   <Ionicons name="call-outline" size={20} color="#888" />
                   <TextInput
                     placeholder="Enter contact phone"
@@ -279,7 +267,7 @@ const SigupStep2 = () => {
                       updateFormData("account_payable_phone", text)
                     }
                     keyboardType="phone-pad"
-                    className="flex-1 ml-3 text-base text-black"
+                    style={styles.textInput}
                   />
                 </View>
               </View>
@@ -288,25 +276,23 @@ const SigupStep2 = () => {
 
           {/* Save & Continue */}
           <TouchableOpacity
-            className="bg-red-500 h-14 rounded-lg items-center justify-center mt-8"
+            style={styles.continueButton}
             activeOpacity={0.8}
             onPress={handleFormSubmit}
           >
             {auth.isLoading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text className="text-white font-bold text-lg">
-                Save & Continue
-              </Text>
+              <Text style={styles.continueButtonText}>Save & Continue</Text>
             )}
           </TouchableOpacity>
 
           {/* Already have an account? (Adjust as needed) */}
-          <View className="flex-row justify-center mt-8">
-            <Text className="text-gray-600">Already have an account? </Text>
+          <View style={styles.loginLinkContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
             <TouchableOpacity>
               <Link href="/(auth)">
-                <Text className="text-red-500 font-medium">Sign In</Text>
+                <Text style={styles.loginLinkText}>Sign In</Text>
               </Link>
             </TouchableOpacity>
           </View>
@@ -315,5 +301,105 @@ const SigupStep2 = () => {
     </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff", // bg-white
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 24, // px-6
+  },
+  scrollViewContent: {
+    paddingTop: 50,
+    paddingBottom: 40,
+  },
+  headerContainer: {
+    alignItems: "center", // items-center
+    marginBottom: 24, // mb-6
+  },
+  titleText: {
+    fontSize: 30, // text-3xl
+    fontWeight: "bold", // font-bold
+    marginBottom: 8, // mb-2
+  },
+  premiumText: {
+    color: "#ef4444", // text-red-500
+  },
+  meatText: {
+    color: "#000000", // text-black
+  },
+  subtitleText: {
+    color: "#6b7280", // text-gray-500
+    fontSize: 16, // text-base
+  },
+  formContainer: {
+    gap: 16, // space-y-4
+  },
+  inputWrapper: {
+    marginTop: 2, // part of space-y-4
+  },
+  inputLabel: {
+    color: "#374151", // text-gray-700
+    marginBottom: 4, // mb-1
+    fontWeight: "500", // font-medium
+    fontSize: 16, // text-base
+  },
+  requiredAsterisk: {
+    color: "#ef4444", // text-red-500
+  },
+  inputContainer: {
+    flexDirection: "row", // flex-row
+    alignItems: "center", // items-center
+    backgroundColor: "#f3f4f6", // bg-gray-100
+    borderRadius: 8, // rounded-lg
+    paddingHorizontal: 16, // px-4
+    height: 56, // h-14
+  },
+  textInput: {
+    flex: 1, // flex-1
+    marginLeft: 12, // ml-3
+    fontSize: 16, // text-base
+    color: "#000000", // text-black
+  },
+  sectionTitle: {
+    fontSize: 18, // text-lg
+    fontWeight: "600", // font-semibold
+    marginTop: 16, // mt-4
+    marginBottom: 8, // mb-2
+  },
+  accountsPayableField: {
+    marginBottom: 12, // mb-3
+  },
+  continueButton: {
+    backgroundColor: "#ef4444", // bg-red-500
+    height: 50, // h-14
+    borderRadius: 8, // rounded-lg
+    alignItems: "center", // items-center
+    justifyContent: "center", // justify-center
+    marginTop: 32, // mt-8
+  },
+  continueButtonText: {
+    color: "#ffffff", // text-white
+    fontWeight: "bold", // font-bold
+    fontSize: 18, // text-lg
+  },
+  loginLinkContainer: {
+    flexDirection: "row", // flex-row
+    justifyContent: "center", // justify-center
+    marginTop: 32, // mt-8
+  },
+  loginText: {
+    color: "#4b5563", // text-gray-600
+  },
+  loginLinkText: {
+    color: "#ef4444", // text-red-500
+    fontWeight: "500", // font-medium
+  },
+});
 
 export default SigupStep2;

@@ -9,6 +9,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -18,6 +19,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { StoreState } from "@/store/store";
 import { loginUser } from "@/store/actions/authActions";
 import { Toast } from "toastify-react-native";
+
 const LoginScreen = () => {
   const auth = useSelector((state: StoreState) => state.auth);
   const dispatch = useDispatch();
@@ -25,6 +27,7 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+
   const handleLogin = async () => {
     try {
       const response = await dispatch(
@@ -37,39 +40,33 @@ const LoginScreen = () => {
       }
     } catch (err) {}
   };
+
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1"
+      style={styles.keyboardAvoidingView}
     >
       <StatusBar style="dark" />
-      <View className="flex-1 bg-white">
+      <View style={styles.container}>
         <ScrollView
-          className="flex-1 px-6"
+          style={styles.scrollView}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingTop: 80,
-            paddingBottom: 40,
-          }}
+          contentContainerStyle={styles.scrollViewContent}
         >
           {/* Logo and Title */}
-          <View className="items-center mb-8">
-            <Text className="text-3xl font-bold mb-2">
-              <Text className="text-red-500">Premium</Text>
-              <Text className="text-black"> Meat</Text>
+          <View style={styles.headerContainer}>
+            <Text style={styles.titleText}>
+              <Text style={styles.premiumText}>Premium</Text>
+              <Text style={styles.meatText}> Meat</Text>
             </Text>
-            <Text className="text-gray-500 text-base">
-              Sign in to your account
-            </Text>
+            <Text style={styles.subtitleText}>Sign in to your account</Text>
           </View>
 
           {/* Form */}
-          <View className="space-y-5 mt-6">
+          <View style={styles.formContainer}>
             <View>
-              <Text className="text-gray-700 mb-2 font-medium text-base">
-                Email
-              </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <Text style={styles.inputLabel}>Email</Text>
+              <View style={styles.inputContainer}>
                 <Ionicons name="mail-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter your email"
@@ -78,16 +75,14 @@ const LoginScreen = () => {
                   onChangeText={setEmail}
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
 
-            <View>
-              <Text className="text-gray-700 mb-2 font-medium text-base">
-                Password
-              </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+            <View style={styles.passwordContainer}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <View style={styles.inputContainer}>
                 <Ionicons name="lock-closed-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter your password"
@@ -95,7 +90,7 @@ const LoginScreen = () => {
                   value={password}
                   onChangeText={setPassword}
                   secureTextEntry={secureTextEntry}
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
                 <TouchableOpacity
                   onPress={() => setSecureTextEntry(!secureTextEntry)}
@@ -109,14 +104,14 @@ const LoginScreen = () => {
               </View>
             </View>
 
-            <TouchableOpacity className="self-end">
-              <Text className="text-red-500 font-medium">Forgot Password?</Text>
+            <TouchableOpacity style={styles.forgotPasswordButton}>
+              <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
             </TouchableOpacity>
           </View>
 
           {/* Login Button */}
           <TouchableOpacity
-            className="bg-red-500 h-14 rounded-lg items-center justify-center mt-8"
+            style={styles.loginButton}
             activeOpacity={0.8}
             onPress={() => {
               handleLogin();
@@ -126,36 +121,36 @@ const LoginScreen = () => {
             {auth.isLoading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text className="text-white font-bold text-lg">Sign In</Text>
+              <Text style={styles.loginButtonText}>Sign In</Text>
             )}
           </TouchableOpacity>
 
           {/* Divider */}
-          <View className="flex-row items-center my-8">
-            <View className="flex-1 h-[1px] bg-gray-300" />
-            <Text className="mx-4 text-gray-500">Or continue with</Text>
-            <View className="flex-1 h-[1px] bg-gray-300" />
-          </View>
+          {/* <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>Or continue with</Text>
+            <View style={styles.dividerLine} />
+          </View> */}
 
           {/* Social Login */}
-          <View className="flex-row justify-center gap-6">
-            <TouchableOpacity className="w-14 h-14 rounded-full bg-gray-100 items-center justify-center">
+          {/* <View style={styles.socialButtonsContainer}>
+            <TouchableOpacity style={styles.socialButton}>
               <Ionicons name="logo-google" size={24} color="#DB4437" />
             </TouchableOpacity>
-            <TouchableOpacity className="w-14 h-14 rounded-full bg-gray-100 items-center justify-center">
+            <TouchableOpacity style={styles.socialButton}>
               <Ionicons name="logo-facebook" size={24} color="#4267B2" />
             </TouchableOpacity>
-            <TouchableOpacity className="w-14 h-14 rounded-full bg-gray-100 items-center justify-center">
+            <TouchableOpacity style={styles.socialButton}>
               <Ionicons name="logo-apple" size={24} color="#000" />
             </TouchableOpacity>
-          </View>
+          </View> */}
 
           {/* Sign Up Link */}
-          <View className="flex-row justify-center mt-8">
-            <Text className="text-gray-600">Don't have an account? </Text>
+          <View style={styles.signupContainer}>
+            <Text style={styles.signupText}>Don't have an account? </Text>
             <TouchableOpacity>
               <Link href="/(auth)/signup">
-                <Text className="text-red-500 font-medium">Sign Up</Text>
+                <Text style={styles.signupLinkText}>Sign Up</Text>
               </Link>
             </TouchableOpacity>
           </View>
@@ -164,5 +159,128 @@ const LoginScreen = () => {
     </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff", // bg-white
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 24, // px-6
+  },
+  scrollViewContent: {
+    paddingTop: 80,
+    paddingBottom: 40,
+  },
+  headerContainer: {
+    alignItems: "center", // items-center
+    marginBottom: 32, // mb-8
+  },
+  titleText: {
+    fontSize: 30, // text-3xl
+    fontWeight: "bold", // font-bold
+    marginBottom: 8, // mb-2
+  },
+  premiumText: {
+    color: "#ef4444", // text-red-500
+  },
+  meatText: {
+    color: "#000000", // text-black
+  },
+  subtitleText: {
+    color: "#6b7280", // text-gray-500
+    fontSize: 16, // text-base
+  },
+  formContainer: {
+    marginTop: 24, // mt-6
+  },
+  inputLabel: {
+    color: "#374151", // text-gray-700
+    marginBottom: 8, // mb-2
+    fontWeight: "500", // font-medium
+    fontSize: 16, // text-base
+  },
+  inputContainer: {
+    flexDirection: "row", // flex-row
+    alignItems: "center", // items-center
+    backgroundColor: "#f3f4f6", // bg-gray-100
+    borderRadius: 8, // rounded-lg
+    paddingHorizontal: 16, // px-4
+    height: 56, // h-14
+  },
+  textInput: {
+    flex: 1, // flex-1
+    marginLeft: 12, // ml-3
+    fontSize: 16, // text-base
+    color: "#000000", // text-black
+  },
+  passwordContainer: {
+    marginTop: 20, // part of space-y-5
+  },
+  forgotPasswordButton: {
+    alignSelf: "flex-end", // self-end
+    marginTop: 20, // part of space-y-5
+  },
+  forgotPasswordText: {
+    color: "#ef4444", // text-red-500
+    fontWeight: "500", // font-medium
+  },
+  loginButton: {
+    backgroundColor: "#ef4444", // bg-red-500
+    height: 50, // h-14
+    borderRadius: 8, // rounded-lg
+    alignItems: "center", // items-center
+    justifyContent: "center", // justify-center
+    marginTop: 32, // mt-8
+  },
+  loginButtonText: {
+    color: "#ffffff", // text-white
+    fontWeight: "bold", // font-bold
+    fontSize: 18, // text-lg
+  },
+  dividerContainer: {
+    flexDirection: "row", // flex-row
+    alignItems: "center", // items-center
+    marginVertical: 32, // my-8
+  },
+  dividerLine: {
+    flex: 1, // flex-1
+    height: 1, // h-[1px]
+    backgroundColor: "#d1d5db", // bg-gray-300
+  },
+  dividerText: {
+    marginHorizontal: 16, // mx-4
+    color: "#6b7280", // text-gray-500
+  },
+  socialButtonsContainer: {
+    flexDirection: "row", // flex-row
+    justifyContent: "center", // justify-center
+    gap: 24, // gap-6
+  },
+  socialButton: {
+    width: 56, // w-14
+    height: 56, // h-14
+    borderRadius: 28, // rounded-full
+    backgroundColor: "#f3f4f6", // bg-gray-100
+    alignItems: "center", // items-center
+    justifyContent: "center", // justify-center
+  },
+  signupContainer: {
+    flexDirection: "row", // flex-row
+    justifyContent: "center", // justify-center
+    marginTop: 32, // mt-8
+  },
+  signupText: {
+    color: "#4b5563", // text-gray-600
+  },
+  signupLinkText: {
+    color: "#ef4444", // text-red-500
+    fontWeight: "500", // font-medium
+  },
+});
 
 export default LoginScreen;

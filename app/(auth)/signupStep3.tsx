@@ -8,6 +8,7 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  StyleSheet,
 } from "react-native";
 import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
@@ -27,7 +28,7 @@ const SigupStep3 = () => {
   const { _id } = useLocalSearchParams();
   console.log("Received woww _id:", _id);
 
-  // Adjust form fields to match “Credit Reference 1” and “Credit Reference 2”
+  // Adjust form fields to match "Credit Reference 1" and "Credit Reference 2"
   const [formData, setFormData] = useState({
     credit_reference1_name: "",
     credit_reference1_email: "",
@@ -37,7 +38,7 @@ const SigupStep3 = () => {
     credit_reference2_phone: "",
   });
 
-  // For the “I agree” checkbox
+  // For the "I agree" checkbox
   const [agreeChecked, setAgreeChecked] = useState(false);
 
   const updateFormData = (field, value) => {
@@ -54,7 +55,7 @@ const SigupStep3 = () => {
         Toast.error("Please fill all fields", "top");
         return;
       }
-      // Check “I agree” box if your flow requires it
+      // Check "I agree" box if your flow requires it
       if (!agreeChecked) {
         Toast.error("Please agree to the terms before continuing.", "top");
         return;
@@ -83,41 +84,34 @@ const SigupStep3 = () => {
   return (
     <KeyboardAvoidingView
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      className="flex-1"
+      style={styles.keyboardAvoidingView}
     >
       <StatusBar style="dark" />
-      <View className="flex-1 bg-white">
+      <View style={styles.container}>
         <ScrollView
-          className="flex-1 px-6"
+          style={styles.scrollView}
           showsVerticalScrollIndicator={false}
-          contentContainerStyle={{
-            paddingTop: 50,
-            paddingBottom: 40,
-          }}
+          contentContainerStyle={styles.scrollViewContent}
         >
           {/* Heading */}
-          <View className="items-center mb-6">
-            <Text className="text-3xl font-bold mb-2">
-              <Text className="text-red-500">Premium</Text>
-              <Text className="text-black"> Meat</Text>
+          <View style={styles.headerContainer}>
+            <Text style={styles.titleText}>
+              <Text style={styles.premiumText}>Premium</Text>
+              <Text style={styles.meatText}> Meat</Text>
             </Text>
-            <Text className="text-gray-500 text-base">
-              Credit Reference (Step 3/3)
-            </Text>
+            <Text style={styles.subtitleText}>Credit Reference (Step 3/3)</Text>
           </View>
 
           {/* Credit Reference 1 */}
-          <View className="space-y-4">
-            <Text className="text-lg font-semibold mt-2 mb-2">
-              Credit Reference 1
-            </Text>
+          <View style={styles.referenceContainer}>
+            <Text style={styles.sectionTitle}>Credit Reference 1</Text>
 
             {/* Name of Business */}
             <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Name of Business <Text className="text-red-500">*</Text>
+              <Text style={styles.inputLabel}>
+                Name of Business <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="briefcase-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter name of business"
@@ -126,17 +120,18 @@ const SigupStep3 = () => {
                   onChangeText={(text) =>
                     updateFormData("credit_reference1_name", text)
                   }
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
 
             {/* Contact Person Email */}
-            <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Contact Person Email <Text className="text-red-500">*</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>
+                Contact Person Email{" "}
+                <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="mail-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter contact person email"
@@ -147,17 +142,17 @@ const SigupStep3 = () => {
                   }
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
 
             {/* Phone Number */}
-            <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Phone Number <Text className="text-red-500">*</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>
+                Phone Number <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="call-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter phone number"
@@ -167,24 +162,22 @@ const SigupStep3 = () => {
                     updateFormData("credit_reference1_phone", text)
                   }
                   keyboardType="phone-pad"
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
           </View>
 
           {/* Credit Reference 2 */}
-          <View className="space-y-4 mt-6">
-            <Text className="text-lg font-semibold mt-2 mb-2">
-              Credit Reference 2
-            </Text>
+          <View style={styles.referenceContainer2}>
+            <Text style={styles.sectionTitle}>Credit Reference 2</Text>
 
             {/* Name of Business */}
             <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Name of Business <Text className="text-red-500">*</Text>
+              <Text style={styles.inputLabel}>
+                Name of Business <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="briefcase-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter name of business"
@@ -193,17 +186,18 @@ const SigupStep3 = () => {
                   onChangeText={(text) =>
                     updateFormData("credit_reference2_name", text)
                   }
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
 
             {/* Contact Person Email */}
-            <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Contact Person Email <Text className="text-red-500">*</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>
+                Contact Person Email{" "}
+                <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="mail-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter contact person email"
@@ -214,17 +208,17 @@ const SigupStep3 = () => {
                   }
                   keyboardType="email-address"
                   autoCapitalize="none"
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
 
             {/* Phone Number */}
-            <View>
-              <Text className="text-gray-700 mb-1 font-medium text-base">
-                Phone Number <Text className="text-red-500">*</Text>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>
+                Phone Number <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
-              <View className="flex-row items-center bg-gray-100 rounded-lg px-4 h-14">
+              <View style={styles.inputContainer}>
                 <Ionicons name="call-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter phone number"
@@ -234,17 +228,17 @@ const SigupStep3 = () => {
                     updateFormData("credit_reference2_phone", text)
                   }
                   keyboardType="phone-pad"
-                  className="flex-1 ml-3 text-base text-black"
+                  style={styles.textInput}
                 />
               </View>
             </View>
           </View>
 
-          {/* “I agree” Checkbox */}
-          <View className="flex-row items-center mt-6">
+          {/* "I agree" Checkbox */}
+          <View style={styles.checkboxContainer}>
             <TouchableOpacity
               onPress={() => setAgreeChecked(!agreeChecked)}
-              className="mr-2"
+              style={styles.checkboxButton}
             >
               {/* Toggle between checked / unchecked Ionicon if desired */}
               <Ionicons
@@ -253,32 +247,30 @@ const SigupStep3 = () => {
                 color={agreeChecked ? "#f00" : "#888"}
               />
             </TouchableOpacity>
-            <Text className="flex-1 text-gray-600 text-sm">
-              I agree to the company’s credit terms and conditions.
+            <Text style={styles.checkboxText}>
+              I agree to the company's credit terms and conditions.
             </Text>
           </View>
 
           {/* Save & Continue Button */}
           <TouchableOpacity
-            className="bg-red-500 h-14 rounded-lg items-center justify-center mt-8"
+            style={styles.createAccountButton}
             activeOpacity={0.8}
             onPress={handleFormSubmit}
           >
             {auth.isLoading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text className="text-white font-bold text-lg">
-                Create Account
-              </Text>
+              <Text style={styles.createAccountButtonText}>Create Account</Text>
             )}
           </TouchableOpacity>
 
           {/* Already have an account? */}
-          <View className="flex-row justify-center mt-8">
-            <Text className="text-gray-600">Already have an account? </Text>
+          <View style={styles.loginLinkContainer}>
+            <Text style={styles.loginText}>Already have an account? </Text>
             <TouchableOpacity>
               <Link href="/(auth)">
-                <Text className="text-red-500 font-medium">Sign In</Text>
+                <Text style={styles.loginLinkText}>Sign In</Text>
               </Link>
             </TouchableOpacity>
           </View>
@@ -287,5 +279,119 @@ const SigupStep3 = () => {
     </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  keyboardAvoidingView: {
+    flex: 1,
+  },
+  container: {
+    flex: 1,
+    backgroundColor: "#ffffff", // bg-white
+  },
+  scrollView: {
+    flex: 1,
+    paddingHorizontal: 24, // px-6
+  },
+  scrollViewContent: {
+    paddingTop: 50,
+    paddingBottom: 40,
+  },
+  headerContainer: {
+    alignItems: "center", // items-center
+    marginBottom: 24, // mb-6
+  },
+  titleText: {
+    fontSize: 30, // text-3xl
+    fontWeight: "bold", // font-bold
+    marginBottom: 8, // mb-2
+  },
+  premiumText: {
+    color: "#ef4444", // text-red-500
+  },
+  meatText: {
+    color: "#000000", // text-black
+  },
+  subtitleText: {
+    color: "#6b7280", // text-gray-500
+    fontSize: 16, // text-base
+  },
+  referenceContainer: {
+    gap: 16, // space-y-4
+  },
+  referenceContainer2: {
+    gap: 16, // space-y-4
+    marginTop: 24, // mt-6
+  },
+  sectionTitle: {
+    fontSize: 18, // text-lg
+    fontWeight: "600", // font-semibold
+    marginTop: 8, // mt-2
+    marginBottom: 8, // mb-2
+  },
+  inputWrapper: {
+    marginTop: 16, // part of space-y-4
+  },
+  inputLabel: {
+    color: "#374151", // text-gray-700
+    marginBottom: 4, // mb-1
+    fontWeight: "500", // font-medium
+    fontSize: 16, // text-base
+  },
+  requiredAsterisk: {
+    color: "#ef4444", // text-red-500
+  },
+  inputContainer: {
+    flexDirection: "row", // flex-row
+    alignItems: "center", // items-center
+    backgroundColor: "#f3f4f6", // bg-gray-100
+    borderRadius: 8, // rounded-lg
+    paddingHorizontal: 16, // px-4
+    height: 56, // h-14
+  },
+  textInput: {
+    flex: 1, // flex-1
+    marginLeft: 12, // ml-3
+    fontSize: 16, // text-base
+    color: "#000000", // text-black
+  },
+  checkboxContainer: {
+    flexDirection: "row", // flex-row
+    alignItems: "center", // items-center
+    marginTop: 24, // mt-6
+  },
+  checkboxButton: {
+    marginRight: 8, // mr-2
+  },
+  checkboxText: {
+    flex: 1, // flex-1
+    color: "#4b5563", // text-gray-600
+    fontSize: 14, // text-sm
+  },
+  createAccountButton: {
+    backgroundColor: "#ef4444", // bg-red-500
+    height: 56, // h-14
+    borderRadius: 8, // rounded-lg
+    alignItems: "center", // items-center
+    justifyContent: "center", // justify-center
+    marginTop: 32, // mt-8
+  },
+  createAccountButtonText: {
+    color: "#ffffff", // text-white
+    fontWeight: "bold", // font-bold
+    fontSize: 18, // text-lg
+  },
+  loginLinkContainer: {
+    flexDirection: "row", // flex-row
+    justifyContent: "center", // justify-center
+    marginTop: 32, // mt-8
+  },
+  loginText: {
+    color: "#4b5563", // text-gray-600
+  },
+  loginLinkText: {
+    color: "#ef4444", // text-red-500
+    fontWeight: "500", // font-medium
+  },
+});
 
 export default SigupStep3;
