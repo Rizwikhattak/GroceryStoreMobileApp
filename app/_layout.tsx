@@ -8,6 +8,7 @@ import ToastManager from "toastify-react-native";
 import { PersistGate } from "redux-persist/integration/react";
 import { checkAuthStatus } from "@/store/actions/authActions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+  // AsyncStorage.removeItem("Authorization");
 import CheckoutScreen from "@/app/CheckoutScreen";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";

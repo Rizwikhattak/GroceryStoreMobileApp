@@ -6,50 +6,35 @@ import PromoSlider from "@/components/ui/PromoSlider";
 import SearchInput from "@/components/ui/SearchInput";
 import SectionHeader from "@/components/ui/SectionHeader";
 import { primary } from "@/constants/colors";
-import { icons } from "@/constants/icons";
 import {
   getAllFeaturedProducts,
   getFeaturedProducts,
 } from "@/store/actions/productsActions";
 import { useEffect } from "react";
 import {
-  Image,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Text,
   View,
   Keyboard,
   TouchableOpacity,
   StyleSheet,
+  Alert,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Logo from "../../assets/images/premium-meats-logo.svg";
 import AppText from "@/components/ui/AppText";
-
-// import AsyncStorage from "@react-native-async-storage/async-storage";
-
-// const checkPersistedData = async () => {
-//   try {
-//     const data = await AsyncStorage.getItem("persist:root");
-//     if (data !== null) {
-//       // Data is stored. Note that it's a JSON string.
-//       console.log("Persisted data:", JSON.parse(data));
-//     } else {
-//       console.log("No persisted data found");
-//     }
-//   } catch (error) {
-//     console.error("Error reading persisted data:", error);
-//   }
-// };
-
-// checkPersistedData();
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import { logout } from "@/store/reducers/authSlice";
 
 export default function Index() {
   const user = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
+  const router = useRouter();
   const products = useSelector((state: any) => state.products.featuredProducts);
   console.log("userrrr", user);
+
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
@@ -60,9 +45,30 @@ export default function Index() {
     };
     fetchFeaturedProducts();
   }, [dispatch]);
+
   // Function to dismiss keyboard when tapping outside of input
   const dismissKeyboard = () => {
     Keyboard.dismiss();
+  };
+
+  const handleLogout = () => {
+    Alert.alert("Logout", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        onPress: () => {
+          // Dispatch logout action
+          dispatch(logout());
+          console.log("User logged out");
+          // Navigate to login screen
+          // router.replace("/login");
+        },
+        style: "destructive",
+      },
+    ]);
   };
 
   return (
@@ -80,10 +86,6 @@ export default function Index() {
         >
           {/* Title section - can be wrapped with TouchableOpacity to dismiss keyboard */}
           <TouchableOpacity activeOpacity={1} onPress={dismissKeyboard}>
-            {/* <View style={styles.titleContainer}>
-              <Text style={styles.premiumText}>Premium</Text>
-              <Text style={styles.meatsText}>Meats</Text>
-            </View> */}
             <Logo
               width={200}
               height={80}
@@ -102,16 +104,12 @@ export default function Index() {
               </View>
             </TouchableOpacity>
 
-            {/* <TouchableOpacity onPress={dismissKeyboard}>
-              <View style={styles.notificationButton}>
-                <Image
-                  source={icons.bell}
-                  // tintColor="#ea7173"
-                  tintColor={primary}
-                  style={styles.notificationIcon}
-                />
-              </View>
-            </TouchableOpacity> */}
+            <TouchableOpacity
+              style={styles.logoutButton}
+              onPress={handleLogout}
+            >
+              <Ionicons name="log-out-outline" size={20} color={primary} />
+            </TouchableOpacity>
           </View>
 
           {/* Search input */}
@@ -201,7 +199,7 @@ const styles = StyleSheet.create({
     fontWeight: "600", // font-semibold equivalent
     color: primary, // text-primary-700 equivalent
   },
-  notificationButton: {
+  logoutButton: {
     justifyContent: "center",
     width: 40, // size-10 equivalent
     height: 40, // size-10 equivalent

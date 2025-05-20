@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
@@ -50,6 +51,38 @@ const BusinessDetailTab = () => {
 
   /* ------------- helpers ------------- */
   const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
+  const buildFormData = () => {
+    const fd = new FormData();
+
+    /* ──────────────────────── primitives ──────────────────────── */
+    fd.set("_id", customerData._id);
+    fd.set("first_name", customerData.first_name);
+    fd.set("last_name", customerData.last_name);
+    fd.set("email", customerData.email);
+    fd.set("phone", customerData.phone);
+    fd.set("address", customerData.address);
+    fd.set("business_name", businessName.trim());
+    fd.set("business_mobile", businessPhone.trim());
+    fd.set("business_email", businessEmail.trim());
+    fd.set("delivery_address", deliveryAddress.trim());
+    fd.set("company_number", companyNumber.trim());
+    fd.set("account_payable_name", apName.trim());
+    fd.set("account_payable_phone", apPhone.trim());
+    fd.set("account_payable_email", apEmail.trim());
+
+    /* ──────────────────────── arrays ───────────────────────────── */
+    (customerData.billing_addresses ?? []).forEach((v: string) =>
+      fd.set("billing_addresses[]", v)
+    );
+    (customerData.shipping_addresses ?? []).forEach((v: string) =>
+      fd.set("shipping_addresses[]", v)
+    );
+    (customerData.addresses ?? []).forEach((v: string) =>
+      fd.set("addresses[]", v)
+    );
+
+    return fd;
+  };
 
   const saveBusinessDetails = async () => {
     /* quick client validation */
@@ -61,23 +94,7 @@ const BusinessDetailTab = () => {
     }
 
     try {
-      const form = new FormData();
-
-      // copy every existing key from Redux (same trick used in SettingsTab)
-      for (const [k, v] of Object.entries(customer.data)) {
-        form.append(k, Array.isArray(v) ? JSON.stringify(v) : v);
-      }
-
-      /* overwrite edited business fields */
-      form.set("business_name", businessName.trim());
-      form.set("business_mobile", businessPhone.trim());
-      form.set("business_email", businessEmail.trim());
-      form.set("delivery_address", deliveryAddress.trim());
-      form.set("company_number", companyNumber.trim());
-      form.set("account_payable_name", apName.trim());
-      form.set("account_payable_phone", apPhone.trim());
-      form.set("account_payable_email", apEmail.trim());
-      form.set("_id", customer.data._id); // for unique rules
+      const form = buildFormData();
 
       await dispatch(
         updateUserProfileDetails({ _id: customer.data._id, formData: form })
@@ -181,7 +198,11 @@ const BusinessDetailTab = () => {
 
       {/* save btn */}
       <TouchableOpacity style={styles.saveBtn} onPress={saveBusinessDetails}>
-        <Text style={styles.saveTxt}>Save Changes</Text>
+        {customer.isPostLoading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.saveTxt}>Save Changes</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -194,6 +215,14 @@ const styles = StyleSheet.create({
   col: { flex: 1, marginRight: 8 },
   full: { marginBottom: 16 },
   label: { fontSize: 14, color: "#666", marginBottom: 8 },
+  // input: {
+  //   borderWidth: 1,
+  //   borderColor: "#ddd",
+  //   borderRadius: 8,
+  //   paddingHorizontal: 12,
+  //   paddingVertical: 10,
+  //   fontSize: 16,
+  // },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
@@ -201,6 +230,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
+    height: 48, // 🔒 keeps height constant
+  },
+
+  /* optional separate style if you want different width rules for e-mail */
+  inputEmail: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    height: 48,
+  },
+
+  /* address box: still multiline, but fixed height so it won’t expand */
+  addressInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    height: 70, // enough for two lines
+    textAlignVertical: "top", // place text at the top of the box
   },
   saveBtn: {
     backgroundColor: primary,

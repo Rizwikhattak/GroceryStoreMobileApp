@@ -7,6 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { primary } from "@/constants/colors";
@@ -88,7 +89,46 @@ const CreditReferenceTab = () => {
   const [ref2Phone, setRef2Phone] = useState(
     customerData.credit_reference2_phone
   );
+  const buildFormData = () => {
+    const fd = new FormData();
 
+    /* ──────────────────────── primitives ──────────────────────── */
+    fd.set("_id", customerData._id);
+    fd.set("first_name", customerData.first_name);
+    fd.set("last_name", customerData.last_name);
+    fd.set("email", customerData.email);
+    fd.set("phone", customerData.phone);
+    fd.set("address", customerData.address);
+    fd.set("business_name", customerData.business_name);
+    fd.set("business_mobile", customerData.business_mobile);
+    fd.set("business_email", customerData.business_email);
+    fd.set("delivery_address", customerData.delivery_address);
+    fd.set("company_number", customerData.company_number);
+    fd.set("account_payable_name", customerData.account_payable_name);
+    fd.set("account_payable_phone", customerData.account_payable_phone);
+    fd.set("account_payable_email", customerData.account_payable_email);
+    // asd asd
+
+    fd.set("credit_reference1_name", ref1Name.trim());
+    fd.set("credit_reference1_email", ref1Contact.trim());
+    fd.set("credit_reference1_phone", ref1Phone.trim());
+
+    fd.set("credit_reference2_name", ref2Name.trim());
+    fd.set("credit_reference2_email", ref2Contact.trim());
+    fd.set("credit_reference2_phone", ref2Phone.trim());
+    /* ──────────────────────── arrays ───────────────────────────── */
+    (customerData.billing_addresses ?? []).forEach((v: string) =>
+      fd.set("billing_addresses[]", v)
+    );
+    (customerData.shipping_addresses ?? []).forEach((v: string) =>
+      fd.set("shipping_addresses[]", v)
+    );
+    (customerData.addresses ?? []).forEach((v: string) =>
+      fd.set("addresses[]", v)
+    );
+
+    return fd;
+  };
   /* ------ save handler ------ */
   const saveCreditRefs = async () => {
     if (!ref1Name.trim()) {
@@ -96,22 +136,7 @@ const CreditReferenceTab = () => {
     }
 
     try {
-      const form = new FormData();
-
-      for (const [k, v] of Object.entries(customer.data)) {
-        form.append(k, Array.isArray(v) ? JSON.stringify(v) : v);
-      }
-
-      form.set("credit_reference1_name", ref1Name.trim());
-      form.set("credit_reference1_email", ref1Contact.trim());
-      form.set("credit_reference1_phone", ref1Phone.trim());
-
-      form.set("credit_reference2_name", ref2Name.trim());
-      form.set("credit_reference2_email", ref2Contact.trim());
-      form.set("credit_reference2_phone", ref2Phone.trim());
-
-      form.set("_id", customer.data._id);
-
+      const form = buildFormData();
       await dispatch(
         updateUserProfileDetails({ _id: customer.data._id, formData: form })
       ).unwrap();
@@ -148,7 +173,11 @@ const CreditReferenceTab = () => {
       />
 
       <TouchableOpacity style={styles.saveBtn} onPress={saveCreditRefs}>
-        <Text style={styles.saveTxt}>Save Changes</Text>
+        {customer.isPostLoading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.saveTxt}>Save Changes</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -158,6 +187,15 @@ const styles = StyleSheet.create({
   wrapper: { padding: 16 },
   heading: { fontSize: 15, fontWeight: "600", marginBottom: 8 },
   label: { fontSize: 14, color: "#666", marginBottom: 8 },
+  // input: {
+  //   borderWidth: 1,
+  //   borderColor: "#ddd",
+  //   borderRadius: 8,
+  //   paddingHorizontal: 12,
+  //   paddingVertical: 10,
+  //   fontSize: 16,
+  //   marginBottom: 16,
+  // },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
@@ -165,7 +203,30 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
-    marginBottom: 16,
+    height: 48, // 🔒 keeps height constant
+  },
+
+  /* optional separate style if you want different width rules for e-mail */
+  inputEmail: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    height: 48,
+  },
+
+  /* address box: still multiline, but fixed height so it won’t expand */
+  addressInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    height: 70, // enough for two lines
+    textAlignVertical: "top", // place text at the top of the box
   },
   row: { flexDirection: "row", marginBottom: 16 },
   col: { flex: 1, marginRight: 8 },

@@ -50,10 +50,7 @@ export const API_COMMON = async (
   } catch (error) {
     console.log(
       "This is the real error",
-      JSON.stringify(error),
       error.message,
-      error.response,
-      error.response?.data,
       error.response?.data?.errors
     );
     const message = error.response?.data?.errors || ERROR_MESSAGE; // Extracting the message from backend

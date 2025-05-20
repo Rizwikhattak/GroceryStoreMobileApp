@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
@@ -17,6 +18,7 @@ import {
 } from "@/store/actions/settingsActions";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
+import { saveAndOpenLicense } from "@/utils/downloadLiscence";
 
 const ProfileSettingsTab = () => {
   /* ---- redux ---- */
@@ -67,7 +69,16 @@ const ProfileSettingsTab = () => {
       Alert.alert("Error", "Failed to select document");
     }
   };
-
+  const handleDownload = () => {
+    const dl = customer.data.driver_license;
+    if (!dl?.data) {
+      Alert.alert("No license found");
+      return;
+    }
+    saveAndOpenLicense(dl).catch(() =>
+      Alert.alert("Error", "Could not open driver license")
+    );
+  };
   const saveProfile = async () => {
     /* quick validation */
     if (!firstName.trim() || !lastName.trim())
@@ -109,7 +120,8 @@ const ProfileSettingsTab = () => {
       ];
       arrayFields.forEach((field) => {
         if (customer.data[field] && Array.isArray(customer.data[field])) {
-          form.append(field, JSON.stringify(customer.data[field]));
+          // form.append(field, JSON.stringify(customer.data[field]));
+          form.append(field, customer.data[field]);
         }
       });
 
@@ -219,17 +231,27 @@ const ProfileSettingsTab = () => {
           </Text>
         </TouchableOpacity>
         <Text style={styles.uploadNote}>
-          {!customerData?.driver_license?.name
-            ? customerData?.driver_license?.name
-            : driverLicense
+          {driverLicense
             ? driverLicense.name
+            : customerData?.driver_license?.name
+            ? customerData?.driver_license?.name
             : "No file chosen"}
         </Text>
+        {customerData?.driver_license && (
+          <TouchableOpacity style={styles.downloadBtn} onPress={handleDownload}>
+            <Ionicons name="download-outline" size={20} color="#fff" />
+            <Text style={styles.downloadTxt}>Download license</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* save */}
       <TouchableOpacity style={styles.saveBtn} onPress={saveProfile}>
-        <Text style={styles.saveTxt}>Save Changes</Text>
+        {customer.isPostLoading ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.saveTxt}>Save Changes</Text>
+        )}
       </TouchableOpacity>
     </ScrollView>
   );
@@ -242,6 +264,14 @@ const styles = StyleSheet.create({
   col: { flex: 1, marginRight: 8 },
   full: { marginBottom: 16 },
   label: { fontSize: 14, color: "#666", marginBottom: 8 },
+  // input: {
+  //   borderWidth: 1,
+  //   borderColor: "#ddd",
+  //   borderRadius: 8,
+  //   paddingHorizontal: 12,
+  //   paddingVertical: 10,
+  //   fontSize: 16,
+  // },
   input: {
     borderWidth: 1,
     borderColor: "#ddd",
@@ -249,7 +279,32 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
+    height: 48, // 🔒 keeps height constant
   },
+
+  /* optional separate style if you want different width rules for e-mail */
+  inputEmail: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    height: 48,
+  },
+
+  /* address box: still multiline, but fixed height so it won’t expand */
+  addressInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    height: 70, // enough for two lines
+    textAlignVertical: "top", // place text at the top of the box
+  },
+
   uploadBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -271,6 +326,22 @@ const styles = StyleSheet.create({
     marginBottom: 30,
   },
   saveTxt: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  downloadBtn: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: primary, // use your theme colour
+    borderRadius: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    alignSelf: "flex-start",
+    marginTop: 8,
+  },
+
+  downloadTxt: {
+    color: "#fff", // white text on coloured button
+    marginLeft: 8,
+    fontWeight: "500",
+  },
 });
 
 export default ProfileSettingsTab;

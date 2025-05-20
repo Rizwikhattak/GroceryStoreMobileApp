@@ -1,7 +1,17 @@
+"use client";
+
 import { primary } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useState } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { useState, useRef, useEffect } from "react";
+import {
+  Image,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+  TextInput,
+  Keyboard,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { updateCartQuantity } from "@/store/reducers/productsSlice";
 
@@ -12,11 +22,40 @@ const ProductItemCard = ({ item }) => {
   const dispatch = useDispatch();
   const cartState = useSelector((state) => state.products.cartState);
   const [favorites, setFavorites] = useState({});
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState("");
+  const inputRef = useRef(null);
 
   // Get quantity from cart state
   const quantity =
     cartState.find((cartItem) => cartItem._id === item._id)?.orderQuantity || 0;
   const isFavorite = favorites[item._id] || false;
+
+  // Get unit from product data or use default
+  const unit = item?.uom?.slug || "kg";
+
+  // Only update input value when quantity changes and we're not editing
+  useEffect(() => {
+    if (!isEditing) {
+      setInputValue(quantity.toString());
+    }
+  }, [quantity, isEditing]);
+
+  // Set up keyboard dismiss listener
+  useEffect(() => {
+    const keyboardDidHideListener = Keyboard.addListener(
+      "keyboardDidHide",
+      () => {
+        if (isEditing) {
+          handleQuantitySubmit();
+        }
+      }
+    );
+
+    return () => {
+      keyboardDidHideListener.remove();
+    };
+  }, [isEditing, inputValue]);
 
   // Toggle favorite
   const toggleFavorite = (id) => {
@@ -24,6 +63,58 @@ const ProductItemCard = ({ item }) => {
       ...prev,
       [id]: !prev[id],
     }));
+  };
+  const hasSubmitted = useRef(false);
+  // Handle direct quantity input
+  const handleQuantityInputFocus = () => {
+    if (hasSubmitted.current) return; // ignore duplicates
+    hasSubmitted.current = true;
+    setIsEditing(true);
+
+    // Select all text for easy replacement
+    if (inputRef.current) {
+      setTimeout(() => {
+        inputRef.current.focus();
+      }, 50);
+    }
+  };
+
+  const handleQuantityChange = (text) => {
+    // Only allow numeric input
+    if (/^\d*$/.test(text)) {
+      setInputValue(text);
+    }
+  };
+
+  const handleQuantitySubmit = () => {
+    // Exit if not editing
+    if (!isEditing) return;
+
+    // Parse the input value as an integer
+    let newQuantity = parseInt(inputValue, 10);
+
+    // Handle empty or non-numeric input
+    if (isNaN(newQuantity)) {
+      newQuantity = 0;
+    }
+
+    // Ensure minimum value is 0
+    newQuantity = Math.max(0, newQuantity);
+
+    // Update cart with the absolute new quantity, not relative change
+    if (newQuantity !== quantity) {
+      // Calculate the change needed to reach the new quantity
+      const change = newQuantity - quantity;
+
+      dispatch(
+        updateCartQuantity({ id: item._id, item: item, change: change })
+      );
+    }
+
+    // Reset editing state
+    setIsEditing(false);
+    setTimeout(() => (hasSubmitted.current = false), 200);
+    // Keyboard.dismiss();
   };
 
   return (
@@ -66,8 +157,11 @@ const ProductItemCard = ({ item }) => {
           {item.name}
         </Text>
 
-        <View style={styles.priceRatingContainer}>
-          <Text style={styles.priceText}>${item.sale_price}</Text>
+        <View style={styles.priceUnitContainer}>
+          <View style={styles.priceContainer}>
+            <Text style={styles.priceText}>${item.sale_price}</Text>
+            <Text style={styles.unitText}>/{unit}</Text>
+          </View>
 
           {item.rating && (
             <View style={styles.ratingContainer}>
@@ -76,6 +170,13 @@ const ProductItemCard = ({ item }) => {
             </View>
           )}
         </View>
+
+        {/* Weight/Size if available */}
+        {item.weight && (
+          <Text style={styles.weightText}>
+            {item.weight} {unit}
+          </Text>
+        )}
 
         {/* Action Buttons */}
         {quantity > 0 ? (
@@ -91,7 +192,31 @@ const ProductItemCard = ({ item }) => {
               <Text style={styles.quantityButtonText}>-</Text>
             </TouchableOpacity>
 
-            <Text style={styles.quantityText}>{quantity}</Text>
+            {isEditing ? (
+              <TextInput
+                ref={inputRef}
+                style={styles.quantityInput}
+                value={inputValue}
+                onChangeText={handleQuantityChange}
+                keyboardType="numeric"
+                selectTextOnFocus
+                autoFocus
+                onEndEditing={handleQuantitySubmit} // <-- only event that commits
+                blurOnSubmit
+                maxLength={3}
+              />
+            ) : (
+              <TouchableOpacity
+                style={styles.quantityDisplay}
+                onPress={handleQuantityInputFocus}
+                activeOpacity={0.7}
+              >
+                <View style={styles.quantityUnitContainer}>
+                  <Text style={styles.quantityText}>{quantity}</Text>
+                  <Text style={styles.quantityUnitText}>{unit}</Text>
+                </View>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
               style={[styles.quantityButton, styles.incrementButton]}
@@ -181,16 +306,30 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     fontSize: 14,
   },
-  priceRatingContainer: {
+  priceUnitContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    marginBottom: 12,
+    marginBottom: 8,
+  },
+  priceContainer: {
+    flexDirection: "row",
+    alignItems: "baseline",
   },
   priceText: {
     color: "#333",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  unitText: {
+    color: "#666",
+    fontSize: 12,
+    marginLeft: 1,
+  },
+  weightText: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 8,
   },
   ratingContainer: {
     flexDirection: "row",
@@ -205,6 +344,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+    height: 36,
   },
   quantityButton: {
     width: 35,
@@ -224,9 +364,39 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 16,
   },
+  quantityDisplay: {
+    flex: 1,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 5,
+  },
+  quantityUnitContainer: {
+    flexDirection: "row",
+    alignItems: "baseline",
+    justifyContent: "center",
+  },
   quantityText: {
     color: "#333",
     fontWeight: "500",
+    fontSize: 14,
+    textAlign: "center",
+  },
+  quantityUnitText: {
+    color: "#666",
+    fontSize: 10,
+    marginLeft: 2,
+  },
+  quantityInput: {
+    flex: 1,
+    color: "#333",
+    fontWeight: "500",
+    minWidth: 30,
+    textAlign: "center",
+    borderBottomWidth: 1,
+    borderBottomColor: primary,
+    paddingVertical: 0,
+    marginHorizontal: 5,
+    height: 30,
   },
   addToCartButton: {
     height: 36,

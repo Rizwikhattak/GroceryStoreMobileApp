@@ -51,7 +51,28 @@ export const updateUserProfileDetails = createAsyncThunk(
   "settings/updateUserProfileDetails",
   async (data, { rejectWithValue }) => {
     try {
-      console.log("IDDDDDD", data._id);
+      console.log("IDDDDDDDDDDDDDDDDD", data._id);
+      const response = await API_COMMON(
+        "put",
+        "form",
+        `${CUSTOMER_DETAILS_API}${data._id}`,
+        "Error in updating customer details",
+        data.formData
+      );
+      // console.log("DATA", response);
+      return response;
+    } catch (err) {
+      console.log("err", err);
+      return rejectWithValue(
+        err?.message || "Error in updating customer details"
+      );
+    }
+  }
+);
+export const downloadUserDriverLiscence = createAsyncThunk(
+  "settings/downloadUserDriverLiscence",
+  async (data, { rejectWithValue }) => {
+    try {
       const response = await API_COMMON(
         "put",
         "form",

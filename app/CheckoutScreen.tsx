@@ -1,4 +1,6 @@
-import React, { useState } from "react";
+"use client";
+
+import { useState } from "react";
 import {
   View,
   Text,
@@ -9,31 +11,34 @@ import {
   TextInput,
   Alert,
   StatusBar,
-  ActivityIndicator,
-  KeyboardAvoidingView,
   Platform,
+  KeyboardAvoidingView,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useGlobalSearchParams, useRouter } from "expo-router";
+import { primary } from "@/constants/colors";
 
 const CheckoutScreen = ({ route, navigation }) => {
-  // Destructure parameters from route.params; these should be passed when navigating here.
   const router = useRouter();
-  const { cartTotal, subtotal, deliveryFee } = useGlobalSearchParams();
+  const {
+    cartTotal,
+    subtotal,
+    deliveryFee,
+    gstAmount = "0",
+  } = useGlobalSearchParams();
 
   const [deliveryMethod, setDeliveryMethod] = useState("delivery"); // "delivery" or "pickup"
-  const [paymentMethod, setPaymentMethod] = useState("cash"); // "cash", "card", or "online"
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [orderInstructions, setOrderInstructions] = useState("");
 
-  // Delivery address state
-  const [deliveryAddress, setDeliveryAddress] = useState({
-    name: "Dhoke Kala Khan",
-    street: "123 Main Street",
-    city: "Islamabad",
-    phone: "+92 300 1234567",
-  });
-
-  // Pickup location state
-  const [selectedPickupLocation, setSelectedPickupLocation] = useState("main");
+  // Delivery address - now just displayed, not editable
+  const deliveryAddress = {
+    name: "John Doe",
+    street: "54 Stoddard Road",
+    city: "Wesley, Auckland 1041",
+    country: "New Zealand",
+    phone: "+64 21 123 4567",
+  };
 
   // Sample pickup locations
   const pickupLocations = [
@@ -57,298 +62,318 @@ const CheckoutScreen = ({ route, navigation }) => {
     },
   ];
 
+  // Selected pickup location
+  const [selectedPickupLocation, setSelectedPickupLocation] = useState("main");
+
+  // Generate delivery dates (next 7 days)
+  const getDeliveryDates = () => {
+    const dates = [];
+    const daysOfWeek = [
+      "Sunday",
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+    ];
+    const months = [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec",
+    ];
+
+    // Start from tomorrow
+    const today = new Date();
+
+    for (let i = 1; i <= 7; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+
+      dates.push({
+        id: i.toString(),
+        day: daysOfWeek[date.getDay()],
+        date: date.getDate(),
+        month: months[date.getMonth()],
+        year: date.getFullYear(),
+        fullDate: date,
+      });
+    }
+
+    return dates;
+  };
+
+  const deliveryDates = getDeliveryDates();
+
   const handlePlaceOrder = () => {
+    if (!selectedDate) {
+      Alert.alert("Select Date", "Please select a delivery/pickup date");
+      return;
+    }
+
     Alert.alert("Order Placed", "Your order has been placed successfully!", [
-      { text: "OK", onPress: () => navigation.navigate("Home") },
+      {
+        text: "OK",
+        onPress: () => navigation?.navigate("Home") || router.push("/"),
+      },
     ]);
   };
 
-  const renderDeliveryForm = () => (
-    <View style={styles.formContainer}>
-      <Text style={styles.formLabel}>Delivery Address</Text>
+  return (
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="dark-content" />
 
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Full Name</Text>
-        <TextInput
-          style={styles.input}
-          value={deliveryAddress.name}
-          onChangeText={(text) =>
-            setDeliveryAddress({ ...deliveryAddress, name: text })
-          }
-          placeholder="Enter your full name"
-        />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Street Address</Text>
-        <TextInput
-          style={styles.input}
-          value={deliveryAddress.street}
-          onChangeText={(text) =>
-            setDeliveryAddress({ ...deliveryAddress, street: text })
-          }
-          placeholder="Enter street address"
-        />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>City</Text>
-        <TextInput
-          style={styles.input}
-          value={deliveryAddress.city}
-          onChangeText={(text) =>
-            setDeliveryAddress({ ...deliveryAddress, city: text })
-          }
-          placeholder="Enter city"
-        />
-      </View>
-
-      <View style={styles.inputGroup}>
-        <Text style={styles.inputLabel}>Phone Number</Text>
-        <TextInput
-          style={styles.input}
-          value={deliveryAddress.phone}
-          onChangeText={(text) =>
-            setDeliveryAddress({ ...deliveryAddress, phone: text })
-          }
-          placeholder="Enter phone number"
-          keyboardType="phone-pad"
-        />
-      </View>
-
-      <View style={styles.deliveryTimeContainer}>
-        <Text style={styles.deliveryTimeTitle}>Estimated Delivery Time</Text>
-        <Text style={styles.deliveryTimeValue}>30-45 minutes</Text>
-      </View>
-    </View>
-  );
-
-  const renderPickupForm = () => (
-    <View style={styles.formContainer}>
-      <Text style={styles.formLabel}>Select Pickup Location</Text>
-
-      {pickupLocations.map((location) => (
-        <TouchableOpacity
-          key={location.id}
-          style={[
-            styles.pickupLocationCard,
-            selectedPickupLocation === location.id &&
-              styles.selectedPickupLocation,
-          ]}
-          onPress={() => setSelectedPickupLocation(location.id)}
+      <KeyboardAvoidingView
+        style={styles.container}
+        behavior={Platform.OS === "ios" ? "padding" : null}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      >
+        <ScrollView
+          style={styles.content}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollContent}
         >
-          <View style={styles.pickupLocationHeader}>
-            <Text style={styles.pickupLocationName}>{location.name}</Text>
-            {selectedPickupLocation === location.id && (
-              <Ionicons name="checkmark-circle" size={24} color="#f44336" />
+          {/* Delivery Method Selection */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Delivery Method</Text>
+            <View style={styles.deliveryOptions}>
+              <TouchableOpacity
+                style={[
+                  styles.deliveryOption,
+                  deliveryMethod === "delivery" &&
+                    styles.selectedDeliveryOption,
+                ]}
+                onPress={() => setDeliveryMethod("delivery")}
+              >
+                <Ionicons
+                  name="bicycle"
+                  size={24}
+                  color={deliveryMethod === "delivery" ? primary : "#888"}
+                />
+                <Text
+                  style={[
+                    styles.deliveryOptionText,
+                    deliveryMethod === "delivery" &&
+                      styles.selectedDeliveryOptionText,
+                  ]}
+                >
+                  Delivery
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.deliveryOption,
+                  deliveryMethod === "pickup" && styles.selectedDeliveryOption,
+                ]}
+                onPress={() => setDeliveryMethod("pickup")}
+              >
+                <Ionicons
+                  name="storefront"
+                  size={24}
+                  color={deliveryMethod === "pickup" ? primary : "#888"}
+                />
+                <Text
+                  style={[
+                    styles.deliveryOptionText,
+                    deliveryMethod === "pickup" &&
+                      styles.selectedDeliveryOptionText,
+                  ]}
+                >
+                  Pickup
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Delivery Address or Pickup Location */}
+          <View style={styles.sectionContainer}>
+            {deliveryMethod === "delivery" ? (
+              <>
+                <Text style={styles.sectionTitle}>Deliver to:</Text>
+                <View style={styles.addressCard}>
+                  <Text style={styles.addressName}>{deliveryAddress.name}</Text>
+                  <Text style={styles.addressText}>
+                    {deliveryAddress.street}
+                  </Text>
+                  <Text style={styles.addressText}>{deliveryAddress.city}</Text>
+                  <Text style={styles.addressText}>
+                    {deliveryAddress.phone}
+                  </Text>
+                </View>
+                <TouchableOpacity style={styles.changeAddressButton}>
+                  <Text style={styles.changeAddressText}>Change Address</Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text style={styles.sectionTitle}>Pickup from:</Text>
+                {pickupLocations.map((location) => (
+                  <TouchableOpacity
+                    key={location.id}
+                    style={[
+                      styles.pickupLocationCard,
+                      selectedPickupLocation === location.id &&
+                        styles.selectedPickupLocation,
+                    ]}
+                    onPress={() => setSelectedPickupLocation(location.id)}
+                  >
+                    <View style={styles.pickupLocationHeader}>
+                      <Text style={styles.pickupLocationName}>
+                        {location.name}
+                      </Text>
+                      {selectedPickupLocation === location.id && (
+                        <Ionicons
+                          name="checkmark-circle"
+                          size={24}
+                          color={primary}
+                        />
+                      )}
+                    </View>
+                    <Text style={styles.pickupLocationAddress}>
+                      {location.address}
+                    </Text>
+                    <Text style={styles.pickupLocationTime}>
+                      Hours: {location.time}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </>
             )}
           </View>
-          <Text style={styles.pickupLocationAddress}>{location.address}</Text>
-          <Text style={styles.pickupLocationTime}>Hours: {location.time}</Text>
-        </TouchableOpacity>
-      ))}
 
-      <View style={styles.deliveryTimeContainer}>
-        <Text style={styles.deliveryTimeTitle}>Pickup Instructions</Text>
-        <Text style={styles.deliveryTimeValue}>
-          Show your order ID at the counter
-        </Text>
-      </View>
-    </View>
-  );
+          {/* Delivery/Pickup Date Selection */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>
+              {deliveryMethod === "delivery" ? "Delivery" : "Pickup"} Date
+            </Text>
 
-  return (
-    <SafeAreaView style={styles.container}>
-      {/* Header */}
-
-      {/* <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => navigation.goBack()}
-        >
-          <Ionicons name="chevron-back" size={24} color="#f44336" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Checkout</Text>
-        <View style={styles.placeholder} />
-      </View> */}
-
-      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
-        {/* Delivery Method Selection */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Delivery Method</Text>
-          <View style={styles.deliveryOptions}>
-            <TouchableOpacity
-              style={[
-                styles.deliveryOption,
-                deliveryMethod === "delivery" && styles.selectedDeliveryOption,
-              ]}
-              onPress={() => setDeliveryMethod("delivery")}
-            >
-              <Ionicons
-                name="bicycle"
-                size={24}
-                color={deliveryMethod === "delivery" ? "#f44336" : "#888"}
-              />
-              <Text
-                style={[
-                  styles.deliveryOptionText,
-                  deliveryMethod === "delivery" &&
-                    styles.selectedDeliveryOptionText,
-                ]}
-              >
-                Delivery
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.deliveryOption,
-                deliveryMethod === "pickup" && styles.selectedDeliveryOption,
-              ]}
-              onPress={() => setDeliveryMethod("pickup")}
-            >
-              <Ionicons
-                name="storefront"
-                size={24}
-                color={deliveryMethod === "pickup" ? "#f44336" : "#888"}
-              />
-              <Text
-                style={[
-                  styles.deliveryOptionText,
-                  deliveryMethod === "pickup" &&
-                    styles.selectedDeliveryOptionText,
-                ]}
-              >
-                Pickup
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Conditional Form Rendering */}
-        {deliveryMethod === "delivery"
-          ? renderDeliveryForm()
-          : renderPickupForm()}
-
-        {/* Payment Method Selection */}
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Payment Method</Text>
-          <View style={styles.paymentOptions}>
-            <TouchableOpacity
-              style={[
-                styles.paymentOption,
-                paymentMethod === "cash" && styles.selectedPaymentOption,
-              ]}
-              onPress={() => setPaymentMethod("cash")}
-            >
-              <Ionicons
-                name="cash"
-                size={24}
-                color={paymentMethod === "cash" ? "#f44336" : "#888"}
-              />
-              <Text style={styles.paymentOptionText}>
-                Cash on {deliveryMethod === "delivery" ? "Delivery" : "Pickup"}
-              </Text>
-              {paymentMethod === "cash" && (
-                <Ionicons
-                  name="checkmark-circle"
-                  size={24}
-                  color="#f44336"
-                  style={styles.checkIcon}
-                />
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.paymentOption,
-                paymentMethod === "card" && styles.selectedPaymentOption,
-              ]}
-              onPress={() => setPaymentMethod("card")}
-            >
-              <Ionicons
-                name="card"
-                size={24}
-                color={paymentMethod === "card" ? "#f44336" : "#888"}
-              />
-              <Text style={styles.paymentOptionText}>Credit/Debit Card</Text>
-              {paymentMethod === "card" && (
-                <Ionicons
-                  name="checkmark-circle"
-                  size={24}
-                  color="#f44336"
-                  style={styles.checkIcon}
-                />
-              )}
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[
-                styles.paymentOption,
-                paymentMethod === "online" && styles.selectedPaymentOption,
-              ]}
-              onPress={() => setPaymentMethod("online")}
-            >
-              <Ionicons
-                name="globe"
-                size={24}
-                color={paymentMethod === "online" ? "#f44336" : "#888"}
-              />
-              <Text style={styles.paymentOptionText}>Online Payment</Text>
-              {paymentMethod === "online" && (
-                <Ionicons
-                  name="checkmark-circle"
-                  size={24}
-                  color="#f44336"
-                  style={styles.checkIcon}
-                />
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        {/* Order Summary */}
-        <View style={styles.summaryContainer}>
-          <Text style={styles.summaryTitle}>Order Summary</Text>
-
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>{subtotal} $</Text>
-          </View>
-
-          {deliveryMethod === "delivery" && (
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Delivery Fee</Text>
-              <Text style={styles.summaryValue}>{deliveryFee} $</Text>
+            <View style={styles.dateContainer}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                {deliveryDates.map((date) => (
+                  <TouchableOpacity
+                    key={date.id}
+                    style={[
+                      styles.dateCard,
+                      selectedDate === date.id && styles.selectedDateCard,
+                    ]}
+                    onPress={() => setSelectedDate(date.id)}
+                  >
+                    <Text
+                      style={[
+                        styles.dayText,
+                        selectedDate === date.id && styles.selectedDateText,
+                      ]}
+                    >
+                      {date.day}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.dateText,
+                        selectedDate === date.id && styles.selectedDateText,
+                      ]}
+                    >
+                      {date.date}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.monthText,
+                        selectedDate === date.id && styles.selectedDateText,
+                      ]}
+                    >
+                      {date.month} {date.year}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
             </View>
-          )}
 
-          <View style={styles.divider} />
-
-          <View style={styles.summaryRow}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>{cartTotal} $</Text>
+            <Text style={styles.deliveryNote}>
+              If an order is placed before 5:00pm then it will be delivered on
+              the same day, otherwise it will be processed for the next day.
+            </Text>
           </View>
+
+          {/* Order Instructions */}
+          <View style={styles.sectionContainer}>
+            <Text style={styles.sectionTitle}>Order Instructions</Text>
+            <TextInput
+              style={styles.instructionsInput}
+              placeholder="Add any special instructions for your order here..."
+              multiline
+              numberOfLines={4}
+              value={orderInstructions}
+              onChangeText={setOrderInstructions}
+            />
+          </View>
+
+          {/* Order Summary */}
+          <View style={styles.summaryContainer}>
+            <Text style={styles.summaryTitle}>Order Summary</Text>
+
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryValue}>${subtotal}</Text>
+            </View>
+
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>GST (15%)</Text>
+              <Text style={styles.summaryValue}>${gstAmount}</Text>
+            </View>
+
+            {deliveryMethod === "delivery" && (
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Delivery Fee</Text>
+                <Text style={styles.summaryValue}>${deliveryFee}</Text>
+              </View>
+            )}
+
+            <View style={styles.divider} />
+
+            <View style={styles.summaryRow}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalValue}>Rs. {cartTotal}</Text>
+            </View>
+          </View>
+
+          {/* Add some padding at the bottom to ensure content isn't hidden behind the fixed button */}
+          <View style={styles.bottomPadding} />
+        </ScrollView>
+
+        {/* Place Order Button - now positioned absolutely */}
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.checkoutButton}
+            onPress={handlePlaceOrder}
+          >
+            <Text style={styles.checkoutButtonText}>Place Order</Text>
+            <Ionicons
+              name="arrow-forward"
+              size={20}
+              color="white"
+              style={{ marginLeft: 8 }}
+            />
+          </TouchableOpacity>
         </View>
-
-        {/* Bottom Space for Fixed Button */}
-        <View style={styles.bottomSpace} />
-      </ScrollView>
-
-      {/* Fixed Place Order Button */}
-      <View style={styles.bottomButtonContainer}>
-        <TouchableOpacity
-          style={styles.checkoutButton}
-          onPress={handlePlaceOrder}
-        >
-          <Text style={styles.checkoutButtonText}>Place Order</Text>
-        </TouchableOpacity>
-      </View>
+      </KeyboardAvoidingView>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
@@ -358,9 +383,12 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
     paddingHorizontal: 16,
-    paddingVertical: 12,
+    paddingTop: Platform.OS === "ios" ? 0 : 40,
+    paddingBottom: 12,
     borderBottomWidth: 1,
     borderBottomColor: "#eee",
+    backgroundColor: "#fff",
+    zIndex: 10,
   },
   backButton: {
     padding: 4,
@@ -368,7 +396,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#f44336",
+    color: primary,
   },
   placeholder: {
     width: 32,
@@ -376,6 +404,9 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     backgroundColor: "white",
+  },
+  scrollContent: {
+    paddingBottom: 80, // Add padding to account for the fixed button
   },
   sectionContainer: {
     padding: 16,
@@ -386,6 +417,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "bold",
     marginBottom: 12,
+    color: "#333",
   },
   deliveryOptions: {
     flexDirection: "row",
@@ -403,7 +435,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   selectedDeliveryOption: {
-    borderColor: "#f44336",
+    borderColor: primary,
     backgroundColor: "#fff5f5",
   },
   deliveryOptionText: {
@@ -412,50 +444,32 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   selectedDeliveryOptionText: {
-    color: "#f44336",
+    color: primary,
     fontWeight: "500",
   },
-  formContainer: {
+  addressCard: {
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  formLabel: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 12,
-  },
-  inputGroup: {
-    marginBottom: 12,
-  },
-  inputLabel: {
-    fontSize: 14,
-    color: "#666",
-    marginBottom: 4,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 16,
-  },
-  deliveryTimeContainer: {
-    marginTop: 16,
-    padding: 12,
     backgroundColor: "#f9f9f9",
     borderRadius: 8,
+    marginBottom: 12,
   },
-  deliveryTimeTitle: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: "#666",
-  },
-  deliveryTimeValue: {
+  addressName: {
     fontSize: 16,
     fontWeight: "bold",
-    marginTop: 4,
+    marginBottom: 4,
+  },
+  addressText: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 2,
+  },
+  changeAddressButton: {
+    alignSelf: "flex-start",
+  },
+  changeAddressText: {
+    color: primary,
+    fontSize: 14,
+    fontWeight: "500",
   },
   pickupLocationCard: {
     marginBottom: 12,
@@ -465,7 +479,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   selectedPickupLocation: {
-    borderColor: "#f44336",
+    borderColor: primary,
     backgroundColor: "#fff5f5",
   },
   pickupLocationHeader: {
@@ -487,30 +501,59 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#666",
   },
-  paymentOptions: {
-    marginTop: 8,
+  dateContainer: {
+    marginVertical: 12,
   },
-  paymentOption: {
-    flexDirection: "row",
+  dateCard: {
+    width: 100,
+    height: 90,
+    marginRight: 12,
+    padding: 12,
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
     alignItems: "center",
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
+    justifyContent: "center",
   },
-  selectedPaymentOption: {
-    backgroundColor: "#fff5f5",
+  selectedDateCard: {
+    borderColor: primary,
+    backgroundColor: primary,
   },
-  paymentOptionText: {
-    marginLeft: 12,
-    fontSize: 16,
-    flex: 1,
+  dayText: {
+    fontSize: 14,
+    fontWeight: "500",
+    marginBottom: 4,
   },
-  checkIcon: {
-    marginLeft: "auto",
+  dateText: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 2,
+  },
+  monthText: {
+    fontSize: 12,
+    color: "#666",
+  },
+  selectedDateText: {
+    color: "white",
+  },
+  deliveryNote: {
+    fontSize: 12,
+    color: "#666",
+    fontStyle: "italic",
+    marginTop: 12,
+    lineHeight: 18,
+  },
+  instructionsInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 14,
+    height: 100,
+    textAlignVertical: "top",
   },
   summaryContainer: {
     padding: 16,
-    marginBottom: 100,
     backgroundColor: "#f9f9f9",
     marginTop: 8,
   },
@@ -544,27 +587,28 @@ const styles = StyleSheet.create({
   totalValue: {
     fontSize: 16,
     fontWeight: "bold",
-    color: "#f44336",
+    color: primary,
   },
-  bottomSpace: {
-    height: 80,
+  bottomPadding: {
+    height: 100, // Extra padding at the bottom so content isn't hidden behind button
   },
-  bottomButtonContainer: {
+  buttonContainer: {
     position: "absolute",
-    bottom: 0,
     left: 0,
     right: 0,
-    height: 180,
+    bottom: 80,
     padding: 16,
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#eee",
   },
   checkoutButton: {
-    backgroundColor: "#f44336",
+    backgroundColor: primary,
     borderRadius: 8,
     paddingVertical: 14,
     alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "center",
   },
   checkoutButtonText: {
     color: "#fff",

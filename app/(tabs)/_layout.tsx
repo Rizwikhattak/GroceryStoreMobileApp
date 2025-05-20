@@ -240,12 +240,12 @@ const styles = StyleSheet.create({
     shadowRadius: 6.27,
     elevation: 10, // shadow-lg equivalent
   },
-  tabBarItem: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-  },
+  // tabBarItem: {
+  //   width: "100%",
+  //   height: "100%",
+  //   justifyContent: "center",
+  //   alignItems: "center",
+  // },
 });
 
 export default _layout;
