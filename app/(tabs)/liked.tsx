@@ -11,71 +11,45 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { primary } from "@/constants/colors";
 import SearchInput from "@/components/ui/SearchInput";
-
+import { useDispatch, useSelector } from "react-redux";
+import { getPantryProducts } from "@/store/actions/productsActions";
+import Constants from "expo-constants";
+const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 const LikedScreen = () => {
+  const dispatch = useDispatch();
   // State for search functionality
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
-  const [filteredProducts, setFilteredProducts] = useState([]);
+  // const [filteredProducts, setFilteredProducts] = useState([]);
 
-  // Mock data for liked products
-  const [likedProducts, setLikedProducts] = useState([
-    {
-      _id: "1",
-      name: "Premium Beef Steak",
-      sale_price: 25,
-      rating: 4.8,
-      photo: "placeholder",
-      promotion_status: "active",
-      promotion_value: 10,
-    },
-    {
-      _id: "2",
-      name: "Chicken Breast",
-      sale_price: 12,
-      rating: 4.5,
-      photo: "placeholder",
-      promotion_status: "inactive",
-      promotion_value: 0,
-    },
-    {
-      _id: "3",
-      name: "Fresh Cucumber",
-      sale_price: 3,
-      rating: 4.2,
-      photo: "placeholder",
-      promotion_status: "inactive",
-      promotion_value: 0,
-    },
-    {
-      _id: "4",
-      name: "Cherries",
-      sale_price: 8,
-      rating: 4.7,
-      photo: "placeholder",
-      promotion_status: "active",
-      promotion_value: 5,
-    },
-  ]);
+  const pantryProducts = useSelector((state) => state.products);
+
+  useEffect(() => {
+    const fetchPantryProducts = async () => {
+      try {
+        const prods = await dispatch(getPantryProducts()).unwrap();
+        console.log("Fetched pantry products:", prods);
+      } catch (err) {
+        console.error("Error fetching pantry products:", err);
+      }
+    };
+    fetchPantryProducts();
+  }, []);
 
   // Filter products based on search text
-  useEffect(() => {
-    if (searchText.trim() === "") {
-      setFilteredProducts(likedProducts);
-    } else {
-      const filtered = likedProducts.filter((product) =>
-        product.name.toLowerCase().includes(searchText.toLowerCase())
-      );
-      setFilteredProducts(filtered);
-    }
-  }, [searchText, likedProducts]);
+  // useEffect(() => {
+  //   if (searchText.trim() === "") {
+  //     setFilteredProducts(pantryProducts?.data);
+  //   } else {
+  //     const filtered = pantryProducts?.data?.filter((product) =>
+  //       product.name.toLowerCase().includes(searchText.toLowerCase())
+  //     );
+  //     setFilteredProducts(filtered);
+  //   }
+  // }, [searchText]);
 
   // Function to remove item from liked products
-  const removeFromLiked = (productId) => {
-    setLikedProducts(
-      likedProducts.filter((product) => product._id !== productId)
-    );
-  };
+  const removeFromLiked = (productId) => {};
 
   // Function to toggle favorite status
   const toggleFavorite = (productId) => {
@@ -93,58 +67,68 @@ const LikedScreen = () => {
     );
   };
 
-  const renderItem = ({ item }) => (
-    <View style={styles.productCard}>
-      {/* Discount Tag */}
-      {item.promotion_status === "active" && (
-        <View style={styles.discountTag}>
-          <Text style={styles.discountText}>{item.promotion_value}% OFF</Text>
-        </View>
-      )}
+  const renderItem = ({ item }) => {
+    const product = item?.product;
+    if (!product) return null;
+    return (
+      <View style={styles.productCard}>
+        {/* Discount Tag */}
+        {product?.promotion_status === "active" && (
+          <View style={styles.discountTag}>
+            <Text style={styles.discountText}>
+              {product?.promotion_value}% OFF
+            </Text>
+          </View>
+        )}
 
-      {/* Favorite Button */}
-      <TouchableOpacity
-        style={styles.favoriteButton}
-        onPress={() => toggleFavorite(item._id)}
-      >
-        <Ionicons name="heart-outline" size={22} color="#999" />
-      </TouchableOpacity>
-
-      {/* Delete Button */}
-      <TouchableOpacity
-        style={styles.deleteButton}
-        onPress={() => removeFromLiked(item._id)}
-      >
-        <Ionicons name="trash" size={18} color="#fff" />
-      </TouchableOpacity>
-
-      {/* Product Image */}
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: "https://via.placeholder.com/150" }}
-          style={styles.productImage}
-          resizeMode="cover"
-        />
-      </View>
-
-      {/* Product Details */}
-      <View style={styles.detailsContainer}>
-        <Text style={styles.productName} numberOfLines={1}>
-          {item.name}
-        </Text>
-
-        <View style={styles.priceContainer}>
-          <Text style={styles.priceText}>${item.sale_price}</Text>
-          <Text style={styles.ratingText}>{item.rating}</Text>
-          <Ionicons name="star" size={12} color="#FFD700" />
-        </View>
-
-        <TouchableOpacity style={styles.addToCartButton}>
-          <Text style={styles.addToCartText}>Add to cart</Text>
+        {/* Favorite Button */}
+        <TouchableOpacity
+          style={styles.favoriteButton}
+          onPress={() => toggleFavorite(product?._id)}
+        >
+          <Ionicons name="heart-outline" size={22} color="#999" />
         </TouchableOpacity>
+
+        {/* Delete Button */}
+        <TouchableOpacity
+          style={styles.deleteButton}
+          onPress={() => removeFromLiked(product?._id)}
+        >
+          <Ionicons name="trash" size={18} color="#fff" />
+        </TouchableOpacity>
+
+        {/* Product Image */}
+        <View style={styles.imageContainer}>
+          <Image
+            source={{
+              uri:
+                `${apiUrl}products/photo/${product?.photo}` ||
+                "https://via.placeholder.com/150",
+            }}
+            style={styles.productImage}
+            resizeMode="cover"
+          />
+        </View>
+
+        {/* Product Details */}
+        <View style={styles.detailsContainer}>
+          <Text style={styles.productName} numberOfLines={1}>
+            {product?.name}
+          </Text>
+
+          <View style={styles.priceContainer}>
+            <Text style={styles.priceText}>${product?.sale_price}</Text>
+            <Text style={styles.ratingText}>{product?.rating}</Text>
+            <Ionicons name="star" size={12} color="#FFD700" />
+          </View>
+
+          <TouchableOpacity style={styles.addToCartButton}>
+            <Text style={styles.addToCartText}>Add to cart</Text>
+          </TouchableOpacity>
+        </View>
       </View>
-    </View>
-  );
+    );
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -168,13 +152,14 @@ const LikedScreen = () => {
 
       {/* Item Count */}
       <Text style={styles.itemCount}>
-        {filteredProducts.length}{" "}
-        {filteredProducts.length === 1 ? "item" : "items"} in your pantry list
+        {pantryProducts?.data?.length}{" "}
+        {pantryProducts?.data?.length === 1 ? "item" : "items"} in your pantry
+        list
       </Text>
 
       {/* Products Grid */}
       <FlatList
-        data={filteredProducts}
+        data={pantryProducts?.data}
         renderItem={renderItem}
         keyExtractor={(item) => item._id}
         numColumns={2}

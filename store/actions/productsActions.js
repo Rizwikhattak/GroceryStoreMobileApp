@@ -1,5 +1,9 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
-import { fetchFeturedProductsAPI, PRODUCTS_API } from "../../constants/apis";
+import {
+  fetchFeturedProductsAPI,
+  PANTRY_PRODUCTS_API,
+  PRODUCTS_API,
+} from "../../constants/apis";
 import { API_COMMON } from "@/utils/ApiCommon";
 export const getFeaturedProducts = createAsyncThunk(
   "products/getFeaturedProducts",
@@ -12,6 +16,23 @@ export const getFeaturedProducts = createAsyncThunk(
         // `${fetchFeturedProductsAPI}`,
         "Error in fetching products",
         data
+      );
+      return response;
+    } catch (err) {
+      return rejectWithValue(err?.message || "Error in fetching products");
+    }
+  }
+);
+export const getPantryProducts = createAsyncThunk(
+  "products/getPantryProducts",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await API_COMMON(
+        "getAll",
+        "json",
+        `${PANTRY_PRODUCTS_API}`,
+        "Error in fetching products",
+        null
       );
       return response;
     } catch (err) {

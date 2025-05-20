@@ -11,4 +11,9 @@ export const fetchFeturedProductsAPI = "featured-products/";
 export const fetchCategoriesApi = "categories/";
 export const PRODUCTS_API = "products/";
 
+export const PANTRY_PRODUCTS_API = "pantry/";
 export const SUB_CATEGORIES_API = "subcategories/";
+
+export const SETTINGS_API = {
+  NOTIFICATIONS: "notification/",
+};

@@ -2,10 +2,10 @@ import { primary } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
-import Constants from "expo-constants";
 import { useDispatch, useSelector } from "react-redux";
 import { updateCartQuantity } from "@/store/reducers/productsSlice";
 
+import Constants from "expo-constants";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 const ProductItemCard = ({ item }) => {
