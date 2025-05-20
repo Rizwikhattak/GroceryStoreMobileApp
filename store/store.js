@@ -13,14 +13,14 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import authReducer from "./reducers/authSlice";
 import productsReducer from "./reducers/productsSlice";
 import categoriesReducer from "./reducers/categoriesSlice";
-import customerReducer from "./reducers/customerSlice";
+import settingsReducer from "./reducers/settingsSlice";
 
 // Create a root reducer by combining your slices
 const rootReducer = combineReducers({
   auth: authReducer,
   products: productsReducer,
   categories: categoriesReducer,
-  customers: customerReducer,
+  settings: settingsReducer,
 });
 
 // Configuration for Redux Persist

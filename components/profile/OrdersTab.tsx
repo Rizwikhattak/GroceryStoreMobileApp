@@ -7,6 +7,7 @@ import {
   StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import { primary } from "@/constants/colors";
 
 const OrdersTab = () => {
   const orders = [
@@ -96,7 +97,7 @@ const OrdersTab = () => {
         </TouchableOpacity>
         <TouchableOpacity style={styles.orderActionButton}>
           <Text style={styles.orderActionText}>Print Order</Text>
-          <Ionicons name="document-text-outline" size={16} color="#f44336" />
+          <Ionicons name="document-text-outline" size={16} color={primary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -114,7 +115,7 @@ const OrdersTab = () => {
         <Ionicons
           name={showFilters ? "chevron-up" : "chevron-down"}
           size={18}
-          color="#f44336"
+          color={primary}
         />
       </TouchableOpacity>
 
@@ -223,7 +224,7 @@ const styles = StyleSheet.create({
   },
   filterToggleText: {
     fontSize: 14,
-    color: "#f44336",
+    color: primary,
     fontWeight: "500",
     marginRight: 4,
   },
@@ -251,8 +252,8 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   activeStatusButton: {
-    backgroundColor: "#f44336",
-    borderColor: "#f44336",
+    backgroundColor: primary,
+    borderColor: primary,
   },
   statusButtonText: {
     color: "#666",
@@ -334,7 +335,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   orderActionText: {
-    color: "#f44336",
+    color: primary,
     fontWeight: "500",
     marginRight: 4,
   },
@@ -367,7 +368,7 @@ const styles = StyleSheet.create({
     color: "#333",
   },
   applyFilterButton: {
-    backgroundColor: "#f44336",
+    backgroundColor: primary,
     borderRadius: 8,
     paddingVertical: 12,
     alignItems: "center",

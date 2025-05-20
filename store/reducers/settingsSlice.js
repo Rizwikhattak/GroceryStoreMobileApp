@@ -1,9 +1,14 @@
-import { getNotifications } from "@/store/actions/settingsActions";
+import {
+  getUserProfileDetails,
+  getNotifications,
+  updateUserProfileDetails,
+} from "@/store/actions/settingsActions";
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   isLoading: false,
-  data: [],
+  isPostLoading: false,
+  data: {},
   pagination: {},
   error: null,
   orders: {
@@ -39,6 +44,31 @@ const settingsSlice = createSlice({
       .addCase(getNotifications.rejected, (state, action) => {
         state.notifications.isLoading = false;
         state.notifications.error = action.payload;
+      })
+      .addCase(getUserProfileDetails.pending, (state, action) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(getUserProfileDetails.fulfilled, (state, action) => {
+        state.data = action.payload?.item || {};
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(getUserProfileDetails.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(updateUserProfileDetails.pending, (state, action) => {
+        state.isPostLoading = true;
+        state.error = null;
+      })
+      .addCase(updateUserProfileDetails.fulfilled, (state, action) => {
+        state.isPostLoading = false;
+        state.error = null;
+      })
+      .addCase(updateUserProfileDetails.rejected, (state, action) => {
+        state.isPostLoading = false;
+        state.error = null;
       });
   },
 });

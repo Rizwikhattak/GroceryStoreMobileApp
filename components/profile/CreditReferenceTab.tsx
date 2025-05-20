@@ -1,0 +1,183 @@
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { primary } from "@/constants/colors";
+import {
+  updateUserProfileDetails,
+  getUserProfileDetails,
+} from "@/store/actions/settingsActions";
+
+interface Props {
+  customerData: any;
+}
+
+/* helper for DRY rendering of each reference block */
+const ReferenceBlock = ({
+  prefix,
+  values,
+  setters,
+}: {
+  prefix: "1" | "2";
+  values: { name: string; contact: string; phone: string };
+  setters: {
+    setName: (t: string) => void;
+    setContact: (t: string) => void;
+    setPhone: (t: string) => void;
+  };
+}) => (
+  <>
+    <Text style={styles.heading}>Credit Reference {prefix}</Text>
+
+    <Text style={styles.label}>Name of Business</Text>
+    <TextInput
+      style={styles.input}
+      value={values.name}
+      onChangeText={setters.setName}
+    />
+
+    <View style={styles.row}>
+      <View style={styles.col}>
+        <Text style={styles.label}>Contact Person</Text>
+        <TextInput
+          style={styles.input}
+          value={values.contact}
+          onChangeText={setters.setContact}
+        />
+      </View>
+      <View style={styles.col}>
+        <Text style={styles.label}>Phone Number</Text>
+        <TextInput
+          style={styles.input}
+          value={values.phone}
+          onChangeText={setters.setPhone}
+          keyboardType="phone-pad"
+        />
+      </View>
+    </View>
+  </>
+);
+
+const CreditReferenceTab = () => {
+  const dispatch = useDispatch();
+  const auth = useSelector((s: any) => s.auth);
+  const customer = useSelector((s: any) => s.settings);
+  const customerData = customer.data;
+
+  /* reference 1 state */
+  const [ref1Name, setRef1Name] = useState(customerData.credit_reference1_name);
+  const [ref1Contact, setRef1Contact] = useState(
+    customerData.credit_reference1_email // site shows “contact person” but API stores email & phone separately
+  );
+  const [ref1Phone, setRef1Phone] = useState(
+    customerData.credit_reference1_phone
+  );
+
+  /* reference 2 state */
+  const [ref2Name, setRef2Name] = useState(customerData.credit_reference2_name);
+  const [ref2Contact, setRef2Contact] = useState(
+    customerData.credit_reference2_email
+  );
+  const [ref2Phone, setRef2Phone] = useState(
+    customerData.credit_reference2_phone
+  );
+
+  /* ------ save handler ------ */
+  const saveCreditRefs = async () => {
+    if (!ref1Name.trim()) {
+      return Alert.alert("Missing", "Reference 1 business name is required");
+    }
+
+    try {
+      const form = new FormData();
+
+      for (const [k, v] of Object.entries(customer.data)) {
+        form.append(k, Array.isArray(v) ? JSON.stringify(v) : v);
+      }
+
+      form.set("credit_reference1_name", ref1Name.trim());
+      form.set("credit_reference1_email", ref1Contact.trim());
+      form.set("credit_reference1_phone", ref1Phone.trim());
+
+      form.set("credit_reference2_name", ref2Name.trim());
+      form.set("credit_reference2_email", ref2Contact.trim());
+      form.set("credit_reference2_phone", ref2Phone.trim());
+
+      form.set("_id", customer.data._id);
+
+      await dispatch(
+        updateUserProfileDetails({ _id: customer.data._id, formData: form })
+      ).unwrap();
+      await dispatch(getUserProfileDetails(auth.data._id)).unwrap();
+      Alert.alert("Success", "Credit references updated");
+    } catch (err: any) {
+      console.error(err);
+      Alert.alert("Error", err?.message || "Update failed");
+    }
+  };
+
+  return (
+    <ScrollView style={styles.wrapper}>
+      <ReferenceBlock
+        prefix="1"
+        values={{ name: ref1Name, contact: ref1Contact, phone: ref1Phone }}
+        setters={{
+          setName: setRef1Name,
+          setContact: setRef1Contact,
+          setPhone: setRef1Phone,
+        }}
+      />
+
+      <View style={{ height: 24 }} />
+
+      <ReferenceBlock
+        prefix="2"
+        values={{ name: ref2Name, contact: ref2Contact, phone: ref2Phone }}
+        setters={{
+          setName: setRef2Name,
+          setContact: setRef2Contact,
+          setPhone: setRef2Phone,
+        }}
+      />
+
+      <TouchableOpacity style={styles.saveBtn} onPress={saveCreditRefs}>
+        <Text style={styles.saveTxt}>Save Changes</Text>
+      </TouchableOpacity>
+    </ScrollView>
+  );
+};
+
+const styles = StyleSheet.create({
+  wrapper: { padding: 16 },
+  heading: { fontSize: 15, fontWeight: "600", marginBottom: 8 },
+  label: { fontSize: 14, color: "#666", marginBottom: 8 },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    fontSize: 16,
+    marginBottom: 16,
+  },
+  row: { flexDirection: "row", marginBottom: 16 },
+  col: { flex: 1, marginRight: 8 },
+  saveBtn: {
+    backgroundColor: primary,
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: "center",
+    marginTop: 8,
+    marginBottom: 30,
+  },
+  saveTxt: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+});
+
+export default CreditReferenceTab;

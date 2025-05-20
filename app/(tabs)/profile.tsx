@@ -15,19 +15,31 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { getCustomerDetails } from "@/store/actions/customerActions";
 import OrdersTab from "@/components/profile/OrdersTab";
-import Notifications from "@/components/profile/Notifications";
+import Notifications from "@/components/profile/NotificationsTab";
 import SettingsTab from "@/components/profile/Settings";
+import * as ImagePicker from "expo-image-picker";
+import * as mime from "react-native-mime-types";
+import { Alert } from "react-native";
+
+import { primary } from "@/constants/colors";
+import Constants from "expo-constants";
+import {
+  getUserProfileDetails,
+  updateUserProfileDetails,
+} from "@/store/actions/settingsActions";
+const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 const ProfileScreen = () => {
   const dispatch = useDispatch();
   const auth = useSelector((state: any) => state.auth);
-  const customer = useSelector((state: any) => state.customers);
+
+  const customer = useSelector((state: any) => state.settings);
   const [activeTab, setActiveTab] = useState("orders");
   const router = useRouter();
   // Orders tab state
-
+  // console.log("customer", customer);
+  console.log("auth", auth);
   const [showFilters, setShowFilters] = useState(false);
 
   const toggleFilters = () => {
@@ -43,13 +55,75 @@ const ProfileScreen = () => {
   useEffect(() => {
     const fetchCustomerDetails = async () => {
       try {
-        await dispatch(getCustomerDetails(auth.data._id)).unwrap();
+        await dispatch(getUserProfileDetails(auth.data._id)).unwrap();
       } catch (err) {
         console.error(err);
       }
     };
     fetchCustomerDetails();
   }, [dispatch]);
+  const pickAndUploadPhoto = async () => {
+    /* 1️⃣  Ask the user for gallery permission (iOS + Android) */
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== "granted") {
+      Alert.alert(
+        "Permission needed",
+        "We need access to your photo library so you can change your picture."
+      );
+      return;
+    }
+
+    /* 2️⃣  Launch the gallery */
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      allowsEditing: true,
+      aspect: [1, 1], // keep it square-ish
+      quality: 0.8,
+    });
+
+    if (result.canceled) return; // user hit the ✖️
+
+    /* 3️⃣  Prepare multipart/form-data exactly like backend expects */
+    const asset = result.assets[0];
+    const localUri = asset.uri;
+    const filename = localUri.split("/").pop() || `photo_${Date.now()}.jpg`;
+    const filetype = mime.lookup(filename) || "image/jpeg";
+
+    const formData = new FormData();
+
+    // copy every field we got from the API slice
+    for (const [key, value] of Object.entries(customer.data)) {
+      if (key !== "photo") {
+        formData.append(
+          key,
+          Array.isArray(value) ? JSON.stringify(value) : value
+        );
+      }
+    }
+
+    // 2️⃣ **MUST** include the current id for the unique rule
+    formData.append("_id", customer.data._id); // 👈 add this back!
+
+    // 3️⃣ attach the file exactly on the field name the controller expects
+    formData.append("photo", {
+      uri: localUri,
+      name: filename,
+      type: filetype,
+    });
+
+    /* 4️⃣  Fire the Redux thunk – it already sets multipart headers for "form" */
+    try {
+      console.log("Uploading photo...");
+      await dispatch(
+        updateUserProfileDetails({ _id: customer.data._id, formData: formData })
+      ).unwrap();
+      // optionally refresh the profile info in Redux
+      await dispatch(getUserProfileDetails(auth?.data?._id)).unwrap();
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Upload failed", err.message || "Please try again");
+    }
+  };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -60,7 +134,7 @@ const ProfileScreen = () => {
           style={styles.backButton}
           onPress={() => router.back()}
         >
-          <Ionicons name="chevron-back" size={24} color="#f44336" />
+          <Ionicons name="chevron-back" size={24} color={primary} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>My Profile</Text>
         <View style={styles.placeholder} />
@@ -71,11 +145,17 @@ const ProfileScreen = () => {
         <View style={styles.profileImageContainer}>
           <Image
             source={{
-              uri: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=100&width=100",
+              // uri: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=100&width=100",
+              uri:
+                `${apiUrl}users/photo/${customer?.data?.photo}` ||
+                "https://via.placeholder.com/150",
             }}
             style={styles.profileImage}
           />
-          <TouchableOpacity style={styles.editProfileImageButton}>
+          <TouchableOpacity
+            style={styles.editProfileImageButton}
+            onPress={pickAndUploadPhoto}
+          >
             <Ionicons name="camera" size={16} color="#fff" />
           </TouchableOpacity>
         </View>
@@ -159,7 +239,7 @@ const ProfileScreen = () => {
           <Ionicons name="heart" size={24} color="#888" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.navItem}>
-          <Ionicons name="person" size={24} color="#f44336" />
+          <Ionicons name="person" size={24} color=primary />
         </TouchableOpacity>
       </View> */}
     </SafeAreaView>
@@ -188,7 +268,7 @@ const styles = StyleSheet.create({
   headerTitle: {
     fontSize: 18,
     fontWeight: "bold",
-    color: "#f44336",
+    color: primary,
   },
   placeholder: {
     width: 32,
@@ -209,13 +289,13 @@ const styles = StyleSheet.create({
     height: 70,
     borderRadius: 35,
     borderWidth: 2,
-    borderColor: "#f44336",
+    borderColor: primary,
   },
   editProfileImageButton: {
     position: "absolute",
     right: 0,
     bottom: 0,
-    backgroundColor: "#f44336",
+    backgroundColor: primary,
     width: 28,
     height: 28,
     borderRadius: 14,
@@ -248,14 +328,14 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     borderBottomWidth: 2,
-    borderBottomColor: "#f44336",
+    borderBottomColor: primary,
   },
   tabText: {
     fontSize: 14,
     color: "#666",
   },
   activeTabText: {
-    color: "#f44336",
+    color: primary,
     fontWeight: "500",
   },
   contentContainer: {
@@ -275,7 +355,7 @@ const styles = StyleSheet.create({
     padding: 8,
   },
   cartNavItem: {
-    backgroundColor: "#f44336",
+    backgroundColor: primary,
     borderRadius: 30,
     padding: 12,
     marginTop: -20,

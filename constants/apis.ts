@@ -5,6 +5,7 @@ export const REGISTRATION_CREDIT_API = "registration-credit/";
 
 // Customer //
 export const GET_CUSTOMER_DETAILS_API = "customer_by_user/";
+export const CUSTOMER_DETAILS_API = "customers/";
 
 // Products //
 export const fetchFeturedProductsAPI = "featured-products/";
@@ -16,4 +17,5 @@ export const SUB_CATEGORIES_API = "subcategories/";
 
 export const SETTINGS_API = {
   NOTIFICATIONS: "notification/",
+  DOWNLOAD_LISCENCE: "customer-pdf/",
 };
