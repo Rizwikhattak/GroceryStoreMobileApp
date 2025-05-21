@@ -18,6 +18,7 @@ export const SUB_CATEGORIES_API = "subcategories/";
 export const SETTINGS_API = {
   NOTIFICATIONS: "notification/",
   ORDERS: "orders/",
+  DOWNLOAD_ORDER: "pdf-report/",
   DOWNLOAD_LISCENCE: "customer-pdf/",
 };
 

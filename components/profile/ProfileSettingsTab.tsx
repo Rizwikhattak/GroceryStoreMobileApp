@@ -18,7 +18,7 @@ import {
 } from "@/store/actions/settingsActions";
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
-import { saveAndOpenLicense } from "@/utils/downloadLiscence";
+import { saveAndOpenFile } from "@/utils/downloadFile";
 
 const ProfileSettingsTab = () => {
   /* ---- redux ---- */
@@ -75,7 +75,7 @@ const ProfileSettingsTab = () => {
       Alert.alert("No license found");
       return;
     }
-    saveAndOpenLicense(dl).catch(() =>
+    saveAndOpenFile(dl).catch(() =>
       Alert.alert("Error", "Could not open driver license")
     );
   };

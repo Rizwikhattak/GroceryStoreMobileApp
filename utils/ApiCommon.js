@@ -16,6 +16,15 @@ export const API_COMMON = async (
             : await axiosJSON.post(URL, DATA);
         return response.data;
       }
+      case "download": {
+        const response =
+          type === "form"
+            ? await axiosForm.get(URL, DATA)
+            : await axiosJSON.get(URL, {
+                responseType: "arraybuffer",
+              });
+        return response.data;
+      }
       case "patch": {
         const response =
           type === "form"

@@ -21,12 +21,12 @@ import * as ImagePicker from "expo-image-picker";
 import * as mime from "react-native-mime-types";
 
 import { primary } from "@/constants/colors";
-import Constants from "expo-constants";
 import {
   getUserProfileDetails,
   updateUserProfileDetails,
 } from "@/store/actions/settingsActions";
 import { logout } from "@/store/reducers/authSlice";
+import Constants from "expo-constants";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 const ProfileScreen = () => {

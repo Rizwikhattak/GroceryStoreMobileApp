@@ -8,11 +8,12 @@ import ToastManager from "toastify-react-native";
 import { PersistGate } from "redux-persist/integration/react";
 import { checkAuthStatus } from "@/store/actions/authActions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-  // AsyncStorage.removeItem("Authorization");
+// AsyncStorage.removeItem("Authorization");
 import CheckoutScreen from "@/app/CheckoutScreen";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
-
+import { Buffer } from "buffer";
+global.Buffer = Buffer;
 // Create a wrapper component to use Redux hooks
 function AppContent() {
   const dispatch = useDispatch();

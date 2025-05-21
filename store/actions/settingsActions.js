@@ -5,6 +5,7 @@ import {
   SETTINGS_API,
 } from "@/constants/apis";
 import { API_COMMON } from "@/utils/ApiCommon";
+import { axiosJSON } from "@/utils/Axios";
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
 export const getNotifications = createAsyncThunk(
@@ -38,6 +39,60 @@ export const getCustomerOrders = createAsyncThunk(
       return response;
     } catch (err) {
       return rejectWithValue(err?.message || "Error in fetching products");
+    }
+  }
+);
+// export const printCustomerOrder = createAsyncThunk(
+//   "settings/printCustomerOrder",
+//   async (data, { rejectWithValue }) => {
+//     try {
+//       console.log(
+//         "data",
+//         data,
+//         `${SETTINGS_API.DOWNLOAD_ORDER}${data.orderId}/${data.user}`
+//       );
+//       const response = await axiosJSON.get(
+//         `${SETTINGS_API.DOWNLOAD_ORDER}${data.orderId}/${data.user}`,
+//         {
+//           responseType: "arraybuffer",
+//         }
+//       );
+//       const base64 = Buffer.from(response.data, "binary").toString("base64");
+//       return { base64 };
+
+//       // const response = await API_COMMON(
+//       //   "download",
+//       //   "json",
+//       //   `${SETTINGS_API.DOWNLOAD_ORDER}${data.orderId}/${data.user}`,
+//       //   "Error in fetching products",
+//       //   null
+//       // );
+//       // const base64 = Buffer.from(response, "binary").toString("base64");
+//       // return { base64 };
+//     } catch (err) {
+//       return rejectWithValue(err?.message || "Error in fetching products");
+//     }
+//   }
+// );
+// settingsActions.ts  (already correct)
+/* store/actions/orderActions.ts */
+export const printCustomerOrder = createAsyncThunk(
+  "settings/printCustomerOrder",
+  async (p, { rejectWithValue }) => {
+    try {
+      const res = await API_COMMON(
+        "download",
+        "json",
+        `${SETTINGS_API.DOWNLOAD_ORDER}${p.orderId}/${p.user}`,
+        "Could not fetch PDF"
+      ); // res is an ArrayBuffer
+
+      const base64 = Buffer.from(res, "binary") // <- tiny poly-fill (see below)
+        .toString("base64");
+
+      return { base64 };
+    } catch (err) {
+      return rejectWithValue(err?.message ?? "Download failed");
     }
   }
 );
