@@ -24,6 +24,23 @@ export const getNotifications = createAsyncThunk(
     }
   }
 );
+export const getCustomerOrders = createAsyncThunk(
+  "settings/getCustomerOrders",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await API_COMMON(
+        "getAll",
+        "json",
+        `${SETTINGS_API.ORDERS}`,
+        "Error in fetching products",
+        null
+      );
+      return response;
+    } catch (err) {
+      return rejectWithValue(err?.message || "Error in fetching products");
+    }
+  }
+);
 
 export const getUserProfileDetails = createAsyncThunk(
   "settings/getUserProfileDetails",

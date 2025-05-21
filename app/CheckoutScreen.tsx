@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -13,13 +13,23 @@ import {
   StatusBar,
   Platform,
   KeyboardAvoidingView,
+  Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useGlobalSearchParams, useRouter } from "expo-router";
 import { primary } from "@/constants/colors";
+import { getUserProfileDetails } from "@/store/actions/settingsActions";
+import { useDispatch, useSelector } from "react-redux";
+import { placeCustomerOrder } from "@/store/actions/orderActions";
 
 const CheckoutScreen = ({ route, navigation }) => {
   const router = useRouter();
+  const dispatch = useDispatch();
+  const auth = useSelector((state) => state.auth);
+  const customer = useSelector((state) => state.settings);
+  // console.log("Customer Details", customer);
+  // console.log("Auth Details", auth);
+  const cartState = useSelector((state: any) => state.products.cartState);
   const {
     cartTotal,
     subtotal,
@@ -113,20 +123,137 @@ const CheckoutScreen = ({ route, navigation }) => {
   };
 
   const deliveryDates = getDeliveryDates();
+  /**
+   * Transform the cart state held in Redux into the payload
+   * required by POST /api/v1/orders
+   *
+   * ──────────────────────────────────────────────────────────
+   * cartState:  [
+   *   {
+   *     _id:            "66c835b2989abcf543ea9693", // product id
+   *     orderQuantity:  4,                          // user-chosen quantity
+   *     weight?:        { value: 2, uom: "kg" },    // OPTIONAL per-item weight
+   *     note?:          "Cube it",                  // OPTIONAL per-item note
+   *     selectedVariation?: {                      // OPTIONAL variation
+   *       uniqueId: "123-blue-500g",
+   *       size    : "500 g",
+   *       price   : 19.99
+   *     }
+   *   },
+   *   …
+   * ]
+   */
+  const mapCartToOrderPayload = (
+    cartState: any[],
+    customerId: string,
+    shippingAddress: string,
+    shippingDateISO: string,
+    deliveryMethod: "Pickup" | "Delivery" | "Delivery/Pickup",
+    globalInstructions: string
+  ) => {
+    // 1⃣  Arrays expected by the backend
+    const items: { productId: string; uniqueId: string | null }[] = [];
+    const quantities: number[] = [];
+    const weights: ({ value: number; uom: string } | null)[] = [];
+    const variations: (object | null)[] = [];
+    const productNotes: { product_id: string; note: string }[] = [];
 
-  const handlePlaceOrder = () => {
+    cartState.forEach((cartItem) => {
+      items.push({
+        productId: cartItem._id,
+        uniqueId: cartItem.selectedVariation?.uniqueId ?? null,
+      });
+
+      quantities.push(cartItem.orderQuantity);
+      weights.push(cartItem.weight ?? null);
+      variations.push(cartItem.selectedVariation ?? null);
+
+      if (cartItem.note) {
+        productNotes.push({
+          product_id: cartItem._id,
+          note: cartItem.note,
+        });
+      }
+    });
+
+    // 2⃣  Final payload
+    return {
+      customer: customerId, // ➜ customers._id
+      items, // ➜ [{ productId, uniqueId }]
+      quantities, // ➜ [4, 2, …] (same length as items)
+      weights, // ➜ [null, {value:2,uom:"kg"}, …]
+      selectedVariations: variations, // ➜ [null, {…}, …]
+      product_notes: productNotes, // ➜ [{product_id, note}, …]
+
+      shipping_address: shippingAddress,
+      shipping_date: shippingDateISO, // ISO string (e.g. "2025-05-24T00:00:00Z")
+      type: deliveryMethod, // "Pickup" | "Delivery" | "Delivery/Pickup"
+      instructions: globalInstructions || "",
+      tax: 0,
+      status: "Pending",
+    };
+  };
+  const handlePlaceOrder = async () => {
     if (!selectedDate) {
-      Alert.alert("Select Date", "Please select a delivery/pickup date");
+      Alert.alert("Select Date", "Please select a delivery/pick-up date");
       return;
     }
 
-    Alert.alert("Order Placed", "Your order has been placed successfully!", [
-      {
-        text: "OK",
-        onPress: () => navigation?.navigate("Home") || router.push("/"),
-      },
-    ]);
+    const isoDate = deliveryDates
+      .find((d) => d.id === selectedDate)!
+      .fullDate.toISOString();
+
+    const payload = mapCartToOrderPayload(
+      cartState,
+      customer?.data?._id,
+      customer?.data?.delivery_address,
+      isoDate,
+      deliveryMethod === "delivery" ? "Delivery" : "Pickup",
+      orderInstructions
+    );
+
+    try {
+      await dispatch(placeCustomerOrder(payload)).unwrap();
+      Alert.alert("Order Placed", "Your order has been placed successfully!", [
+        { text: "OK", onPress: () => router.push("/") },
+      ]);
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Failed to place order. Please try again.");
+    }
   };
+
+  // const handlePlaceOrder = async () => {
+  //   try {
+  //     if (!selectedDate) {
+  //       Alert.alert("Select Date", "Please select a delivery/pickup date");
+  //       return;
+  //     }
+
+  //     const orderPayload = {
+  //       customer: customer?.data?._id,
+  //       items: [...cartState],
+  //       type: deliveryMethod,
+  //       shipping_date: deliveryDates.find((date) => date.id === selectedDate)
+  //         ?.fullDate,
+  //       instructions: orderInstructions,
+  //       shipping_address: customer?.data?.delivery_address,
+  //       tax: 0,
+  //       status: "Pending",
+  //     };
+  //     console.log("Order Payload", orderPayload);
+  //     await dispatch(placeCustomerOrder(orderPayload)).unwrap();
+  //     Alert.alert("Order Placed", "Your order has been placed successfully!", [
+  //       {
+  //         text: "OK",
+  //         onPress: () => navigation?.navigate("Home") || router.push("/"),
+  //       },
+  //     ]);
+  //   } catch (err) {
+  //     console.error(err);
+  //     Alert.alert("Error", "Failed to place order. Please try again.");
+  //   }
+  // };
 
   // Handle date selection with immediate visual feedback
   const handleDateSelection = (dateId) => {
@@ -137,259 +264,266 @@ const CheckoutScreen = ({ route, navigation }) => {
   const handlePickupLocationSelection = (locationId) => {
     setSelectedPickupLocation(locationId);
   };
-
+  useEffect(() => {
+    const fetchCustomerDetails = async () => {
+      try {
+        await dispatch(getUserProfileDetails(auth.data._id)).unwrap();
+      } catch (err) {
+        console.error(err);
+      }
+    };
+    fetchCustomerDetails();
+  }, [dispatch]);
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
 
       <KeyboardAvoidingView
         style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : null}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
         keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
-        <ScrollView
-          style={styles.content}
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* Delivery Method Selection */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Delivery Method</Text>
-            <View style={styles.deliveryOptions}>
-              <TouchableOpacity
-                style={[
-                  styles.deliveryOption,
-                  deliveryMethod === "delivery" &&
-                    styles.selectedDeliveryOption,
-                ]}
-                onPress={() => setDeliveryMethod("delivery")}
-                activeOpacity={0.6}
-              >
-                <Ionicons
-                  name="bicycle"
-                  size={24}
-                  color={deliveryMethod === "delivery" ? primary : "#888"}
-                />
-                <Text
-                  style={[
-                    styles.deliveryOptionText,
-                    deliveryMethod === "delivery" &&
-                      styles.selectedDeliveryOptionText,
-                  ]}
-                >
-                  Delivery
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.deliveryOption,
-                  deliveryMethod === "pickup" && styles.selectedDeliveryOption,
-                ]}
-                onPress={() => setDeliveryMethod("pickup")}
-                activeOpacity={0.6}
-              >
-                <Ionicons
-                  name="storefront"
-                  size={24}
-                  color={deliveryMethod === "pickup" ? primary : "#888"}
-                />
-                <Text
-                  style={[
-                    styles.deliveryOptionText,
-                    deliveryMethod === "pickup" &&
-                      styles.selectedDeliveryOptionText,
-                  ]}
-                >
-                  Pickup
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-
-          {/* Delivery Address or Pickup Location */}
-          <View style={styles.sectionContainer}>
-            {deliveryMethod === "delivery" ? (
-              <>
-                <Text style={styles.sectionTitle}>Deliver to:</Text>
-                <View style={styles.addressCard}>
-                  <Text style={styles.addressName}>{deliveryAddress.name}</Text>
-                  <Text style={styles.addressText}>
-                    {deliveryAddress.street}
-                  </Text>
-                  <Text style={styles.addressText}>{deliveryAddress.city}</Text>
-                  <Text style={styles.addressText}>
-                    {deliveryAddress.phone}
-                  </Text>
-                </View>
+        <View style={styles.mainContainer}>
+          <ScrollView
+            style={styles.content}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollContent}
+          >
+            {/* Delivery Method Selection */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Delivery Method</Text>
+              <View style={styles.deliveryOptions}>
                 <TouchableOpacity
-                  style={styles.changeAddressButton}
+                  style={[
+                    styles.deliveryOption,
+                    deliveryMethod === "delivery" &&
+                      styles.selectedDeliveryOption,
+                  ]}
+                  onPress={() => setDeliveryMethod("delivery")}
                   activeOpacity={0.6}
                 >
-                  <Text style={styles.changeAddressText}>Change Address</Text>
+                  <Ionicons
+                    name="bicycle"
+                    size={24}
+                    color={deliveryMethod === "delivery" ? primary : "#888"}
+                  />
+                  <Text
+                    style={[
+                      styles.deliveryOptionText,
+                      deliveryMethod === "delivery" &&
+                        styles.selectedDeliveryOptionText,
+                    ]}
+                  >
+                    Delivery
+                  </Text>
                 </TouchableOpacity>
-              </>
-            ) : (
-              <>
-                <Text style={styles.sectionTitle}>Pickup from:</Text>
-                {pickupLocations.map((location) => (
-                  <TouchableOpacity
-                    key={location.id}
+
+                <TouchableOpacity
+                  style={[
+                    styles.deliveryOption,
+                    deliveryMethod === "pickup" &&
+                      styles.selectedDeliveryOption,
+                  ]}
+                  onPress={() => setDeliveryMethod("pickup")}
+                  activeOpacity={0.6}
+                >
+                  <Ionicons
+                    name="storefront"
+                    size={24}
+                    color={deliveryMethod === "pickup" ? primary : "#888"}
+                  />
+                  <Text
                     style={[
-                      styles.pickupLocationCard,
-                      selectedPickupLocation === location.id &&
-                        styles.selectedPickupLocation,
+                      styles.deliveryOptionText,
+                      deliveryMethod === "pickup" &&
+                        styles.selectedDeliveryOptionText,
                     ]}
-                    onPress={() => handlePickupLocationSelection(location.id)}
-                    activeOpacity={0.6}
-                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
-                    <View style={styles.pickupLocationHeader}>
-                      <Text style={styles.pickupLocationName}>
-                        {location.name}
-                      </Text>
-                      {selectedPickupLocation === location.id && (
-                        <Ionicons
-                          name="checkmark-circle"
-                          size={24}
-                          color={primary}
-                        />
-                      )}
-                    </View>
-                    <Text style={styles.pickupLocationAddress}>
-                      {location.address}
-                    </Text>
-                    <Text style={styles.pickupLocationTime}>
-                      Hours: {location.time}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </>
-            )}
-          </View>
-
-          {/* Delivery/Pickup Date Selection */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>
-              {deliveryMethod === "delivery" ? "Delivery" : "Pickup"} Date
-            </Text>
-
-            <View style={styles.dateContainer}>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-                {deliveryDates.map((date) => (
-                  <TouchableOpacity
-                    key={date.id}
-                    style={[
-                      styles.dateCard,
-                      selectedDate === date.id && styles.selectedDateCard,
-                    ]}
-                    onPress={() => handleDateSelection(date.id)}
-                    activeOpacity={0.6}
-                    hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
-                  >
-                    <View style={styles.dateCardContent}>
-                      <Text
-                        style={[
-                          styles.dayText,
-                          selectedDate === date.id && styles.selectedDateText,
-                        ]}
-                      >
-                        {date.day}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.dateText,
-                          selectedDate === date.id && styles.selectedDateText,
-                        ]}
-                      >
-                        {date.date}
-                      </Text>
-                      <Text
-                        style={[
-                          styles.monthText,
-                          selectedDate === date.id && styles.selectedDateText,
-                        ]}
-                      >
-                        {date.month} {date.year}
-                      </Text>
-                    </View>
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
-            </View>
-
-            <Text style={styles.deliveryNote}>
-              If an order is placed before 5:00pm then it will be delivered on
-              the same day, otherwise it will be processed for the next day.
-            </Text>
-          </View>
-
-          {/* Order Instructions */}
-          <View style={styles.sectionContainer}>
-            <Text style={styles.sectionTitle}>Order Instructions</Text>
-            <TextInput
-              style={styles.instructionsInput}
-              placeholder="Add any special instructions for your order here..."
-              multiline
-              numberOfLines={4}
-              value={orderInstructions}
-              onChangeText={setOrderInstructions}
-            />
-          </View>
-
-          {/* Order Summary */}
-          <View style={styles.summaryContainer}>
-            <Text style={styles.summaryTitle}>Order Summary</Text>
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>${subtotal}</Text>
-            </View>
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>GST (15%)</Text>
-              <Text style={styles.summaryValue}>${gstAmount}</Text>
-            </View>
-
-            {deliveryMethod === "delivery" && (
-              <View style={styles.summaryRow}>
-                <Text style={styles.summaryLabel}>Delivery Fee</Text>
-                <Text style={styles.summaryValue}>${deliveryFee}</Text>
+                    Pickup
+                  </Text>
+                </TouchableOpacity>
               </View>
-            )}
-
-            <View style={styles.divider} />
-
-            <View style={styles.summaryRow}>
-              <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>Rs. {cartTotal}</Text>
             </View>
-          </View>
 
-          {/* Add some padding at the bottom to ensure content isn't hidden behind the fixed button */}
-          <View style={styles.bottomPadding} />
-        </ScrollView>
+            {/* Delivery Address or Pickup Location */}
+            <View style={styles.sectionContainer}>
+              {deliveryMethod === "delivery" ? (
+                <>
+                  <Text style={styles.sectionTitle}>Deliver to:</Text>
+                  <View style={styles.addressCard}>
+                    <Text style={styles.addressName}>
+                      {customer?.data?.name}
+                    </Text>
+                    <Text style={styles.addressText}>
+                      {customer?.data?.delivery_address}
+                    </Text>
+                    {/* <Text style={styles.addressText}>
+                      {deliveryAddress.street}
+                    </Text>
+                    <Text style={styles.addressText}>
+                      {deliveryAddress.city}
+                    </Text>
+                    <Text style={styles.addressText}>
+                      {deliveryAddress.phone}
+                    </Text> */}
+                  </View>
+                  <TouchableOpacity
+                    style={styles.changeAddressButton}
+                    activeOpacity={0.6}
+                  >
+                    <Text style={styles.changeAddressText}>Change Address</Text>
+                  </TouchableOpacity>
+                </>
+              ) : (
+                <>
+                  <Text style={styles.sectionTitle}>Pickup from:</Text>
 
-        {/* Place Order Button - now positioned absolutely */}
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity
-            style={styles.checkoutButton}
-            onPress={handlePlaceOrder}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.checkoutButtonText}>Place Order</Text>
-            <Ionicons
-              name="arrow-forward"
-              size={20}
-              color="white"
-              style={{ marginLeft: 8 }}
-            />
-          </TouchableOpacity>
+                  {/* ───── Meat ───── */}
+                  <View style={styles.addressCard}>
+                    <Text style={styles.addressName}>Meat pickup</Text>
+                    <Text style={styles.addressText}>164 Stoddard Road</Text>
+                    <Text style={styles.addressText}>Auckland 0632</Text>
+                  </View>
+
+                  {/* ───── Grocery ───── */}
+                  <View style={[styles.addressCard, { marginTop: 12 }]}>
+                    <Text style={styles.addressName}>Grocery pickup</Text>
+                    <Text style={styles.addressText}>
+                      3 St Jude Street, Bush Road
+                    </Text>
+                    <Text style={styles.addressText}>
+                      Rosedale, Auckland 0632
+                    </Text>
+                  </View>
+                </>
+              )}
+            </View>
+
+            {/* Delivery/Pickup Date Selection */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>
+                {deliveryMethod === "delivery" ? "Delivery" : "Pickup"} Date
+              </Text>
+
+              <View style={styles.dateContainer}>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                  {deliveryDates.map((date) => (
+                    <TouchableOpacity
+                      key={date.id}
+                      style={[
+                        styles.dateCard,
+                        selectedDate === date.id && styles.selectedDateCard,
+                      ]}
+                      onPress={() => handleDateSelection(date.id)}
+                      activeOpacity={0.6}
+                      hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
+                    >
+                      <View style={styles.dateCardContent}>
+                        <Text
+                          style={[
+                            styles.dayText,
+                            selectedDate === date.id && styles.selectedDateText,
+                          ]}
+                        >
+                          {date.day}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.dateText,
+                            selectedDate === date.id && styles.selectedDateText,
+                          ]}
+                        >
+                          {date.date}
+                        </Text>
+                        <Text
+                          style={[
+                            styles.monthText,
+                            selectedDate === date.id && styles.selectedDateText,
+                          ]}
+                        >
+                          {date.month} {date.year}
+                        </Text>
+                      </View>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              </View>
+
+              <Text style={styles.deliveryNote}>
+                If an order is placed before 5:00pm then it will be delivered on
+                the same day, otherwise it will be processed for the next day.
+              </Text>
+            </View>
+
+            {/* Order Instructions */}
+            <View style={styles.sectionContainer}>
+              <Text style={styles.sectionTitle}>Order Instructions</Text>
+              <TextInput
+                style={styles.instructionsInput}
+                placeholder="Add any special instructions for your order here..."
+                multiline
+                numberOfLines={4}
+                value={orderInstructions}
+                onChangeText={setOrderInstructions}
+              />
+            </View>
+
+            {/* Order Summary */}
+            <View style={styles.summaryContainer}>
+              <Text style={styles.summaryTitle}>Order Summary</Text>
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>Subtotal</Text>
+                <Text style={styles.summaryValue}>${subtotal}</Text>
+              </View>
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.summaryLabel}>GST (15%)</Text>
+                <Text style={styles.summaryValue}>${gstAmount}</Text>
+              </View>
+
+              {deliveryMethod === "delivery" && (
+                <View style={styles.summaryRow}>
+                  <Text style={styles.summaryLabel}>Delivery Fee</Text>
+                  <Text style={styles.summaryValue}>${deliveryFee}</Text>
+                </View>
+              )}
+
+              <View style={styles.divider} />
+
+              <View style={styles.summaryRow}>
+                <Text style={styles.totalLabel}>Total</Text>
+                <Text style={styles.totalValue}>Rs. {cartTotal}</Text>
+              </View>
+            </View>
+
+            {/* Add some padding at the bottom to ensure content isn't hidden behind the fixed button */}
+            <View style={styles.bottomPadding} />
+          </ScrollView>
+
+          {/* Place Order Button - now in a fixed position at the bottom */}
         </View>
       </KeyboardAvoidingView>
+      <View style={styles.buttonContainer}>
+        <TouchableOpacity
+          style={styles.checkoutButton}
+          onPress={handlePlaceOrder}
+          activeOpacity={0.7}
+        >
+          <Text style={styles.checkoutButtonText}>Place Order</Text>
+          <Ionicons
+            name="arrow-forward"
+            size={20}
+            color="white"
+            style={{ marginLeft: 8 }}
+          />
+        </TouchableOpacity>
+      </View>
     </SafeAreaView>
   );
 };
+
+const { height } = Dimensions.get("window");
 
 const styles = StyleSheet.create({
   safeArea: {
@@ -399,6 +533,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+    // position: "relative",
+  },
+
+  mainContainer: {
+    flex: 1,
+    position: "relative",
   },
   header: {
     flexDirection: "row",
@@ -428,7 +568,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   scrollContent: {
-    paddingBottom: 80, // Add padding to account for the fixed button
+    paddingBottom: 100, // Increased padding to ensure content isn't hidden behind the button
   },
   sectionContainer: {
     padding: 16,
@@ -623,11 +763,18 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: Platform.OS === "ios" ? 20 : 0, // Adjust position based on platform
+    bottom: 85,
     padding: 16,
     backgroundColor: "#fff",
     borderTopWidth: 1,
     borderTopColor: "#eee",
+    // Add shadow for better visibility
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 5,
+    zIndex: 999, // Ensure it's above everything else
   },
   checkoutButton: {
     backgroundColor: primary,

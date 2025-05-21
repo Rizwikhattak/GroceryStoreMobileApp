@@ -14,6 +14,7 @@ import authReducer from "./reducers/authSlice";
 import productsReducer from "./reducers/productsSlice";
 import categoriesReducer from "./reducers/categoriesSlice";
 import settingsReducer from "./reducers/settingsSlice";
+import orderReducer from "./reducers/orderSlice";
 
 // Create a root reducer by combining your slices
 const rootReducer = combineReducers({
@@ -21,6 +22,7 @@ const rootReducer = combineReducers({
   products: productsReducer,
   categories: categoriesReducer,
   settings: settingsReducer,
+  order: orderReducer,
 });
 
 // Configuration for Redux Persist

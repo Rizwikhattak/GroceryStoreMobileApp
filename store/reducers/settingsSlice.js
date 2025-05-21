@@ -2,6 +2,7 @@ import {
   getUserProfileDetails,
   getNotifications,
   updateUserProfileDetails,
+  getCustomerOrders,
 } from "@/store/actions/settingsActions";
 import { createSlice } from "@reduxjs/toolkit";
 
@@ -44,6 +45,21 @@ const settingsSlice = createSlice({
       .addCase(getNotifications.rejected, (state, action) => {
         state.notifications.isLoading = false;
         state.notifications.error = action.payload;
+      })
+      .addCase(getCustomerOrders.pending, (state, action) => {
+        state.orders.isLoading = true;
+        state.orders.error = null;
+      })
+      .addCase(getCustomerOrders.fulfilled, (state, action) => {
+        const data = action.payload.list;
+        state.orders.data = data;
+        state.orders.pagination = action.payload.pagination;
+        state.orders.isLoading = false;
+        state.orders.error = null;
+      })
+      .addCase(getCustomerOrders.rejected, (state, action) => {
+        state.orders.isLoading = false;
+        state.orders.error = action.payload;
       })
       .addCase(getUserProfileDetails.pending, (state, action) => {
         state.isLoading = true;

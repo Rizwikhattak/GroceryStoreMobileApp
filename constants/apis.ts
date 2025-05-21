@@ -17,5 +17,14 @@ export const SUB_CATEGORIES_API = "subcategories/";
 
 export const SETTINGS_API = {
   NOTIFICATIONS: "notification/",
+  ORDERS: "orders/",
   DOWNLOAD_LISCENCE: "customer-pdf/",
+};
+
+export const ORDERS_API = {
+  ORDERS: "orders/",
+  ORDER_DETAILS: "order-details/",
+  ORDER_STATUS: "order-status/",
+  ORDER_TRACKING: "order-tracking/",
+  ORDER_INVOICE: "invoice/",
 };
