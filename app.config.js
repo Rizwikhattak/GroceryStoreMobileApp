@@ -9,7 +9,7 @@ export default {
     userInterfaceStyle: "automatic",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/logo.png",
+    icon: "./assets/images/premium-meats-logo.png",
     scheme: "myapp",
     newArchEnabled: true,
     extra: {
@@ -24,21 +24,21 @@ export default {
     android: {
       package: "com.premiummeats.grocerystore",
       adaptiveIcon: {
-        foregroundImage: "./assets/images/logo.png",
+        foregroundImage: "./assets/images/premium-meats-logo.png",
         backgroundColor: "#ffffff",
       },
     },
     web: {
       bundler: "metro",
       output: "static",
-      favicon: "./assets/images/logo.png",
+      favicon: "./assets/images/premium-meats-logo.png",
     },
     plugins: [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/logo.png",
+          image: "./assets/images/premium-meats-logo.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff",

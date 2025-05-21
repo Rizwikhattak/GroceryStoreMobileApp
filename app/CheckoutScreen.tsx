@@ -128,6 +128,16 @@ const CheckoutScreen = ({ route, navigation }) => {
     ]);
   };
 
+  // Handle date selection with immediate visual feedback
+  const handleDateSelection = (dateId) => {
+    setSelectedDate(dateId);
+  };
+
+  // Handle pickup location selection with immediate visual feedback
+  const handlePickupLocationSelection = (locationId) => {
+    setSelectedPickupLocation(locationId);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar barStyle="dark-content" />
@@ -153,6 +163,7 @@ const CheckoutScreen = ({ route, navigation }) => {
                     styles.selectedDeliveryOption,
                 ]}
                 onPress={() => setDeliveryMethod("delivery")}
+                activeOpacity={0.6}
               >
                 <Ionicons
                   name="bicycle"
@@ -176,6 +187,7 @@ const CheckoutScreen = ({ route, navigation }) => {
                   deliveryMethod === "pickup" && styles.selectedDeliveryOption,
                 ]}
                 onPress={() => setDeliveryMethod("pickup")}
+                activeOpacity={0.6}
               >
                 <Ionicons
                   name="storefront"
@@ -210,7 +222,10 @@ const CheckoutScreen = ({ route, navigation }) => {
                     {deliveryAddress.phone}
                   </Text>
                 </View>
-                <TouchableOpacity style={styles.changeAddressButton}>
+                <TouchableOpacity
+                  style={styles.changeAddressButton}
+                  activeOpacity={0.6}
+                >
                   <Text style={styles.changeAddressText}>Change Address</Text>
                 </TouchableOpacity>
               </>
@@ -225,7 +240,9 @@ const CheckoutScreen = ({ route, navigation }) => {
                       selectedPickupLocation === location.id &&
                         styles.selectedPickupLocation,
                     ]}
-                    onPress={() => setSelectedPickupLocation(location.id)}
+                    onPress={() => handlePickupLocationSelection(location.id)}
+                    activeOpacity={0.6}
+                    hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                   >
                     <View style={styles.pickupLocationHeader}>
                       <Text style={styles.pickupLocationName}>
@@ -266,32 +283,36 @@ const CheckoutScreen = ({ route, navigation }) => {
                       styles.dateCard,
                       selectedDate === date.id && styles.selectedDateCard,
                     ]}
-                    onPress={() => setSelectedDate(date.id)}
+                    onPress={() => handleDateSelection(date.id)}
+                    activeOpacity={0.6}
+                    hitSlop={{ top: 10, bottom: 10, left: 5, right: 5 }}
                   >
-                    <Text
-                      style={[
-                        styles.dayText,
-                        selectedDate === date.id && styles.selectedDateText,
-                      ]}
-                    >
-                      {date.day}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.dateText,
-                        selectedDate === date.id && styles.selectedDateText,
-                      ]}
-                    >
-                      {date.date}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.monthText,
-                        selectedDate === date.id && styles.selectedDateText,
-                      ]}
-                    >
-                      {date.month} {date.year}
-                    </Text>
+                    <View style={styles.dateCardContent}>
+                      <Text
+                        style={[
+                          styles.dayText,
+                          selectedDate === date.id && styles.selectedDateText,
+                        ]}
+                      >
+                        {date.day}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.dateText,
+                          selectedDate === date.id && styles.selectedDateText,
+                        ]}
+                      >
+                        {date.date}
+                      </Text>
+                      <Text
+                        style={[
+                          styles.monthText,
+                          selectedDate === date.id && styles.selectedDateText,
+                        ]}
+                      >
+                        {date.month} {date.year}
+                      </Text>
+                    </View>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -354,6 +375,7 @@ const CheckoutScreen = ({ route, navigation }) => {
           <TouchableOpacity
             style={styles.checkoutButton}
             onPress={handlePlaceOrder}
+            activeOpacity={0.7}
           >
             <Text style={styles.checkoutButtonText}>Place Order</Text>
             <Ionicons
@@ -465,6 +487,7 @@ const styles = StyleSheet.create({
   },
   changeAddressButton: {
     alignSelf: "flex-start",
+    padding: 8, // Add padding to increase touch area
   },
   changeAddressText: {
     color: primary,
@@ -473,7 +496,7 @@ const styles = StyleSheet.create({
   },
   pickupLocationCard: {
     marginBottom: 12,
-    padding: 12,
+    padding: 16, // Increased padding for better touch area
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
@@ -505,15 +528,19 @@ const styles = StyleSheet.create({
     marginVertical: 12,
   },
   dateCard: {
-    width: 100,
-    height: 90,
+    width: 110, // Slightly wider for better touch area
+    height: 100, // Slightly taller for better touch area
     marginRight: 12,
-    padding: 12,
     borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
+    overflow: "hidden", // Ensure content doesn't overflow
+  },
+  dateCardContent: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
+    padding: 12,
   },
   selectedDateCard: {
     borderColor: primary,
@@ -596,7 +623,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 80,
+    bottom: Platform.OS === "ios" ? 20 : 0, // Adjust position based on platform
     padding: 16,
     backgroundColor: "#fff",
     borderTopWidth: 1,

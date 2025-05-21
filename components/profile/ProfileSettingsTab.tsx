@@ -104,6 +104,15 @@ const ProfileSettingsTab = () => {
         "delivery_address",
         "business_mobile",
         "business_email",
+        "account_payable_name",
+        "account_payable_phone",
+        "account_payable_email",
+        "credit_reference1_name",
+        "credit_reference1_email",
+        "credit_reference1_phone",
+        "credit_reference2_name",
+        "credit_reference2_email",
+        "credit_reference2_phone",
       ];
 
       requiredFields.forEach((field) => {
@@ -113,17 +122,17 @@ const ProfileSettingsTab = () => {
       });
 
       // Handle arrays
-      const arrayFields = [
-        "billing_addresses",
-        "shipping_addresses",
-        "addresses",
-      ];
-      arrayFields.forEach((field) => {
-        if (customer.data[field] && Array.isArray(customer.data[field])) {
-          // form.append(field, JSON.stringify(customer.data[field]));
-          form.append(field, customer.data[field]);
-        }
-      });
+      // const arrayFields = [
+      //   "billing_addresses",
+      //   "shipping_addresses",
+      //   "addresses",
+      // ];
+      // arrayFields.forEach((field) => {
+      //   if (customer.data[field] && Array.isArray(customer.data[field])) {
+      //     // form.append(field, JSON.stringify(customer.data[field]));
+      //     form.append(field, customer.data[field]);
+      //   }
+      // });
 
       // Handle driver license file properly
       if (driverLicense) {

@@ -34,6 +34,7 @@ const ProfileScreen = () => {
   const auth = useSelector((state: any) => state.auth);
 
   const customer = useSelector((state: any) => state.settings);
+  const customerData = customer.data;
   const [activeTab, setActiveTab] = useState("orders");
   const router = useRouter();
   // Orders tab state
@@ -93,20 +94,46 @@ const ProfileScreen = () => {
     const formData = new FormData();
 
     // copy every field we got from the API slice
-    for (const [key, value] of Object.entries(customer.data)) {
-      if (key !== "photo") {
-        formData.append(
-          key,
-          Array.isArray(value) ? JSON.stringify(value) : value
-        );
-      }
-    }
 
     // 2️⃣ **MUST** include the current id for the unique rule
-    formData.append("_id", customer.data._id); // 👈 add this back!
+    formData.set("_id", customerData._id);
+    formData.set("first_name", customerData.first_name);
+    formData.set("last_name", customerData.last_name);
+    formData.set("email", customerData.email);
+    formData.set("phone", customerData.phone);
+    formData.set("address", customerData.address);
+    formData.set("business_name", customerData.business_name);
+    formData.set("business_mobile", customerData.business_mobile);
+    formData.set("business_email", customerData.business_email);
+    formData.set("delivery_address", customerData.delivery_address);
+    formData.set("company_number", customerData.company_number);
+    formData.set("account_payable_name", customerData.account_payable_name);
+    formData.set("account_payable_phone", customerData.account_payable_phone);
+    formData.set("account_payable_email", customerData.account_payable_email);
+    // asd asd
+
+    formData.set("credit_reference1_name", customerData.credit_reference1_name);
+    formData.set(
+      "credit_reference1_email",
+      customerData.credit_reference1_email
+    );
+    formData.set(
+      "credit_reference1_phone",
+      customerData.credit_reference1_phone
+    );
+
+    formData.set("credit_reference2_name", customerData.credit_reference2_name);
+    formData.set(
+      "credit_reference2_email",
+      customerData.credit_reference2_email
+    );
+    formData.set(
+      "credit_reference2_phone",
+      customerData.credit_reference2_phone
+    );
 
     // 3️⃣ attach the file exactly on the field name the controller expects
-    formData.append("photo", {
+    formData.set("photo", {
       uri: localUri,
       name: filename,
       type: filetype,

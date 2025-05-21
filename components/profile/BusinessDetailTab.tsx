@@ -55,12 +55,33 @@ const BusinessDetailTab = () => {
     const fd = new FormData();
 
     /* ──────────────────────── primitives ──────────────────────── */
-    fd.set("_id", customerData._id);
-    fd.set("first_name", customerData.first_name);
-    fd.set("last_name", customerData.last_name);
-    fd.set("email", customerData.email);
-    fd.set("phone", customerData.phone);
-    fd.set("address", customerData.address);
+    // fd.set("_id", customerData._id);
+    // fd.set("first_name", customerData.first_name);
+    // fd.set("last_name", customerData.last_name);
+    // fd.set("email", customerData.email);
+    // fd.set("phone", customerData.phone);
+    // fd.set("address", customerData.address);
+
+    const requiredFields = [
+      "_id",
+      "first_name",
+      "last_name",
+      "email",
+      "phone",
+      "address",
+      "credit_reference1_name",
+      "credit_reference1_email",
+      "credit_reference1_phone",
+      "credit_reference2_name",
+      "credit_reference2_email",
+      "credit_reference2_phone",
+    ];
+
+    requiredFields.forEach((field) => {
+      if (customer.data[field]) {
+        fd.append(field, customer.data[field]);
+      }
+    });
     fd.set("business_name", businessName.trim());
     fd.set("business_mobile", businessPhone.trim());
     fd.set("business_email", businessEmail.trim());
@@ -71,15 +92,15 @@ const BusinessDetailTab = () => {
     fd.set("account_payable_email", apEmail.trim());
 
     /* ──────────────────────── arrays ───────────────────────────── */
-    (customerData.billing_addresses ?? []).forEach((v: string) =>
-      fd.set("billing_addresses[]", v)
-    );
-    (customerData.shipping_addresses ?? []).forEach((v: string) =>
-      fd.set("shipping_addresses[]", v)
-    );
-    (customerData.addresses ?? []).forEach((v: string) =>
-      fd.set("addresses[]", v)
-    );
+    // (customerData.billing_addresses ?? []).forEach((v: string) =>
+    //   fd.set("billing_addresses[]", v)
+    // );
+    // (customerData.shipping_addresses ?? []).forEach((v: string) =>
+    //   fd.set("shipping_addresses[]", v)
+    // );
+    // (customerData.addresses ?? []).forEach((v: string) =>
+    //   fd.set("addresses[]", v)
+    // );
 
     return fd;
   };

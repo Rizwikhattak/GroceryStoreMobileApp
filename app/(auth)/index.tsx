@@ -213,6 +213,7 @@ const styles = StyleSheet.create({
   formContainer: {
     marginTop: 24, // mt-6
   },
+  
   inputLabel: {
     color: "#374151", // text-gray-700
     marginBottom: 8, // mb-2
