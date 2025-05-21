@@ -60,13 +60,13 @@ const productsSlice = createSlice({
         state.error = null;
       })
       .addCase(getAllProducts.fulfilled, (state, action) => {
-        const data = action.payload.list;
-        state.data = data;
         // state.data = data.filter(
         //   (item, index) =>
         //     item._id !== "66c835b2989abcf543ea9693" &&
         //     item._id !== "66c855776e4212fbdec483d2"
         // );
+        const data = action.payload.list;
+        state.data = data;
         state.pagination = action.payload.pagination;
         state.isLoading = false;
         state.error = null;

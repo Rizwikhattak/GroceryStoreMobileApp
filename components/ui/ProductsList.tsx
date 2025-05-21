@@ -15,21 +15,21 @@ import Constants from "expo-constants";
 import { Ionicons } from "@expo/vector-icons";
 import SectionHeader from "./SectionHeader";
 import { primary } from "@/constants/colors";
-import { updateCartQuantity } from "@/store/reducers/productsSlice";
+import { updateCartQuantity } from "@/store/reducers/cartSlice";
 import {
   getAllFeaturedProducts,
   getFeaturedProducts,
 } from "@/store/actions/productsActions";
 import ProductItemCard from "@/components/ui/ProductItemCard";
+import { getPantryProducts } from "@/store/actions/pantryActions";
 
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
-const ProductsList = ({ products }) => {
+const ProductsList = ({ products, pantryData }) => {
   const dispatch = useDispatch();
-
   // Render each product item
   const renderProductItem = ({ item }) => {
-    return <ProductItemCard item={item} />;
+    return <ProductItemCard item={item} pantryData={pantryData} />;
   };
 
   // Main render

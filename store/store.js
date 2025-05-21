@@ -15,6 +15,8 @@ import productsReducer from "./reducers/productsSlice";
 import categoriesReducer from "./reducers/categoriesSlice";
 import settingsReducer from "./reducers/settingsSlice";
 import orderReducer from "./reducers/orderSlice";
+import cartReducer from "./reducers/cartSlice";
+import pantryReducer from "./reducers/pantrySlice";
 
 // Create a root reducer by combining your slices
 const rootReducer = combineReducers({
@@ -23,6 +25,8 @@ const rootReducer = combineReducers({
   categories: categoriesReducer,
   settings: settingsReducer,
   order: orderReducer,
+  cart: cartReducer,
+  pantry: pantryReducer,
 });
 
 // Configuration for Redux Persist
@@ -30,7 +34,7 @@ const persistConfig = {
   key: "root",
   storage: AsyncStorage,
   // Optionally, you can whitelist specific reducers:
-  whitelist: ["auth"],
+  whitelist: ["auth", "cart"],
 };
 
 // Wrap your root reducer with persistReducer

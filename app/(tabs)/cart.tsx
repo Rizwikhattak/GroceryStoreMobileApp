@@ -12,7 +12,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { useDispatch, useSelector } from "react-redux";
-import { updateCartQuantity } from "@/store/reducers/productsSlice";
+import { updateCartQuantity } from "@/store/reducers/cartSlice";
 import { primary } from "@/constants/colors";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
@@ -20,7 +20,7 @@ export default function Cart() {
   const dispatch = useDispatch();
   const router = useRouter();
   const navigation = useNavigation();
-  const cartState = useSelector((state: any) => state.products.cartState);
+  const cartState = useSelector((state: any) => state.cart.data);
 
   // GST rate (15%)
   const GST_RATE = 0.15;

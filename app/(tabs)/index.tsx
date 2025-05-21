@@ -27,6 +27,7 @@ import AppText from "@/components/ui/AppText";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { logout } from "@/store/reducers/authSlice";
+import { getPantryProducts } from "@/store/actions/pantryActions";
 
 export default function Index() {
   const user = useSelector((state: any) => state.auth);
@@ -34,7 +35,17 @@ export default function Index() {
   const router = useRouter();
   const products = useSelector((state: any) => state.products.featuredProducts);
   console.log("userrrr", user);
-
+  const pantry = useSelector((state) => state.pantry);
+  useEffect(() => {
+    const fetchPantryProducts = async () => {
+      try {
+        await dispatch(getPantryProducts()).unwrap();
+      } catch (err) {
+        console.log("Error fetching pantry products", err);
+      }
+    };
+    fetchPantryProducts();
+  }, [dispatch]);
   useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
@@ -135,7 +146,7 @@ export default function Index() {
                 )
               }
             />
-            <ProductsList products={products} />
+            <ProductsList products={products} pantryData={pantry?.data} />
           </View>
         </ScrollView>
       </View>

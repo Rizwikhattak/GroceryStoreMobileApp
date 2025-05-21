@@ -29,7 +29,7 @@ const CheckoutScreen = ({ route, navigation }) => {
   const customer = useSelector((state) => state.settings);
   // console.log("Customer Details", customer);
   // console.log("Auth Details", auth);
-  const cartState = useSelector((state: any) => state.products.cartState);
+  const cartState = useSelector((state: any) => state.cart.data);
   const {
     cartTotal,
     subtotal,

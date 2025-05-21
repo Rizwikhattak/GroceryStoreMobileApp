@@ -29,3 +29,6 @@ export const ORDERS_API = {
   ORDER_TRACKING: "order-tracking/",
   ORDER_INVOICE: "invoice/",
 };
+export const PANTRY_API = {
+  PANTRY: "pantry/",
+};
