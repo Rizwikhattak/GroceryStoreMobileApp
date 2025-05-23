@@ -16,6 +16,7 @@ import {
   getUserProfileDetails,
   updateUserProfileDetails,
 } from "@/store/actions/settingsActions";
+import { SettingsSkeleton } from "@/components/ui/Skeletons";
 
 /* ------------- props ------------- */
 interface Props {
@@ -133,90 +134,97 @@ const BusinessDetailTab = () => {
   return (
     <ScrollView style={styles.wrapper}>
       {/* first row */}
-      <View style={styles.row}>
-        <View style={styles.col}>
-          <Text style={styles.label}>Business Name</Text>
-          <TextInput
-            style={styles.input}
-            value={businessName}
-            onChangeText={setBusinessName}
-          />
-        </View>
-        <View style={styles.col}>
-          <Text style={styles.label}>Business Phone</Text>
-          <TextInput
-            style={styles.input}
-            value={businessPhone}
-            onChangeText={setBusinessPhone}
-            keyboardType="phone-pad"
-          />
-        </View>
-      </View>
+      {customer.isLoading ? (
+        <SettingsSkeleton />
+      ) : (
+        <View>
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text style={styles.label}>Business Name</Text>
+              <TextInput
+                style={styles.input}
+                value={businessName}
+                onChangeText={setBusinessName}
+              />
+            </View>
+            <View style={styles.col}>
+              <Text style={styles.label}>Business Phone</Text>
+              <TextInput
+                style={styles.input}
+                value={businessPhone}
+                onChangeText={setBusinessPhone}
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
 
-      {/* second row */}
-      <View style={styles.row}>
-        <View style={styles.col}>
-          <Text style={styles.label}>Business Email</Text>
-          <TextInput
-            style={styles.input}
-            value={businessEmail}
-            onChangeText={setBusinessEmail}
-            keyboardType="email-address"
-          />
-        </View>
-        <View style={styles.col}>
-          <Text style={styles.label}>Delivery Address</Text>
-          <TextInput
-            style={styles.input}
-            value={deliveryAddress}
-            onChangeText={setDeliveryAddress}
-            multiline
-            numberOfLines={2}
-          />
-        </View>
-      </View>
+          {/* second row */}
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text style={styles.label}>Business Email</Text>
+              <TextInput
+                style={styles.input}
+                value={businessEmail}
+                onChangeText={setBusinessEmail}
+                keyboardType="email-address"
+              />
+            </View>
+            <View style={styles.col}>
+              <Text style={styles.label}>Delivery Address</Text>
+              <TextInput
+                style={styles.input}
+                value={deliveryAddress}
+                onChangeText={setDeliveryAddress}
+                multiline
+                numberOfLines={2}
+              />
+            </View>
+          </View>
 
-      {/* company number */}
-      <View style={styles.full}>
-        <Text style={styles.label}>Company Number</Text>
-        <TextInput
-          style={styles.input}
-          value={companyNumber}
-          onChangeText={setCompanyNumber}
-        />
-      </View>
+          {/* company number */}
+          <View style={styles.full}>
+            <Text style={styles.label}>Company Number</Text>
+            <TextInput
+              style={styles.input}
+              value={companyNumber}
+              onChangeText={setCompanyNumber}
+            />
+          </View>
 
-      {/* accounts payable */}
-      <Text style={[styles.label, { marginTop: 16 }]}>Accounts Payable</Text>
-      <View style={styles.row}>
-        <View style={styles.col}>
-          <Text style={styles.label}>Contact Name</Text>
-          <TextInput
-            style={styles.input}
-            value={apName}
-            onChangeText={setApName}
-          />
+          {/* accounts payable */}
+          <Text style={[styles.label, { marginTop: 16 }]}>
+            Accounts Payable
+          </Text>
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text style={styles.label}>Contact Name</Text>
+              <TextInput
+                style={styles.input}
+                value={apName}
+                onChangeText={setApName}
+              />
+            </View>
+            <View style={styles.col}>
+              <Text style={styles.label}>Contact Email</Text>
+              <TextInput
+                style={styles.input}
+                value={apEmail}
+                onChangeText={setApEmail}
+                keyboardType="email-address"
+              />
+            </View>
+          </View>
+          <View style={styles.full}>
+            <Text style={styles.label}>Contact Phone</Text>
+            <TextInput
+              style={styles.input}
+              value={apPhone}
+              onChangeText={setApPhone}
+              keyboardType="phone-pad"
+            />
+          </View>
         </View>
-        <View style={styles.col}>
-          <Text style={styles.label}>Contact Email</Text>
-          <TextInput
-            style={styles.input}
-            value={apEmail}
-            onChangeText={setApEmail}
-            keyboardType="email-address"
-          />
-        </View>
-      </View>
-      <View style={styles.full}>
-        <Text style={styles.label}>Contact Phone</Text>
-        <TextInput
-          style={styles.input}
-          value={apPhone}
-          onChangeText={setApPhone}
-          keyboardType="phone-pad"
-        />
-      </View>
-
+      )}
       {/* save btn */}
       <TouchableOpacity style={styles.saveBtn} onPress={saveBusinessDetails}>
         {customer.isPostLoading ? (

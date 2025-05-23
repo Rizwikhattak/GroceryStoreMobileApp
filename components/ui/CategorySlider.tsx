@@ -17,6 +17,7 @@ import { getAllCategories } from "@/store/actions/categoriesActions";
 import { useNavigation, useRouter } from "expo-router";
 import AppText from "@/components/ui/AppText";
 import { setSelectedCategory } from "@/store/reducers/categoriesSlice";
+import { CategorySkeleton } from "@/components/ui/Skeletons";
 
 const { width: screenWidth } = Dimensions.get("window");
 const itemWidth = screenWidth * 0.25;
@@ -79,16 +80,20 @@ const CategorySlider = () => {
         </TouchableOpacity>
       </View>
       <View>
-        <FlatList
-          ref={flatListRef}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={categories.data}
-          renderItem={renderItem}
-          keyExtractor={(item, index) => index.toString()}
-          // contentContainerStyle={{ paddingHorizontal: 16 }}
-          style={{ zIndex: 10 }}
-        />
+        {categories.isLoading ? (
+          <CategorySkeleton />
+        ) : (
+          <FlatList
+            ref={flatListRef}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={categories.data}
+            renderItem={renderItem}
+            keyExtractor={(item, index) => index.toString()}
+            // contentContainerStyle={{ paddingHorizontal: 16 }}
+            style={{ zIndex: 10 }}
+          />
+        )}
       </View>
     </View>
   );

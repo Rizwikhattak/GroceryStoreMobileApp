@@ -24,6 +24,7 @@ import * as FileSystem from "expo-file-system";
 import * as IntentLauncher from "expo-intent-launcher";
 import * as Linking from "expo-linking";
 import { saveAndOpenFile } from "@/utils/downloadFile";
+import { OrdersSkeleton } from "@/components/ui/Skeletons";
 const OrdersTab = () => {
   /* ─────────────── Redux ─────────────── */
   const dispatch = useDispatch();
@@ -262,18 +263,22 @@ const OrdersTab = () => {
       )}
 
       {/*  Orders list  */}
-      <FlatList
-        data={filteredOrders}
-        renderItem={renderOrderItem}
-        keyExtractor={(item) => item._id}
-        contentContainerStyle={styles.ordersList}
-        showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
-          <Text style={{ textAlign: "center", marginTop: 32, color: "#666" }}>
-            No orders found.
-          </Text>
-        }
-      />
+      {orders.isLoading ? (
+        <OrdersSkeleton />
+      ) : (
+        <FlatList
+          data={filteredOrders}
+          renderItem={renderOrderItem}
+          keyExtractor={(item) => item._id}
+          contentContainerStyle={styles.ordersList}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={
+            <Text style={{ textAlign: "center", marginTop: 32, color: "#666" }}>
+              No orders found.
+            </Text>
+          }
+        />
+      )}
     </View>
   );
 };

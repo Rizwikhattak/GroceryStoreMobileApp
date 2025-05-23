@@ -15,6 +15,7 @@ import {
   updateUserProfileDetails,
   getUserProfileDetails,
 } from "@/store/actions/settingsActions";
+import { SettingsSkeleton } from "@/components/ui/Skeletons";
 
 interface Props {
   customerData: any;
@@ -150,28 +151,33 @@ const CreditReferenceTab = () => {
 
   return (
     <ScrollView style={styles.wrapper}>
-      <ReferenceBlock
-        prefix="1"
-        values={{ name: ref1Name, contact: ref1Contact, phone: ref1Phone }}
-        setters={{
-          setName: setRef1Name,
-          setContact: setRef1Contact,
-          setPhone: setRef1Phone,
-        }}
-      />
+      {customer.isLoading ? (
+        <SettingsSkeleton />
+      ) : (
+        <View>
+          <ReferenceBlock
+            prefix="1"
+            values={{ name: ref1Name, contact: ref1Contact, phone: ref1Phone }}
+            setters={{
+              setName: setRef1Name,
+              setContact: setRef1Contact,
+              setPhone: setRef1Phone,
+            }}
+          />
 
-      <View style={{ height: 24 }} />
+          <View style={{ height: 24 }} />
 
-      <ReferenceBlock
-        prefix="2"
-        values={{ name: ref2Name, contact: ref2Contact, phone: ref2Phone }}
-        setters={{
-          setName: setRef2Name,
-          setContact: setRef2Contact,
-          setPhone: setRef2Phone,
-        }}
-      />
-
+          <ReferenceBlock
+            prefix="2"
+            values={{ name: ref2Name, contact: ref2Contact, phone: ref2Phone }}
+            setters={{
+              setName: setRef2Name,
+              setContact: setRef2Contact,
+              setPhone: setRef2Phone,
+            }}
+          />
+        </View>
+      )}
       <TouchableOpacity style={styles.saveBtn} onPress={saveCreditRefs}>
         {customer.isPostLoading ? (
           <ActivityIndicator size="small" color="#fff" />

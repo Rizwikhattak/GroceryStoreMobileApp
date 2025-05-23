@@ -44,9 +44,6 @@ export default function Index() {
         console.log("Error fetching pantry products", err);
       }
     };
-    fetchPantryProducts();
-  }, [dispatch]);
-  useEffect(() => {
     const fetchFeaturedProducts = async () => {
       try {
         await dispatch(getFeaturedProducts()).unwrap();
@@ -54,6 +51,7 @@ export default function Index() {
         console.log("Error fetching prods", err);
       }
     };
+    fetchPantryProducts();
     fetchFeaturedProducts();
   }, [dispatch]);
 

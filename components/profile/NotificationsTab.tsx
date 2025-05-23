@@ -1,3 +1,4 @@
+import { NotificationsSkeleton } from "@/components/ui/Skeletons";
 import { primary } from "@/constants/colors";
 import { getNotifications } from "@/store/actions/settingsActions";
 import { parseISOString } from "@/utils/Helpers";
@@ -63,7 +64,9 @@ const Notifications = () => {
     </View>
   );
 
-  return (
+  return notifications.isLoading ? (
+    <NotificationsSkeleton />
+  ) : (
     <FlatList
       data={notifications?.data}
       renderItem={renderNotificationItem}

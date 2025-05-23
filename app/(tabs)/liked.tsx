@@ -15,6 +15,9 @@ import SearchInput from "@/components/ui/SearchInput";
 import { primary } from "@/constants/colors";
 import { getPantryProducts } from "@/store/actions/pantryActions";
 import ProductItemCard from "@/components/ui/ProductItemCard";
+import { ProductsSkeleton } from "@/components/ui/Skeletons";
+import { StatusBar } from "expo-status-bar";
+import { ScrollView } from "react-native-gesture-handler";
 
 const LikedScreen = () => {
   const dispatch = useDispatch();
@@ -45,6 +48,7 @@ const LikedScreen = () => {
   /* ---------- JSX ---------- */
   return (
     <SafeAreaView style={styles.screen}>
+      <StatusBar style="dark" translucent={true} backgroundColor="white" />
       {/* header */}
       <View style={styles.header}>
         <Text style={styles.title}>My Pantry List</Text>
@@ -64,19 +68,23 @@ const LikedScreen = () => {
         your pantry
       </Text>
 
-      <FlatList
-        data={visibleItems}
-        keyExtractor={(it: any) => it.product._id}
-        numColumns={2}
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.list}
-        renderItem={({ item }) => (
-          <ProductItemCard
-            item={item.product}
-            inPantry // 👈 heart starts filled
-          />
-        )}
-      />
+      {pantrySlice.isLoading || pantrySlice.isPostLoading ? (
+        <ProductsSkeleton length={10} />
+      ) : (
+        <FlatList
+          data={visibleItems}
+          keyExtractor={(it: any) => it.product._id}
+          numColumns={2}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.list}
+          renderItem={({ item }) => (
+            <ProductItemCard
+              item={item.product}
+              inPantry // 👈 heart starts filled
+            />
+          )}
+        />
+      )}
     </SafeAreaView>
   );
 };
@@ -89,10 +97,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     paddingHorizontal: 16,
     paddingBottom: 12,
+    paddingTop: 10,
   },
   title: { fontSize: 20, fontWeight: "bold" },
   searchBox: { paddingHorizontal: 16, paddingBottom: 12 },
-  count: { fontSize: 14, color: "#666", paddingHorizontal: 16 },
+  count: {
+    fontSize: 14,
+    color: "#666",
+    paddingHorizontal: 16,
+    paddingBottom: 20,
+  },
   list: { padding: 8, paddingBottom: 80 },
 });
 

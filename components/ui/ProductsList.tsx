@@ -22,6 +22,7 @@ import {
 } from "@/store/actions/productsActions";
 import ProductItemCard from "@/components/ui/ProductItemCard";
 import { getPantryProducts } from "@/store/actions/pantryActions";
+import { ProductsSkeleton } from "@/components/ui/Skeletons";
 
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
@@ -39,6 +40,8 @@ const ProductsList = ({ products, pantryData }) => {
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={primary} />
         </View>
+      ) : products.isLoading ? (
+        <ProductsSkeleton />
       ) : products?.data && products?.data.length > 0 ? (
         <FlatList
           data={products.data}

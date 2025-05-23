@@ -19,6 +19,7 @@ import {
 import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import { saveAndOpenFile } from "@/utils/downloadFile";
+import { SettingsSkeleton } from "@/components/ui/Skeletons";
 
 const ProfileSettingsTab = () => {
   /* ---- redux ---- */
@@ -162,98 +163,109 @@ const ProfileSettingsTab = () => {
   return (
     <ScrollView style={styles.wrapper}>
       {/* first/last name */}
-      <View style={styles.row}>
-        <View style={styles.col}>
-          <Text style={styles.label}>First Name</Text>
-          <TextInput
-            style={styles.input}
-            value={firstName}
-            onChangeText={setFirstName}
-          />
+      {customer.isLoading ? (
+        <SettingsSkeleton />
+      ) : (
+        <View>
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text style={styles.label}>First Name</Text>
+              <TextInput
+                style={styles.input}
+                value={firstName}
+                onChangeText={setFirstName}
+              />
+            </View>
+            <View style={styles.col}>
+              <Text style={styles.label}>Last Name</Text>
+              <TextInput
+                style={styles.input}
+                value={lastName}
+                onChangeText={setLastName}
+              />
+            </View>
+          </View>
+
+          {/* email / phone */}
+          <View style={styles.row}>
+            <View style={styles.col}>
+              <Text style={styles.label}>Email</Text>
+              <TextInput
+                style={styles.input}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+              />
+            </View>
+            <View style={styles.col}>
+              <Text style={styles.label}>Phone</Text>
+              <TextInput
+                style={styles.input}
+                value={phone}
+                onChangeText={setPhone}
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+
+          {/* address */}
+          <View style={styles.full}>
+            <Text style={styles.label}>Address</Text>
+            <TextInput
+              style={styles.input}
+              value={address}
+              onChangeText={setAddress}
+              multiline
+              numberOfLines={2}
+            />
+          </View>
+
+          {/* password (placeholder) */}
+          <View style={styles.full}>
+            <Text style={styles.label}>Password</Text>
+            <TextInput
+              style={styles.input}
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+          </View>
+
+          {/* driver license */}
+          <View style={styles.full}>
+            <Text style={styles.label}>Driver License</Text>
+            <TouchableOpacity
+              style={styles.uploadBtn}
+              onPress={pickDriverLicense}
+            >
+              <Ionicons name="cloud-upload-outline" size={20} color={primary} />
+              <Text style={styles.uploadTxt}>
+                {customerData?.driver_license
+                  ? "Change file"
+                  : driverLicense
+                  ? "Change file"
+                  : "Upload License"}
+              </Text>
+            </TouchableOpacity>
+            <Text style={styles.uploadNote}>
+              {driverLicense
+                ? driverLicense.name
+                : customerData?.driver_license?.name
+                ? customerData?.driver_license?.name
+                : "No file chosen"}
+            </Text>
+            {customerData?.driver_license && (
+              <TouchableOpacity
+                style={styles.downloadBtn}
+                onPress={handleDownload}
+              >
+                <Ionicons name="download-outline" size={20} color="#fff" />
+                <Text style={styles.downloadTxt}>Download license</Text>
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-        <View style={styles.col}>
-          <Text style={styles.label}>Last Name</Text>
-          <TextInput
-            style={styles.input}
-            value={lastName}
-            onChangeText={setLastName}
-          />
-        </View>
-      </View>
-
-      {/* email / phone */}
-      <View style={styles.row}>
-        <View style={styles.col}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-          />
-        </View>
-        <View style={styles.col}>
-          <Text style={styles.label}>Phone</Text>
-          <TextInput
-            style={styles.input}
-            value={phone}
-            onChangeText={setPhone}
-            keyboardType="phone-pad"
-          />
-        </View>
-      </View>
-
-      {/* address */}
-      <View style={styles.full}>
-        <Text style={styles.label}>Address</Text>
-        <TextInput
-          style={styles.input}
-          value={address}
-          onChangeText={setAddress}
-          multiline
-          numberOfLines={2}
-        />
-      </View>
-
-      {/* password (placeholder) */}
-      <View style={styles.full}>
-        <Text style={styles.label}>Password</Text>
-        <TextInput
-          style={styles.input}
-          value={password}
-          onChangeText={setPassword}
-          secureTextEntry
-        />
-      </View>
-
-      {/* driver license */}
-      <View style={styles.full}>
-        <Text style={styles.label}>Driver License</Text>
-        <TouchableOpacity style={styles.uploadBtn} onPress={pickDriverLicense}>
-          <Ionicons name="cloud-upload-outline" size={20} color={primary} />
-          <Text style={styles.uploadTxt}>
-            {customerData?.driver_license
-              ? "Change file"
-              : driverLicense
-              ? "Change file"
-              : "Upload License"}
-          </Text>
-        </TouchableOpacity>
-        <Text style={styles.uploadNote}>
-          {driverLicense
-            ? driverLicense.name
-            : customerData?.driver_license?.name
-            ? customerData?.driver_license?.name
-            : "No file chosen"}
-        </Text>
-        {customerData?.driver_license && (
-          <TouchableOpacity style={styles.downloadBtn} onPress={handleDownload}>
-            <Ionicons name="download-outline" size={20} color="#fff" />
-            <Text style={styles.downloadTxt}>Download license</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-
+      )}
       {/* save */}
       <TouchableOpacity style={styles.saveBtn} onPress={saveProfile}>
         {customer.isPostLoading ? (
