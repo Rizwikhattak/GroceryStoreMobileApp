@@ -7,11 +7,12 @@ import {
   Keyboard,
   Platform,
   StyleSheet,
+  useColorScheme,
 } from "react-native";
 import { useEffect, useState } from "react";
 import { Tabs } from "expo-router";
 import { icons } from "@/constants/icons";
-import { primary } from "@/constants/colors";
+import { dark, light, primary } from "@/constants/colors";
 import { StatusBar } from "expo-status-bar";
 // import ProtectedRoute from "@/components/ProtectedRoute";
 
@@ -60,6 +61,8 @@ const TabIcon = ({
 };
 
 const _layout = () => {
+  const colorScheme = useColorScheme();
+
   const [keyboardVisible, setKeyboardVisible] = useState(false);
 
   // Add keyboard listeners to detect when keyboard appears/disappears
@@ -87,7 +90,11 @@ const _layout = () => {
   return (
     // <ProtectedRoute>
     <>
-      <StatusBar style="dark" translucent backgroundColor="transparent" />
+      <StatusBar
+        style={colorScheme === "light" ? "dark" : "light"}
+        translucent
+        backgroundColor="transparent"
+      />
       <Tabs
         screenOptions={{
           tabBarShowLabel: false,
@@ -99,11 +106,11 @@ const _layout = () => {
             />
           ),
           tabBarStyle: {
-            backgroundColor: "#ffffff",
+            backgroundColor: colorScheme === "light" ? light : dark,
             height: 52,
             position: "absolute",
             overflowX: "hidden",
-            borderWidth: 1,
+            // borderWidth: 1,
             // Hide the tab bar when keyboard is visible
             display: keyboardVisible ? "none" : "flex",
           },
@@ -154,7 +161,7 @@ const _layout = () => {
                 title="Cart"
                 customViewStyle="cartButton"
                 customIconStyle="extraLargeIcon"
-                customTintColor="#ffff"
+                customTintColor={light}
               />
             ),
           }}
