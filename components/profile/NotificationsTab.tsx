@@ -1,33 +1,46 @@
-import React, { useEffect, useMemo } from "react";
-import {
-  View,
-  Text,
-  FlatList,
-  StyleSheet,
-  TouchableOpacity,
-  useColorScheme,
-} from "react-native";
-import { useDispatch, useSelector } from "react-redux";
-import { Ionicons } from "@expo/vector-icons";
-import { LinearGradient } from "expo-linear-gradient";
-
 import { NotificationsSkeleton } from "@/components/ui/Skeletons";
-import {
-  primary,
-  dark,
-  dark_secondary,
-  light,
-  light_secondary,
-} from "@/constants/colors";
+import { primary } from "@/constants/colors";
 import { getNotifications } from "@/store/actions/settingsActions";
 import { parseISOString } from "@/utils/Helpers";
+import React, { useEffect } from "react";
+import { View, Text, FlatList, StyleSheet } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
 
 const Notifications = () => {
-  const colorScheme = useColorScheme();
-  const styles = useMemo(() => getStyles(colorScheme), [colorScheme]);
   const dispatch = useDispatch();
   const notifications = useSelector((state) => state.settings.notifications);
-
+  // const notifications = [
+  //   {
+  //     id: "1",
+  //     type: "Order Status",
+  //     message: "Your order has been Shipped",
+  //     date: "21-Jun-2024",
+  //   },
+  //   {
+  //     id: "2",
+  //     type: "Account Verification",
+  //     message: "Your account has been verified",
+  //     date: "27-May-2024",
+  //   },
+  //   {
+  //     id: "3",
+  //     type: "Order Status",
+  //     message: "Your order has been Picked up",
+  //     date: "23-May-2024",
+  //   },
+  //   {
+  //     id: "4",
+  //     type: "Order Status",
+  //     message: "Your order has been Completed",
+  //     date: "22-May-2024",
+  //   },
+  //   {
+  //     id: "5",
+  //     type: "Account Verification",
+  //     message: "Your account has been verified",
+  //     date: "15-Apr-2024",
+  //   },
+  // ];
   useEffect(() => {
     const fetchNotifications = async () => {
       try {
@@ -39,295 +52,61 @@ const Notifications = () => {
     fetchNotifications();
   }, []);
 
-  const getNotificationIcon = (message: string) => {
-    const lowerMessage = message?.toLowerCase() || "";
-    if (
-      lowerMessage.includes("order") ||
-      lowerMessage.includes("shipped") ||
-      lowerMessage.includes("delivered")
-    ) {
-      return "bag-outline";
-    } else if (
-      lowerMessage.includes("account") ||
-      lowerMessage.includes("verified")
-    ) {
-      return "checkmark-circle-outline";
-    } else if (
-      lowerMessage.includes("payment") ||
-      lowerMessage.includes("transaction")
-    ) {
-      return "card-outline";
-    } else if (
-      lowerMessage.includes("promotion") ||
-      lowerMessage.includes("offer")
-    ) {
-      return "gift-outline";
-    }
-    return "notifications-outline";
-  };
-
-  const getNotificationColor = (message: string) => {
-    const lowerMessage = message?.toLowerCase() || "";
-    if (
-      lowerMessage.includes("shipped") ||
-      lowerMessage.includes("delivered") ||
-      lowerMessage.includes("completed")
-    ) {
-      return "#4CAF50";
-    } else if (
-      lowerMessage.includes("verified") ||
-      lowerMessage.includes("confirmed")
-    ) {
-      return "#2196F3";
-    } else if (
-      lowerMessage.includes("pending") ||
-      lowerMessage.includes("processing")
-    ) {
-      return "#FF9800";
-    } else if (
-      lowerMessage.includes("cancelled") ||
-      lowerMessage.includes("failed")
-    ) {
-      return "#F44336";
-    }
-    return primary;
-  };
-
-  const renderNotificationItem = ({ item, index }) => (
-    <TouchableOpacity
-      style={[styles.notificationCard, index === 0 && styles.firstCard]}
-      activeOpacity={0.8}
-    >
-      <View style={styles.cardContent}>
-        <View style={styles.iconContainer}>
-          <View
-            style={[
-              styles.iconBackground,
-              { backgroundColor: getNotificationColor(item?.message) + "20" },
-            ]}
-          >
-            <Ionicons
-              name={getNotificationIcon(item?.message)}
-              size={20}
-              color={getNotificationColor(item?.message)}
-            />
-          </View>
-        </View>
-
-        <View style={styles.textContainer}>
-          <View style={styles.notificationHeader}>
-            <Text style={styles.notificationType} numberOfLines={2}>
-              {item?.message}
-            </Text>
-            <Text style={styles.notificationDate}>
-              {parseISOString(item?.created_at)?.date}
-            </Text>
-          </View>
-          <Text style={styles.notificationMessage} numberOfLines={3}>
-            {item?.title}
-          </Text>
-        </View>
-
-        <View style={styles.actionContainer}>
-          <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
-            <Ionicons
-              name="chevron-forward"
-              size={16}
-              color={colorScheme === "light" ? "#999" : "#666"}
-            />
-          </TouchableOpacity>
-        </View>
+  const renderNotificationItem = ({ item }) => (
+    <View style={styles.notificationCard}>
+      <View style={styles.notificationHeader}>
+        <Text style={styles.notificationType}>{item?.message}</Text>
+        <Text style={styles.notificationDate}>
+          {parseISOString(item?.created_at)?.date}
+        </Text>
       </View>
-
-      {/* Subtle gradient overlay for premium feel */}
-      <LinearGradient
-        colors={[
-          "transparent",
-          colorScheme === "light" ? "#f8f9fa10" : "#ffffff05",
-        ]}
-        style={styles.cardGradient}
-        pointerEvents="none"
-      />
-    </TouchableOpacity>
-  );
-
-  const renderEmptyState = () => (
-    <View style={styles.emptyState}>
-      <View style={styles.emptyIconContainer}>
-        <Ionicons
-          name="notifications-outline"
-          size={64}
-          color={colorScheme === "light" ? "#e0e0e0" : "#555"}
-        />
-      </View>
-      <Text style={styles.emptyTitle}>No notifications yet</Text>
-      <Text style={styles.emptySubtitle}>
-        We'll notify you when something important happens
-      </Text>
+      <Text style={styles.notificationMessage}>{item?.title}</Text>
     </View>
   );
 
-  if (notifications.isLoading) {
-    return (
-      <View style={styles.container}>
-        <NotificationsSkeleton />
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.container}>
-      {notifications?.data?.length === 0 ? (
-        renderEmptyState()
-      ) : (
-        <FlatList
-          data={notifications?.data}
-          renderItem={renderNotificationItem}
-          keyExtractor={(item) => item?._id}
-          contentContainerStyle={styles.notificationsList}
-          showsVerticalScrollIndicator={false}
-          ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
-        />
-      )}
-    </View>
+  return notifications.isLoading ? (
+    <NotificationsSkeleton />
+  ) : (
+    <FlatList
+      data={notifications?.data}
+      renderItem={renderNotificationItem}
+      keyExtractor={(item) => item?._id}
+      contentContainerStyle={styles.notificationsList}
+      showsVerticalScrollIndicator={false}
+    />
   );
 };
 
-const getStyles = (colorScheme: string) =>
-  StyleSheet.create({
-    container: {
-      flex: 1,
-    },
-
-    notificationsList: {
-      padding: 20,
-      paddingBottom: 100,
-    },
-
-    notificationCard: {
-      backgroundColor: colorScheme === "light" ? "#ffffff" : dark_secondary,
-      borderRadius: 16,
-      padding: 0,
-      borderWidth: 1,
-      borderColor: colorScheme === "light" ? "#e9ecef" : "#333",
-      shadowColor: colorScheme === "light" ? "#000" : "#fff",
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: colorScheme === "light" ? 0.08 : 0.03,
-      shadowRadius: 8,
-      elevation: 4,
-      overflow: "hidden",
-    },
-
-    firstCard: {
-      marginTop: 8,
-    },
-
-    cardContent: {
-      flexDirection: "row",
-      alignItems: "flex-start",
-      padding: 16,
-    },
-
-    cardGradient: {
-      position: "absolute",
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-    },
-
-    iconContainer: {
-      marginRight: 12,
-      marginTop: 2,
-    },
-
-    iconBackground: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-
-    textContainer: {
-      flex: 1,
-      marginRight: 8,
-    },
-
-    notificationHeader: {
-      marginBottom: 8,
-    },
-
-    notificationType: {
-      fontSize: 16,
-      fontWeight: "600",
-      color: colorScheme === "light" ? "#1a1a1a" : "#ffffff",
-      lineHeight: 22,
-      marginBottom: 4,
-    },
-
-    notificationDate: {
-      fontSize: 12,
-      color: colorScheme === "light" ? "#666" : "#999",
-      fontWeight: "500",
-    },
-
-    notificationMessage: {
-      fontSize: 14,
-      color: colorScheme === "light" ? "#555" : "#ccc",
-      lineHeight: 20,
-      fontWeight: "400",
-    },
-
-    actionContainer: {
-      justifyContent: "center",
-      alignItems: "center",
-    },
-
-    actionButton: {
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: colorScheme === "light" ? "#f8f9fa" : "#333",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-
-    emptyState: {
-      flex: 1,
-      alignItems: "center",
-      justifyContent: "center",
-      paddingHorizontal: 40,
-      paddingTop: 60,
-    },
-
-    emptyIconContainer: {
-      width: 120,
-      height: 120,
-      borderRadius: 60,
-      backgroundColor: colorScheme === "light" ? "#f8f9fa" : dark_secondary,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: 24,
-      borderWidth: 2,
-      borderColor: colorScheme === "light" ? "#e9ecef" : "#333",
-      borderStyle: "dashed",
-    },
-
-    emptyTitle: {
-      fontSize: 20,
-      fontWeight: "700",
-      color: colorScheme === "light" ? "#333" : "#fff",
-      marginBottom: 8,
-      textAlign: "center",
-    },
-
-    emptySubtitle: {
-      fontSize: 16,
-      color: colorScheme === "light" ? "#666" : "#ccc",
-      textAlign: "center",
-      lineHeight: 22,
-    },
-  });
+const styles = StyleSheet.create({
+  notificationsList: {
+    padding: 16,
+  },
+  notificationCard: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
+    padding: 16,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: "#eee",
+  },
+  notificationHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 8,
+  },
+  notificationType: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: primary,
+  },
+  notificationDate: {
+    fontSize: 12,
+    color: "#666",
+  },
+  notificationMessage: {
+    fontSize: 14,
+    color: "#333",
+  },
+});
 
 export default Notifications;

@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -7,17 +7,10 @@ import {
   Image,
   Dimensions,
   TouchableOpacity,
-  useColorScheme,
 } from "react-native";
 import { icons } from "@/constants/icons";
 import { ChevronRight } from "lucide-react-native";
-import {
-  dark,
-  dark_secondary,
-  light,
-  light_secondary,
-  primary,
-} from "@/constants/colors";
+import { primary } from "@/constants/colors";
 import Constants from "expo-constants";
 import { useDispatch, useSelector } from "react-redux";
 import { getAllCategories } from "@/store/actions/categoriesActions";
@@ -31,8 +24,6 @@ const itemWidth = screenWidth * 0.25;
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 const CategorySlider = () => {
-  const colorScheme = useColorScheme();
-  const styles = useMemo(() => getStyles(colorScheme), [colorScheme]);
   const categories = useSelector((state: any) => state.categories);
   const dispatch = useDispatch();
   const router = useRouter();
@@ -108,44 +99,43 @@ const CategorySlider = () => {
   );
 };
 
-const getStyles = (colorScheme: string) =>
-  StyleSheet.create({
-    headerContainer: {
-      marginTop: 5, // mt-20
-      flexDirection: "row", // flex-row
-      alignItems: "center", // items-center
-      justifyContent: "space-between", // justify-between
-    },
-    headerText: {
-      fontSize: 20, // text-xl
-      fontWeight: "600", // font-semibold
-      color: colorScheme === "light" ? dark_secondary : light_secondary, // text-customblue-700 (assuming this is a dark blue color)
-    },
-    item: {
-      width: itemWidth,
-      height: 100,
-      backgroundColor: primary,
-      borderRadius: 10,
-      marginRight: 12,
-      justifyContent: "center",
-      alignItems: "center",
-      shadowColor: "#000",
-      shadowOffset: { width: 0, height: 0 },
-      shadowOpacity: 0.2,
-      shadowRadius: 10,
-      elevation: 5,
-      marginVertical: 10,
-    },
-    icon: {
-      width: 32,
-      height: 32,
-      marginBottom: 6,
-    },
-    label: {
-      fontSize: 12,
-      textAlign: "center",
-      color: "#fff",
-    },
-  });
+const styles = StyleSheet.create({
+  headerContainer: {
+    marginTop: 5, // mt-20
+    flexDirection: "row", // flex-row
+    alignItems: "center", // items-center
+    justifyContent: "space-between", // justify-between
+  },
+  headerText: {
+    fontSize: 20, // text-xl
+    fontWeight: "600", // font-semibold
+    color: "#000", // text-customblue-700 (assuming this is a dark blue color)
+  },
+  item: {
+    width: itemWidth,
+    height: 100,
+    backgroundColor: primary,
+    borderRadius: 10,
+    marginRight: 12,
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 10,
+    elevation: 5,
+    marginVertical: 10,
+  },
+  icon: {
+    width: 32,
+    height: 32,
+    marginBottom: 6,
+  },
+  label: {
+    fontSize: 12,
+    textAlign: "center",
+    color: "#fff",
+  },
+});
 
 export default CategorySlider;

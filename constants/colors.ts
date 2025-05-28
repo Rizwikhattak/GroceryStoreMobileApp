@@ -1,6 +1,9 @@
+// const secondaryText = "#dc3545";
+// const primaryText = "#000000";
+// const grayIconColor = "#7d8fab";
+// const primaryColor = "#ffffff";
+// export const primary = "#ea7173";
 export const primary = "#691112";
-// export const light = "#ffffff";
-export const light = "#f8f9fa";
-export const light_secondary = "#f3f4f6";
-export const dark = "#050505";
-export const dark_secondary = "#1A1A1A";
+export const secondary = "#4ab7b6";
+// const customgray = "#c5c5c5";
+// const customdarkblue = "#293041";

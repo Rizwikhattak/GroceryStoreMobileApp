@@ -8,14 +8,7 @@
     "scheme": "myapp",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
-    "androidNavigationBar": {
-      "backgroundColor": "#121212",
-      "barStyle": "light-content"
-    },
-    "androidStatusBar": {
-      "backgroundColor": "#121212",
-      "barStyle": "light-content"
-    },
+
     "owner": "moaaz4529",
     "extra": {},
     "ios": {
