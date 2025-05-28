@@ -47,7 +47,7 @@ const CategorySlider = () => {
         router.push(`/Category/${item.name}`);
       }}
     >
-      <AppText style={styles.label}>{item.name}</AppText>
+      <Text style={styles.label}>{item.name}</Text>
     </TouchableOpacity>
     // <View style={styles.item}>
     //   {console.log(`${apiUrl}categories/photo/${item.photo}`)}

@@ -14,6 +14,7 @@ import Constants from "expo-constants";
 import { useDispatch, useSelector } from "react-redux";
 import { updateCartQuantity } from "@/store/reducers/cartSlice";
 import { primary } from "@/constants/colors";
+import HeaderCommon from "@/components/ui/HeaderCommon";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 export default function Cart() {
@@ -57,16 +58,8 @@ export default function Cart() {
     <>
       <View style={styles.container}>
         {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity
-            style={styles.backButton}
-            onPress={() => router.back()}
-          >
-            <Ionicons name="chevron-back" size={24} color={primary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Cart</Text>
-          <View style={styles.placeholder} />
-        </View>
+        <HeaderCommon title="My Cart" isSearchEnabled={false} />
+
         <ScrollView showsVerticalScrollIndicator={false} style={styles.content}>
           {/* Items Section */}
           <View style={styles.itemsSection}>
@@ -227,11 +220,11 @@ export default function Cart() {
               style={styles.checkoutButton}
               onPress={() =>
                 navigation.navigate("CheckoutScreen", {
-                  cartTotal: grandTotal,
-                  subtotal: subtotal,
-                  gstAmount: gstAmount,
-                  deliveryFee: deliveryFee,
-                  discount: discount,
+                  cartTotal: grandTotal.toFixed(2),
+                  subtotal: subtotal.toFixed(2),
+                  gstAmount: gstAmount.toFixed(2),
+                  deliveryFee: deliveryFee.toFixed(2),
+                  discount: discount.toFixed(2),
                   totalItems: totalItems,
                 })
               }
@@ -253,28 +246,7 @@ const styles = StyleSheet.create({
     minHeight: "100%",
     overflow: "visible",
   },
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 15,
-    paddingVertical: 40,
-    paddingBottom: 20,
-    backgroundColor: "white",
-    borderBottomWidth: 1,
-    borderBottomColor: "#eee",
-  },
-  backButton: {
-    padding: 5,
-  },
-  headerTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: primary,
-  },
-  placeholder: {
-    width: 24,
-  },
+
   content: {
     flex: 1,
     backgroundColor: "white",

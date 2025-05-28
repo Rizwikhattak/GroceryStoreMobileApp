@@ -13,6 +13,7 @@ import CheckoutScreen from "@/app/CheckoutScreen";
 import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { Buffer } from "buffer";
+import { StatusBar } from "expo-status-bar";
 global.Buffer = Buffer;
 // Create a wrapper component to use Redux hooks
 function AppContent() {
@@ -51,6 +52,7 @@ function AppContent() {
   return (
     <>
       <ToastManager />
+      <StatusBar style="dark" translucent={true} backgroundColor="white" />
       <Stack>
         {/* Redirect users based on authentication status */}
         <Stack.Screen

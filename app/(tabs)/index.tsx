@@ -20,10 +20,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   Alert,
+  Text,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Logo from "../../assets/images/premium-meats-logo.svg";
-import AppText from "@/components/ui/AppText";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { logout } from "@/store/reducers/authSlice";
@@ -106,10 +106,10 @@ export default function Index() {
           <View style={styles.welcomeSection}>
             <TouchableOpacity activeOpacity={1} onPress={dismissKeyboard}>
               <View style={styles.welcomeTextContainer}>
-                <AppText style={styles.welcomeText}>Welcome, </AppText>
-                <AppText variant="bold" style={styles.welcomeNameText}>
+                <Text style={styles.welcomeText}>Welcome, </Text>
+                <Text style={styles.welcomeNameText}>
                   {user.data.first_name}
-                </AppText>
+                </Text>
               </View>
             </TouchableOpacity>
 

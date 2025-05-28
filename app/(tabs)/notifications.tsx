@@ -4,6 +4,7 @@ import { Ionicons } from "@expo/vector-icons";
 
 import Notifications from "@/components/profile/NotificationsTab";
 import { primary } from "@/constants/colors"; // keep using your theme colour
+import HeaderCommon from "@/components/ui/HeaderCommon";
 
 const NotificationsScreen: React.FC = () => {
   return (
@@ -12,10 +13,8 @@ const NotificationsScreen: React.FC = () => {
       <StatusBar barStyle="dark-content" />
 
       {/* ---------- header ---------- */}
-      <View style={styles.header}>
-        <Ionicons name="notifications-outline" size={24} color={primary} />
-        <Text style={styles.headerTitle}>Notifications</Text>
-      </View>
+
+      <HeaderCommon title="Notifications" isSearchEnabled={false} />
 
       <View style={styles.divider} />
 
@@ -32,8 +31,6 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingHorizontal: 16,
-    marginTop: 35,
   },
 
   header: {

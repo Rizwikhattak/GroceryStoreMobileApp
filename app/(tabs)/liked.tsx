@@ -12,12 +12,13 @@ import { Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 
 import SearchInput from "@/components/ui/SearchInput";
-import { primary } from "@/constants/colors";
+import { primary, shades } from "@/constants/colors";
 import { getPantryProducts } from "@/store/actions/pantryActions";
 import ProductItemCard from "@/components/ui/ProductItemCard";
 import { ProductsSkeleton } from "@/components/ui/Skeletons";
 import { StatusBar } from "expo-status-bar";
 import { ScrollView } from "react-native-gesture-handler";
+import HeaderCommon from "@/components/ui/HeaderCommon";
 
 const LikedScreen = () => {
   const dispatch = useDispatch();
@@ -50,24 +51,11 @@ const LikedScreen = () => {
     <SafeAreaView style={styles.screen}>
       <StatusBar style="dark" translucent={true} backgroundColor="white" />
       {/* header */}
-      <View style={styles.header}>
-        <Text style={styles.title}>My Pantry List</Text>
-        <TouchableOpacity onPress={() => setShowSearch((p) => !p)}>
-          <Ionicons name="search" size={24} color="#333" />
-        </TouchableOpacity>
-      </View>
-
-      {showSearch && (
-        <View style={styles.searchBox}>
-          <SearchInput value={searchText} onChangeText={setSearchText} />
-        </View>
-      )}
-
-      <Text style={styles.count}>
-        {visibleItems.length} {visibleItems.length === 1 ? "item" : "items"} in
-        your pantry
-      </Text>
-
+      <HeaderCommon
+        title="Liked Products"
+        subtitle={`${pantryItems.length} items`}
+        isSearchEnabled={true}
+      />
       {pantrySlice.isLoading || pantrySlice.isPostLoading ? (
         <ProductsSkeleton length={10} />
       ) : (
@@ -91,16 +79,7 @@ const LikedScreen = () => {
 
 /* ------------- styles (unchanged except container names) ------------- */
 const styles = StyleSheet.create({
-  screen: { flex: 1, backgroundColor: "#fff", paddingTop: 30 },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    paddingTop: 10,
-  },
-  title: { fontSize: 20, fontWeight: "bold" },
-  searchBox: { paddingHorizontal: 16, paddingBottom: 12 },
+  screen: { flex: 1, backgroundColor: "#fff" },
   count: {
     fontSize: 14,
     color: "#666",

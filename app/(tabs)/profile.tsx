@@ -27,6 +27,7 @@ import {
 } from "@/store/actions/settingsActions";
 import { logout } from "@/store/reducers/authSlice";
 import Constants from "expo-constants";
+import HeaderCommon from "@/components/ui/HeaderCommon";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 const ProfileScreen = () => {
@@ -180,18 +181,11 @@ const ProfileScreen = () => {
       <StatusBar barStyle="dark-content" />
 
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backButton}
-          onPress={() => router.back()}
-        >
-          <Ionicons name="chevron-back" size={24} color={primary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Profile</Text>
-        <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
-          <Ionicons name="log-out-outline" size={22} color={primary} />
-        </TouchableOpacity>
-      </View>
+      <HeaderCommon
+        title="My Profile"
+        isSearchEnabled={false}
+        isLogoutEnabled={true}
+      />
 
       {/* Profile Summary */}
       <View style={styles.profileSummary}>

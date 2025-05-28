@@ -21,6 +21,7 @@ import { primary } from "@/constants/colors";
 import { getUserProfileDetails } from "@/store/actions/settingsActions";
 import { useDispatch, useSelector } from "react-redux";
 import { placeCustomerOrder } from "@/store/actions/orderActions";
+import DeliveryMethod from "@/components/CheckoutScreen/DeliveryMethod";
 
 const CheckoutScreen = ({ route, navigation }) => {
   const router = useRouter();
@@ -123,26 +124,7 @@ const CheckoutScreen = ({ route, navigation }) => {
   };
 
   const deliveryDates = getDeliveryDates();
-  /**
-   * Transform the cart state held in Redux into the payload
-   * required by POST /api/v1/orders
-   *
-   * ──────────────────────────────────────────────────────────
-   * cartState:  [
-   *   {
-   *     _id:            "66c835b2989abcf543ea9693", // product id
-   *     orderQuantity:  4,                          // user-chosen quantity
-   *     weight?:        { value: 2, uom: "kg" },    // OPTIONAL per-item weight
-   *     note?:          "Cube it",                  // OPTIONAL per-item note
-   *     selectedVariation?: {                      // OPTIONAL variation
-   *       uniqueId: "123-blue-500g",
-   *       size    : "500 g",
-   *       price   : 19.99
-   *     }
-   *   },
-   *   …
-   * ]
-   */
+
   const mapCartToOrderPayload = (
     cartState: any[],
     customerId: string,
@@ -276,7 +258,7 @@ const CheckoutScreen = ({ route, navigation }) => {
   }, [dispatch]);
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
+      {/* <StatusBar barStyle="dark-content" /> */}
 
       <KeyboardAvoidingView
         style={styles.container}
@@ -288,61 +270,21 @@ const CheckoutScreen = ({ route, navigation }) => {
             style={styles.content}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.scrollContent}
+            // ADD THESE PROPS to prevent touch interference:
+            keyboardShouldPersistTaps="always"
+            scrollEventThrottle={16}
+            bounces={true}
+            bouncesZoom={false}
+            alwaysBounceVertical={false}
+            // This is crucial for preventing touch conflicts:
+            nestedScrollEnabled={true}
           >
             {/* Delivery Method Selection */}
-            <View style={styles.sectionContainer}>
-              <Text style={styles.sectionTitle}>Delivery Method</Text>
-              <View style={styles.deliveryOptions}>
-                <TouchableOpacity
-                  style={[
-                    styles.deliveryOption,
-                    deliveryMethod === "delivery" &&
-                      styles.selectedDeliveryOption,
-                  ]}
-                  onPress={() => setDeliveryMethod("delivery")}
-                  activeOpacity={0.6}
-                >
-                  <Ionicons
-                    name="bicycle"
-                    size={24}
-                    color={deliveryMethod === "delivery" ? primary : "#888"}
-                  />
-                  <Text
-                    style={[
-                      styles.deliveryOptionText,
-                      deliveryMethod === "delivery" &&
-                        styles.selectedDeliveryOptionText,
-                    ]}
-                  >
-                    Delivery
-                  </Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[
-                    styles.deliveryOption,
-                    deliveryMethod === "pickup" &&
-                      styles.selectedDeliveryOption,
-                  ]}
-                  onPress={() => setDeliveryMethod("pickup")}
-                  activeOpacity={0.6}
-                >
-                  <Ionicons
-                    name="storefront"
-                    size={24}
-                    color={deliveryMethod === "pickup" ? primary : "#888"}
-                  />
-                  <Text
-                    style={[
-                      styles.deliveryOptionText,
-                      deliveryMethod === "pickup" &&
-                        styles.selectedDeliveryOptionText,
-                    ]}
-                  >
-                    Pickup
-                  </Text>
-                </TouchableOpacity>
-              </View>
+            <View style={{ zIndex: 1 }} pointerEvents="box-none">
+              <DeliveryMethod
+                deliveryMethod={deliveryMethod}
+                setDeliveryMethod={setDeliveryMethod}
+              />
             </View>
 
             {/* Delivery Address or Pickup Location */}
@@ -381,18 +323,24 @@ const CheckoutScreen = ({ route, navigation }) => {
                   {/* ───── Meat ───── */}
                   <View style={styles.addressCard}>
                     <Text style={styles.addressName}>Meat pickup</Text>
-                    <Text style={styles.addressText}>164 Stoddard Road</Text>
-                    <Text style={styles.addressText}>Auckland 0632</Text>
+                    <Text style={styles.addressText}>
+                      3 Saint Jude, Street,
+                    </Text>
+                    <Text style={styles.addressText}>
+                      Avondale, Auckland 1026, New Zealand
+                    </Text>
                   </View>
 
                   {/* ───── Grocery ───── */}
                   <View style={[styles.addressCard, { marginTop: 12 }]}>
                     <Text style={styles.addressName}>Grocery pickup</Text>
                     <Text style={styles.addressText}>
-                      3 St Jude Street, Bush Road
+                      {/* 3 St Jude Street, Bush Road */}
+                      12C Ash Road,
                     </Text>
                     <Text style={styles.addressText}>
-                      Rosedale, Auckland 0632
+                      {/* Rosedale, Auckland 0632 */}
+                      Wiri, Auckland, New Zealand
                     </Text>
                   </View>
                 </>
