@@ -20,7 +20,6 @@ const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 export default function Cart() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const navigation = useNavigation();
   const cartState = useSelector((state: any) => state.cart.data);
 
   // GST rate (15%)
@@ -219,13 +218,16 @@ export default function Cart() {
             <TouchableOpacity
               style={styles.checkoutButton}
               onPress={() =>
-                navigation.navigate("CheckoutScreen", {
-                  cartTotal: grandTotal.toFixed(2),
-                  subtotal: subtotal.toFixed(2),
-                  gstAmount: gstAmount.toFixed(2),
-                  deliveryFee: deliveryFee.toFixed(2),
-                  discount: discount.toFixed(2),
-                  totalItems: totalItems,
+                router.push({
+                  pathname: "/CheckoutScreen",
+                  params: {
+                    cartTotal: grandTotal.toFixed(2),
+                    subtotal: subtotal.toFixed(2),
+                    gstAmount: gstAmount.toFixed(2),
+                    deliveryFee: deliveryFee.toFixed(2),
+                    discount: discount.toFixed(2),
+                    totalItems: totalItems,
+                  },
                 })
               }
             >

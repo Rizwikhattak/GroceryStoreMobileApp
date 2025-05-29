@@ -16,14 +16,19 @@ import {
   Dimensions,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { useGlobalSearchParams, useRouter } from "expo-router";
+import {
+  useGlobalSearchParams,
+  useLocalSearchParams,
+  useRouter,
+} from "expo-router";
 import { primary } from "@/constants/colors";
 import { getUserProfileDetails } from "@/store/actions/settingsActions";
 import { useDispatch, useSelector } from "react-redux";
 import { placeCustomerOrder } from "@/store/actions/orderActions";
 import DeliveryMethod from "@/components/CheckoutScreen/DeliveryMethod";
-
-const CheckoutScreen = ({ route, navigation }) => {
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import HeaderCommon from "@/components/ui/HeaderCommon";
+const CheckoutScreen = () => {
   const router = useRouter();
   const dispatch = useDispatch();
   const auth = useSelector((state) => state.auth);
@@ -36,7 +41,7 @@ const CheckoutScreen = ({ route, navigation }) => {
     subtotal,
     deliveryFee,
     gstAmount = "0",
-  } = useGlobalSearchParams();
+  } = useLocalSearchParams();
 
   const [deliveryMethod, setDeliveryMethod] = useState("delivery"); // "delivery" or "pickup"
   const [selectedDate, setSelectedDate] = useState(null);
@@ -258,12 +263,12 @@ const CheckoutScreen = ({ route, navigation }) => {
   }, [dispatch]);
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* <StatusBar barStyle="dark-content" /> */}
-
-      <KeyboardAvoidingView
+      <StatusBar barStyle="dark-content" />
+      <HeaderCommon title="Checkout" isSearchEnabled={false} />
+      <View
         style={styles.container}
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+        // behavior={Platform.OS === "ios" ? "padding" : "height"}
+        // keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
       >
         <View style={styles.mainContainer}>
           <ScrollView
@@ -451,21 +456,21 @@ const CheckoutScreen = ({ route, navigation }) => {
 
           {/* Place Order Button - now in a fixed position at the bottom */}
         </View>
-      </KeyboardAvoidingView>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity
-          style={styles.checkoutButton}
-          onPress={handlePlaceOrder}
-          activeOpacity={0.7}
-        >
-          <Text style={styles.checkoutButtonText}>Place Order</Text>
-          <Ionicons
-            name="arrow-forward"
-            size={20}
-            color="white"
-            style={{ marginLeft: 8 }}
-          />
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.checkoutButton}
+            onPress={handlePlaceOrder}
+            activeOpacity={0.7}
+          >
+            <Text style={styles.checkoutButtonText}>Place Order</Text>
+            <Ionicons
+              name="arrow-forward"
+              size={20}
+              color="white"
+              style={{ marginLeft: 8 }}
+            />
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -516,7 +521,7 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
   },
   scrollContent: {
-    paddingBottom: 100, // Increased padding to ensure content isn't hidden behind the button
+    paddingBottom: 10, // Increased padding to ensure content isn't hidden behind the button
   },
   sectionContainer: {
     padding: 16,
@@ -711,7 +716,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     left: 0,
     right: 0,
-    bottom: 85,
+    bottom: 0,
     padding: 16,
     backgroundColor: "#fff",
     borderTopWidth: 1,

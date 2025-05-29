@@ -14,6 +14,7 @@ import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { Buffer } from "buffer";
 import { StatusBar } from "expo-status-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 global.Buffer = Buffer;
 // Create a wrapper component to use Redux hooks
 function AppContent() {
@@ -65,7 +66,7 @@ function AppContent() {
           options={{ headerShown: false }}
           redirect={isAuthenticated}
         />
-        <Stack.Screen name="Checkout" options={{ headerShown: false }} />
+        <Stack.Screen name="CheckoutScreen" options={{ headerShown: false }} />
         <Stack.Screen name="Category" options={{ headerShown: false }} />
       </Stack>
     </>
@@ -76,7 +77,9 @@ export default function RootLayout() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <AppContent />
+        <GestureHandlerRootView style={{ flex: 1 }}>
+          <AppContent />
+        </GestureHandlerRootView>
       </PersistGate>
     </Provider>
   );
