@@ -40,6 +40,7 @@ const ReferenceBlock = ({
 
     <Text style={styles.label}>Name of Business</Text>
     <TextInput
+      editable={false}
       style={styles.input}
       value={values.name}
       onChangeText={setters.setName}
@@ -49,6 +50,7 @@ const ReferenceBlock = ({
       <View style={styles.col}>
         <Text style={styles.label}>Contact Person</Text>
         <TextInput
+          editable={false}
           style={styles.input}
           value={values.contact}
           onChangeText={setters.setContact}
@@ -57,6 +59,7 @@ const ReferenceBlock = ({
       <View style={styles.col}>
         <Text style={styles.label}>Phone Number</Text>
         <TextInput
+          editable={false}
           style={styles.input}
           value={values.phone}
           onChangeText={setters.setPhone}
@@ -178,13 +181,13 @@ const CreditReferenceTab = () => {
           />
         </View>
       )}
-      <TouchableOpacity style={styles.saveBtn} onPress={saveCreditRefs}>
+      {/* <TouchableOpacity style={styles.saveBtn} onPress={saveCreditRefs}>
         {customer.isPostLoading ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
           <Text style={styles.saveTxt}>Save Changes</Text>
         )}
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </ScrollView>
   );
 };
@@ -204,12 +207,15 @@ const styles = StyleSheet.create({
   // },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    // borderColor: "#ddd",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
     height: 48, // 🔒 keeps height constant
+    backgroundColor: "#F5F6F7", // light-grey fill
+    borderColor: "#ccc", // softer border
+    color: "#9CA3AF",
   },
 
   /* optional separate style if you want different width rules for e-mail */

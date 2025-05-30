@@ -128,11 +128,28 @@ const EnhancedTabBar = () => {
               ),
             }}
           />
+          {/* <Tabs.Screen
+            name="profile"
+            options={{
+              title: "Profile",
+              headerShown: false,
+              tabBarIcon: ({ focused }) => (
+                <TabIcon
+                  focused={focused}
+                  icon={icons.profile}
+                  title="Profile"
+                />
+              ),
+            }}
+          /> */}
           <Tabs.Screen
             name="profile"
             options={{
               title: "Profile",
               headerShown: false,
+              /* 👇 this style is applied only while the profile tab is active */
+              tabBarStyle: { display: "none" },
+
               tabBarIcon: ({ focused }) => (
                 <TabIcon
                   focused={focused}

@@ -86,6 +86,7 @@ const ProfileSettingsTab = () => {
       return Alert.alert("Missing", "First and last name are required");
     if (!emailOk(email)) return Alert.alert("Invalid", "E-mail is not valid");
     if (!phone.trim()) return Alert.alert("Missing", "Phone number required");
+    if (!address.trim()) return Alert.alert("Missing", "Address is required");
 
     try {
       const form = new FormData();

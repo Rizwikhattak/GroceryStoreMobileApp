@@ -10,7 +10,6 @@ import {
   ScrollView,
   TextInput,
   Alert,
-  StatusBar,
   Platform,
   KeyboardAvoidingView,
   Dimensions,
@@ -28,6 +27,7 @@ import { placeCustomerOrder } from "@/store/actions/orderActions";
 import DeliveryMethod from "@/components/CheckoutScreen/DeliveryMethod";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import HeaderCommon from "@/components/ui/HeaderCommon";
+import { StatusBar } from "expo-status-bar";
 const CheckoutScreen = () => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -263,7 +263,8 @@ const CheckoutScreen = () => {
   }, [dispatch]);
   return (
     <SafeAreaView style={styles.safeArea}>
-      <StatusBar barStyle="dark-content" />
+      <StatusBar style="dark" translucent={true} backgroundColor="white" />
+
       <HeaderCommon title="Checkout" isSearchEnabled={false} />
       <View
         style={styles.container}

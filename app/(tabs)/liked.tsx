@@ -7,6 +7,7 @@ import {
   SafeAreaView,
   FlatList,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
@@ -57,8 +58,8 @@ const LikedScreen = () => {
         isSearchEnabled={true}
       />
       {pantrySlice.isLoading || pantrySlice.isPostLoading ? (
-        <View style={{ paddingTop: 10 }}>
-          <ProductsSkeleton length={10} />
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={primary} />
         </View>
       ) : (
         <FlatList
@@ -68,10 +69,7 @@ const LikedScreen = () => {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={styles.list}
           renderItem={({ item }) => (
-            <ProductItemCard
-              item={item.product}
-              inPantry // 👈 heart starts filled
-            />
+            <ProductItemCard item={item.product} inPantry={true} />
           )}
         />
       )}
@@ -82,6 +80,11 @@ const LikedScreen = () => {
 /* ------------- styles (unchanged except container names) ------------- */
 const styles = StyleSheet.create({
   screen: { flex: 1, backgroundColor: "#fff" },
+  loadingContainer: {
+    height: 160,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   count: {
     fontSize: 14,
     color: "#666",

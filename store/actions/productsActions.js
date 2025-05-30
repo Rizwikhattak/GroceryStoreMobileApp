@@ -12,7 +12,7 @@ export const getFeaturedProducts = createAsyncThunk(
       const response = await API_COMMON(
         "getAll",
         "json",
-        `${fetchFeturedProductsAPI}?skip=30`,
+        `${fetchFeturedProductsAPI}`,
         // `${fetchFeturedProductsAPI}`,
         "Error in fetching products",
         data
@@ -42,7 +42,7 @@ export const getPantryProducts = createAsyncThunk(
 );
 export const getAllFeaturedProducts = createAsyncThunk(
   "products/getAllFeaturedProducts",
-  async ({ limit = 10 }, { rejectWithValue }) => {
+  async ({ limit = 100 }, { rejectWithValue }) => {
     try {
       console.log("Calleeed", limit);
       const response = await API_COMMON(

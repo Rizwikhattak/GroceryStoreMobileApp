@@ -29,6 +29,7 @@ const SigupStep3 = () => {
   const router = useRouter();
   const { _id } = useLocalSearchParams();
   console.log("Received woww _id:", _id);
+  const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
   // Adjust form fields to match "Credit Reference 1" and "Credit Reference 2"
   const [formData, setFormData] = useState({
@@ -57,6 +58,10 @@ const SigupStep3 = () => {
         Toast.error("Please fill all fields", "top");
         return;
       }
+      if (!emailOk(formData.credit_reference1_email))
+        return Toast.error("Please enter a credit reference 1 email", "top");
+      if (!emailOk(formData.credit_reference2_email))
+        return Toast.error("Please enter a credit reference 2 email", "top");
       // Check "I agree" box if your flow requires it
       if (!agreeChecked) {
         Toast.error("Please agree to the terms before continuing.", "top");

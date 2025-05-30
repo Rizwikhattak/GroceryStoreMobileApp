@@ -127,7 +127,7 @@ const Notifications = () => {
           </Text>
         </View>
 
-        <View style={styles.actionContainer}>
+        {/* <View style={styles.actionContainer}>
           <TouchableOpacity style={styles.actionButton} activeOpacity={0.7}>
             <Ionicons
               name="chevron-forward"
@@ -135,7 +135,7 @@ const Notifications = () => {
               color={colorScheme === "light" ? "#999" : "#666"}
             />
           </TouchableOpacity>
-        </View>
+        </View> */}
       </View>
 
       {/* Subtle gradient overlay for premium feel */}

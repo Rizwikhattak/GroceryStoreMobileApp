@@ -122,7 +122,7 @@ const SignupScreen = () => {
       const formObj = new FormData();
 
       Object.entries(formData).forEach(([key, value]) => {
-        formObj.append(key, value);
+        formObj.append(key, value.trim());
       });
       formObj.append("driver_license", document.uri);
       console.log("asdwqeqe", formObj, typeof document.uri);
@@ -133,6 +133,9 @@ const SignupScreen = () => {
       // console.log("Doneeeeee", formObj);
       router.push(`/(auth)/signupStep2?_id=${_id}`);
     } catch (err) {
+      if (err[0].includes("Field {email} must be a unique value"))
+        Toast.error("Email Already registered", "top");
+
       console.log("ERrrrrrrooor", err);
     }
   };

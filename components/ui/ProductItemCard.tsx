@@ -13,9 +13,11 @@ import {
   Keyboard,
   Animated,
   Dimensions,
+  Pressable,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { updateCartQuantity } from "@/store/reducers/cartSlice";
+import * as Haptics from "expo-haptics";
 
 import {
   getPantryProducts,
@@ -50,6 +52,11 @@ const ProductItemCard = ({ item, inPantry, pantryData }) => {
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
   const slideAnim = useRef(new Animated.Value(50)).current;
   const cardScaleAnim = useRef(new Animated.Value(1)).current;
+
+  // New animation values for card press effect
+  const cardPressScale = useRef(new Animated.Value(1)).current;
+  const cardPressOpacity = useRef(new Animated.Value(1)).current;
+  const cardGlow = useRef(new Animated.Value(0)).current;
 
   // Get quantity from cart state
   const quantity =
@@ -142,6 +149,64 @@ const ProductItemCard = ({ item, inPantry, pantryData }) => {
   }, [isEditing, inputValue]);
 
   const hasSubmitted = useRef(false);
+
+  // Enhanced card press handlers
+  const handleCardPressIn = () => {
+    // Light haptic feedback
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+
+    Animated.parallel([
+      Animated.spring(cardPressScale, {
+        toValue: 0.96,
+        useNativeDriver: true,
+        tension: 200,
+        friction: 8,
+      }),
+      Animated.timing(cardPressOpacity, {
+        toValue: 0.8,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardGlow, {
+        toValue: 1,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  const handleCardPressOut = () => {
+    Animated.parallel([
+      Animated.spring(cardPressScale, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 200,
+        friction: 8,
+      }),
+      Animated.timing(cardPressOpacity, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(cardGlow, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: false,
+      }),
+    ]).start();
+  };
+
+  const handleCardPress = () => {
+    // Medium haptic feedback for navigation
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+    router.push({
+      pathname: "/ProductDetailsPage",
+      params: {
+        productParam: JSON.stringify(item),
+      },
+    });
+  };
 
   // Toggle favorite WITHOUT animation
   const toggleFavorite = async (id) => {
@@ -236,14 +301,34 @@ const ProductItemCard = ({ item, inPantry, pantryData }) => {
   };
 
   return (
-    <Animated.View style={[styles.card]}>
+    <Animated.View
+      style={[
+        styles.card,
+        {
+          transform: [{ scale: cardPressScale }],
+          opacity: cardPressOpacity,
+        },
+      ]}
+    >
+      {/* Animated glow effect */}
+      <Animated.View
+        style={[
+          styles.glowEffect,
+          {
+            opacity: cardGlow,
+          },
+        ]}
+      />
+
       {/* Enhanced Gradient Overlay for better contrast */}
       <View style={styles.gradientOverlay} />
+
       {/* Favorite Button */}
       <TouchableOpacity
         style={[
           styles.favoriteButton,
-          isFavorite && styles.favoriteButtonActive,
+
+          (inPantry || isFavorite) && styles.favoriteButtonActive,
         ]}
         onPress={() => toggleFavorite(item._id)}
         activeOpacity={0.8}
@@ -251,18 +336,15 @@ const ProductItemCard = ({ item, inPantry, pantryData }) => {
         <Ionicons
           name={inPantry ? "heart" : isFavorite ? "heart" : "heart-outline"}
           size={18}
-          color={isFavorite ? "#fff" : "#666"}
+          color={isFavorite || inPantry ? "#fff" : "#666"}
         />
       </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() =>
-          router.push({
-            pathname: "/ProductDetailsPage",
-            params: {
-              productParam: JSON.stringify(item),
-            },
-          })
-        }
+
+      <Pressable
+        onPressIn={handleCardPressIn}
+        onPressOut={handleCardPressOut}
+        onPress={handleCardPress}
+        style={styles.pressableContent}
       >
         {/* Discount Label */}
         {hasPromotion && (
@@ -399,12 +481,11 @@ const ProductItemCard = ({ item, inPantry, pantryData }) => {
             )}
           </View>
         </View>
-      </TouchableOpacity>
+      </Pressable>
     </Animated.View>
   );
 };
 
-// styles remain unchanged
 const styles = StyleSheet.create({
   card: {
     width: screenWidth < 400 ? "47%" : "48%",
@@ -420,6 +501,24 @@ const styles = StyleSheet.create({
     elevation: 8,
     position: "relative",
     overflow: "hidden",
+  },
+  glowEffect: {
+    position: "absolute",
+    top: -2,
+    left: -2,
+    right: -2,
+    bottom: -2,
+    backgroundColor: primary,
+    borderRadius: 18,
+    zIndex: -1,
+    shadowColor: primary,
+    shadowOffset: { width: 0, height: 0 },
+    shadowOpacity: 0.6,
+    shadowRadius: 15,
+    elevation: 15,
+  },
+  pressableContent: {
+    flex: 1,
   },
   gradientOverlay: {
     position: "absolute",

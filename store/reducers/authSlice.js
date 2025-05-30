@@ -53,10 +53,10 @@ const authSlice = createSlice({
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
-        Toast.error(
-          "Invalid Credentials,Enter valid email and password",
-          "bottom"
-        );
+        // Toast.error(
+        //   "Invalid Credentials,Enter valid email and password",
+        //   "bottom"
+        // );
       })
       .addCase(registrationStep1.pending, (state, action) => {
         state.isLoading = true;

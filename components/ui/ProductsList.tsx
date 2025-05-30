@@ -95,7 +95,8 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   listContainer: {
-    paddingHorizontal: 4,
+    paddingHorizontal: 0,
+    // paddingHorizontal: 4,
   },
 });
 

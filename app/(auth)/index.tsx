@@ -29,18 +29,28 @@ const LoginScreen = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [secureTextEntry, setSecureTextEntry] = useState(true);
+  const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
   const handleLogin = async () => {
     try {
+      if (!emailOk(email)) return Alert.alert("Invalid", "E-mail is not valid");
+      if (!password.trim())
+        return Alert.alert("Missing", "Password is required");
       const response = await dispatch(
-        loginUser(JSON.stringify({ email, password }))
+        loginUser(JSON.stringify({ email: email.trim(), password }))
       ).unwrap();
 
       if (response?.user) {
         router.replace("/(tabs)");
       } else {
       }
-    } catch (err) {}
+    } catch (err) {
+      // Alert.alert(
+      //   "Invalid",
+      //   "Invalid Credentials,Enter valid email and password"
+      // );
+      Toast.error("Enter valid email and password", "top");
+    }
   };
 
   return (
@@ -49,7 +59,8 @@ const LoginScreen = () => {
       style={styles.keyboardAvoidingView}
       keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
     >
-      <StatusBar style="dark" />
+      <StatusBar style="dark" translucent={true} backgroundColor="white" />
+
       <View style={styles.container}>
         <ScrollView
           style={styles.scrollView}
@@ -171,6 +182,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
+    // height: "100%",
     backgroundColor: "#ffffff", // bg-white
   },
   ImageContainer: {

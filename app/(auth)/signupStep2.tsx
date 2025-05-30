@@ -34,6 +34,7 @@ const SigupStep2 = () => {
   const { _id } = useLocalSearchParams();
   console.log("Wowww nicee id", _id);
   // Change your form state to match the new fields:
+  const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
   const [formData, setFormData] = useState({
     business_name: "",
     business_mobile: "",
@@ -78,9 +79,14 @@ const SigupStep2 = () => {
         Toast.error("Please fill all fields", "top");
         return;
       }
+      if (!emailOk(formData.business_email))
+        return Toast.error("Please enter a valid business email", "top");
+      if (!emailOk(formData.account_payable_email))
+        return Toast.error("Please enter a valid account payable email", "top");
+
       const formObj = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
-        formObj.append(key, value);
+        formObj.append(key, value.trim());
       });
 
       // Dispatch to Redux or handle as needed:
@@ -205,10 +211,11 @@ const SigupStep2 = () => {
                 Company Number <Text style={styles.requiredAsterisk}>*</Text>
               </Text>
               <View style={styles.inputContainer}>
-                <Ionicons name="document-outline" size={20} color="#888" />
+                <Ionicons name="call-outline" size={20} color="#888" />
                 <TextInput
                   placeholder="Enter your company number"
                   placeholderTextColor="#888"
+                  keyboardType="phone-pad"
                   value={formData.company_number}
                   onChangeText={(text) =>
                     updateFormData("company_number", text)

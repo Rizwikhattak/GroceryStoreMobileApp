@@ -10,7 +10,7 @@ import {
   getAllFeaturedProducts,
   getFeaturedProducts,
 } from "@/store/actions/productsActions";
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import {
   KeyboardAvoidingView,
   Platform,
@@ -28,32 +28,38 @@ import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import { logout } from "@/store/reducers/authSlice";
 import { getPantryProducts } from "@/store/actions/pantryActions";
+import { useFocusEffect } from "@react-navigation/native";
 
 export default function Index() {
   const user = useSelector((state: any) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
   const products = useSelector((state: any) => state.products.featuredProducts);
-  console.log("userrrr", user);
+  // console.log("userrrr", user);
   const pantry = useSelector((state) => state.pantry);
-  useEffect(() => {
-    const fetchPantryProducts = async () => {
-      try {
-        await dispatch(getPantryProducts()).unwrap();
-      } catch (err) {
-        console.log("Error fetching pantry products", err);
-      }
-    };
-    const fetchFeaturedProducts = async () => {
-      try {
-        await dispatch(getFeaturedProducts()).unwrap();
-      } catch (err) {
-        console.log("Error fetching prods", err);
-      }
-    };
-    fetchPantryProducts();
-    fetchFeaturedProducts();
-  }, [dispatch]);
+
+  useFocusEffect(
+    useCallback(() => {
+      const fetchPantryProducts = async () => {
+        try {
+          console.log("Nice calling u gog gog");
+          await dispatch(getPantryProducts()).unwrap();
+        } catch (err) {
+          console.log("Error fetching pantry products", err);
+        }
+      };
+      const fetchFeaturedProducts = async () => {
+        try {
+          await dispatch(getFeaturedProducts()).unwrap();
+        } catch (err) {
+          console.log("Error fetching prods", err);
+        }
+      };
+      fetchPantryProducts();
+      fetchFeaturedProducts();
+    }, [dispatch])
+  );
+  useEffect(() => {}, [dispatch]);
 
   // Function to dismiss keyboard when tapping outside of input
   const dismissKeyboard = () => {

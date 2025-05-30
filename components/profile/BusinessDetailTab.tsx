@@ -137,11 +137,12 @@ const BusinessDetailTab = () => {
       {customer.isLoading ? (
         <SettingsSkeleton />
       ) : (
-        <View>
+        <View style={{ paddingBottom: 20 }}>
           <View style={styles.row}>
             <View style={styles.col}>
               <Text style={styles.label}>Business Name</Text>
               <TextInput
+                editable={false}
                 style={styles.input}
                 value={businessName}
                 onChangeText={setBusinessName}
@@ -150,6 +151,7 @@ const BusinessDetailTab = () => {
             <View style={styles.col}>
               <Text style={styles.label}>Business Phone</Text>
               <TextInput
+                editable={false}
                 style={styles.input}
                 value={businessPhone}
                 onChangeText={setBusinessPhone}
@@ -163,6 +165,7 @@ const BusinessDetailTab = () => {
             <View style={styles.col}>
               <Text style={styles.label}>Business Email</Text>
               <TextInput
+                editable={false}
                 style={styles.input}
                 value={businessEmail}
                 onChangeText={setBusinessEmail}
@@ -172,6 +175,7 @@ const BusinessDetailTab = () => {
             <View style={styles.col}>
               <Text style={styles.label}>Delivery Address</Text>
               <TextInput
+                editable={false}
                 style={styles.input}
                 value={deliveryAddress}
                 onChangeText={setDeliveryAddress}
@@ -185,6 +189,7 @@ const BusinessDetailTab = () => {
           <View style={styles.full}>
             <Text style={styles.label}>Company Number</Text>
             <TextInput
+              editable={false}
               style={styles.input}
               value={companyNumber}
               onChangeText={setCompanyNumber}
@@ -199,6 +204,7 @@ const BusinessDetailTab = () => {
             <View style={styles.col}>
               <Text style={styles.label}>Contact Name</Text>
               <TextInput
+                editable={false}
                 style={styles.input}
                 value={apName}
                 onChangeText={setApName}
@@ -207,6 +213,7 @@ const BusinessDetailTab = () => {
             <View style={styles.col}>
               <Text style={styles.label}>Contact Email</Text>
               <TextInput
+                editable={false}
                 style={styles.input}
                 value={apEmail}
                 onChangeText={setApEmail}
@@ -217,6 +224,7 @@ const BusinessDetailTab = () => {
           <View style={styles.full}>
             <Text style={styles.label}>Contact Phone</Text>
             <TextInput
+              editable={false}
               style={styles.input}
               value={apPhone}
               onChangeText={setApPhone}
@@ -226,13 +234,13 @@ const BusinessDetailTab = () => {
         </View>
       )}
       {/* save btn */}
-      <TouchableOpacity style={styles.saveBtn} onPress={saveBusinessDetails}>
+      {/* <TouchableOpacity style={styles.saveBtn} onPress={saveBusinessDetails}>
         {customer.isPostLoading ? (
           <ActivityIndicator size="small" color="#fff" />
         ) : (
           <Text style={styles.saveTxt}>Save Changes</Text>
         )}
-      </TouchableOpacity>
+      </TouchableOpacity> */}
     </ScrollView>
   );
 };
@@ -254,12 +262,15 @@ const styles = StyleSheet.create({
   // },
   input: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    // borderColor: "#ddd",
     borderRadius: 8,
     paddingHorizontal: 12,
     paddingVertical: 10,
     fontSize: 16,
     height: 48, // 🔒 keeps height constant
+    backgroundColor: "#F5F6F7", // light-grey fill
+    borderColor: "#ccc", // softer border
+    color: "#9CA3AF",
   },
 
   /* optional separate style if you want different width rules for e-mail */

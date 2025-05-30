@@ -15,6 +15,7 @@ import { useFonts } from "expo-font";
 import { Buffer } from "buffer";
 import { StatusBar } from "expo-status-bar";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { Platform, UIManager } from "react-native";
 global.Buffer = Buffer;
 // Create a wrapper component to use Redux hooks
 function AppContent() {
@@ -53,7 +54,8 @@ function AppContent() {
   return (
     <>
       <ToastManager />
-      <StatusBar style="dark" translucent={true} backgroundColor="white" />
+            <StatusBar style="dark" translucent={true} backgroundColor="white" />
+      
       <Stack>
         {/* Redirect users based on authentication status */}
         <Stack.Screen
@@ -78,6 +80,11 @@ function AppContent() {
 }
 
 export default function RootLayout() {
+  // useEffect(() => {
+  //   if (Platform.OS === "android") {
+  //     UIManager.setLayoutAnimationEnabledExperimental(true);
+  //   }
+  // }, []);
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
