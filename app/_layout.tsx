@@ -67,6 +67,10 @@ function AppContent() {
           redirect={isAuthenticated}
         />
         <Stack.Screen name="CheckoutScreen" options={{ headerShown: false }} />
+        <Stack.Screen
+          name="ProductDetailsPage"
+          options={{ headerShown: false }}
+        />
         <Stack.Screen name="Category" options={{ headerShown: false }} />
       </Stack>
     </>

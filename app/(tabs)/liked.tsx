@@ -57,7 +57,9 @@ const LikedScreen = () => {
         isSearchEnabled={true}
       />
       {pantrySlice.isLoading || pantrySlice.isPostLoading ? (
-        <ProductsSkeleton length={10} />
+        <View style={{ paddingTop: 10 }}>
+          <ProductsSkeleton length={10} />
+        </View>
       ) : (
         <FlatList
           data={visibleItems}

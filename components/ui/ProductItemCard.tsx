@@ -11,32 +11,45 @@ import {
   View,
   TextInput,
   Keyboard,
+  Animated,
+  Dimensions,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { updateCartQuantity } from "@/store/reducers/cartSlice";
 
-import Constants from "expo-constants";
 import {
   getPantryProducts,
   makeProductPantry,
 } from "@/store/actions/pantryActions";
+import Constants from "expo-constants";
+import { useRouter } from "expo-router";
+
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
+const { width: screenWidth } = Dimensions.get("window");
 
 const ProductItemCard = ({ item, inPantry, pantryData }) => {
   const dispatch = useDispatch();
   const cartState = useSelector((state) => state.cart.data);
-
+  const router = useRouter();
   const favouriteIds = {};
   pantryData &&
-    pantryData.forEach((item: any) => {
+    pantryData.forEach((item) => {
       if (item.product) {
         favouriteIds[item.product._id] = true;
       }
     });
+
   const [favorites, setFavorites] = useState(favouriteIds || {});
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [showQuantityControls, setShowQuantityControls] = useState(false);
   const inputRef = useRef(null);
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const scaleAnim = useRef(new Animated.Value(0.8)).current;
+  const slideAnim = useRef(new Animated.Value(50)).current;
+  const cardScaleAnim = useRef(new Animated.Value(1)).current;
 
   // Get quantity from cart state
   const quantity =
@@ -46,15 +59,73 @@ const ProductItemCard = ({ item, inPantry, pantryData }) => {
   // Get unit from product data or use default
   const unit = item?.uom?.slug || "kg";
 
-  // Only update input value when quantity changes and we're not editing
+  // Calculate discounted price if there's a promotion
+  const hasPromotion =
+    item.promotion_status === "active" && item.promotion_value > 0;
+  const discountedPrice = hasPromotion
+    ? item.promotion_type === "percentage"
+      ? item.sale_price - (item.sale_price * item.promotion_value) / 100
+      : item.sale_price - item.promotion_value
+    : item.sale_price;
+
+  // Update input value when quantity changes and we're not editing
   useEffect(() => {
     if (!isEditing) {
       setInputValue(quantity.toString());
     }
   }, [quantity, isEditing]);
 
-  // Set up keyboard dismiss listener
+  // Show/hide quantity controls based on quantity
+  useEffect(() => {
+    const shouldShow = quantity > 0;
+    if (shouldShow !== showQuantityControls) {
+      setShowQuantityControls(shouldShow);
+    }
+  }, [quantity]);
 
+  // Animation effect when quantity controls visibility changes
+  useEffect(() => {
+    if (showQuantityControls) {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.spring(scaleAnim, {
+          toValue: 1,
+          tension: 120,
+          friction: 8,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleAnim, {
+          toValue: 0.8,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(slideAnim, {
+          toValue: 50,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [showQuantityControls]);
+
+  // Keyboard dismiss listener
   useEffect(() => {
     const keyboardDidHideListener = Keyboard.addListener(
       "keyboardDidHide",
@@ -70,27 +141,28 @@ const ProductItemCard = ({ item, inPantry, pantryData }) => {
     };
   }, [isEditing, inputValue]);
 
-  // Toggle favorite
+  const hasSubmitted = useRef(false);
+
+  // Toggle favorite WITHOUT animation
   const toggleFavorite = async (id) => {
     try {
       setFavorites((prev) => ({
         ...prev,
         [id]: !prev[id],
       }));
-      const resp = await dispatch(makeProductPantry({ product: id })).unwrap();
+      await dispatch(makeProductPantry({ product: id })).unwrap();
       await dispatch(getPantryProducts()).unwrap();
     } catch (err) {
       console.log("Error toggling favorite", err);
     }
   };
-  const hasSubmitted = useRef(false);
+
   // Handle direct quantity input
   const handleQuantityInputFocus = () => {
-    if (hasSubmitted.current) return; // ignore duplicates
+    if (hasSubmitted.current) return;
     hasSubmitted.current = true;
     setIsEditing(true);
 
-    // Select all text for easy replacement
     if (inputRef.current) {
       setTimeout(() => {
         inputRef.current.focus();
@@ -99,278 +171,392 @@ const ProductItemCard = ({ item, inPantry, pantryData }) => {
   };
 
   const handleQuantityChange = (text) => {
-    // Only allow numeric input
     if (/^\d*$/.test(text)) {
       setInputValue(text);
     }
   };
 
   const handleQuantitySubmit = () => {
-    // Exit if not editing
     if (!isEditing) return;
 
-    // Parse the input value as an integer
     let newQuantity = parseInt(inputValue, 10);
-
-    // Handle empty or non-numeric input
     if (isNaN(newQuantity)) {
       newQuantity = 0;
     }
-
-    // Ensure minimum value is 0
     newQuantity = Math.max(0, newQuantity);
 
-    // Update cart with the absolute new quantity, not relative change
     if (newQuantity !== quantity) {
-      // Calculate the change needed to reach the new quantity
       const change = newQuantity - quantity;
-
       dispatch(
         updateCartQuantity({ id: item._id, item: item, change: change })
       );
     }
 
-    // Reset editing state
     setIsEditing(false);
     setTimeout(() => (hasSubmitted.current = false), 200);
-    // Keyboard.dismiss();
+  };
+
+  // Handle add to cart with animation
+  const handleAddToCart = () => {
+    if (quantity === 0) {
+      // Animate button press
+      Animated.sequence([
+        Animated.timing(cardScaleAnim, {
+          toValue: 0.98,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+        Animated.timing(cardScaleAnim, {
+          toValue: 1,
+          duration: 100,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      dispatch(updateCartQuantity({ id: item._id, item: item, change: 1 }));
+    }
+  };
+
+  // Handle quantity change with animation feedback
+  const handleQuantityChangeWithAnimation = (change) => {
+    Animated.sequence([
+      Animated.timing(scaleAnim, {
+        toValue: 1.1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+    ]).start();
+
+    dispatch(updateCartQuantity({ id: item._id, item: item, change: change }));
   };
 
   return (
-    <View style={styles.card}>
+    <Animated.View style={[styles.card]}>
+      {/* Enhanced Gradient Overlay for better contrast */}
+      <View style={styles.gradientOverlay} />
       {/* Favorite Button */}
       <TouchableOpacity
-        style={styles.favoriteButton}
+        style={[
+          styles.favoriteButton,
+          isFavorite && styles.favoriteButtonActive,
+        ]}
         onPress={() => toggleFavorite(item._id)}
+        activeOpacity={0.8}
       >
         <Ionicons
           name={inPantry ? "heart" : isFavorite ? "heart" : "heart-outline"}
-          size={20}
-          color={inPantry ? primary : isFavorite ? primary : "#BDBDBD"}
+          size={18}
+          color={isFavorite ? "#fff" : "#666"}
         />
       </TouchableOpacity>
+      <TouchableOpacity
+        onPress={() =>
+          router.push({
+            pathname: "/ProductDetailsPage",
+            params: {
+              productParam: JSON.stringify(item),
+            },
+          })
+        }
+      >
+        {/* Discount Label */}
+        {hasPromotion && (
+          <View style={styles.discountTag}>
+            <Text style={styles.discountText}>
+              {item.promotion_type === "percentage"
+                ? `${item.promotion_value}% OFF`
+                : `$${item.promotion_value} OFF`}
+            </Text>
+          </View>
+        )}
 
-      {/* Discount Label */}
-      {item.promotion_status === "active" && (
-        <View style={styles.discountTag}>
-          <Text style={styles.discountText}>{item.promotion_value}% OFF</Text>
+        {/* Product Image */}
+        <View style={styles.imageContainer}>
+          <Image
+            source={{
+              uri:
+                `${apiUrl}products/photo/${item.photo}` ||
+                "https://via.placeholder.com/150x150/f5f5f5/999999?text=No+Image",
+            }}
+            style={styles.productImage}
+            resizeMode="cover"
+          />
         </View>
-      )}
 
-      {/* Product Image */}
-      <View style={styles.imageContainer}>
-        <Image
-          source={{
-            uri:
-              `${apiUrl}products/photo/${item.photo}` ||
-              "https://via.placeholder.com/150",
-          }}
-          style={styles.productImage}
-          resizeMode="cover"
-        />
-      </View>
+        {/* Product Details */}
+        <View style={styles.detailsContainer}>
+          <Text style={styles.productName} numberOfLines={2}>
+            {item.name}
+          </Text>
 
-      {/* Product Details */}
-      <View style={styles.detailsContainer}>
-        <Text style={styles.productName} numberOfLines={1}>
-          {item.name}
-        </Text>
-
-        <View style={styles.priceUnitContainer}>
           <View style={styles.priceContainer}>
-            <Text style={styles.priceText}>${item.sale_price}</Text>
-            <Text style={styles.unitText}>/{unit}</Text>
+            <View style={styles.priceRow}>
+              <Text style={styles.currentPrice}>
+                ${discountedPrice.toFixed(2)}
+              </Text>
+              <Text style={styles.unitText}>/{unit}</Text>
+              {hasPromotion && (
+                <Text style={styles.originalPrice}>
+                  ${item.sale_price.toFixed(2)}
+                </Text>
+              )}
+            </View>
           </View>
 
           {item.rating && (
             <View style={styles.ratingContainer}>
+              <Ionicons name="star" size={14} color="#FFD700" />
               <Text style={styles.ratingText}>{item.rating}</Text>
-              <Ionicons name="star" size={12} color="#FFD700" />
             </View>
           )}
-        </View>
 
-        {/* Weight/Size if available */}
-        {item.weight && (
-          <Text style={styles.weightText}>
-            {item.weight} {unit}
-          </Text>
-        )}
+          {/* Action Buttons */}
+          <View style={styles.actionContainer}>
+            {showQuantityControls ? (
+              <Animated.View
+                style={[
+                  styles.quantityContainer,
+                  {
+                    opacity: fadeAnim,
+                    transform: [{ translateY: slideAnim }],
+                  },
+                ]}
+              >
+                <TouchableOpacity
+                  style={[
+                    styles.quantityButton,
+                    styles.decrementButton,
+                    quantity <= 0 && styles.quantityButtonDisabled,
+                  ]}
+                  onPress={() => handleQuantityChangeWithAnimation(-1)}
+                  disabled={quantity <= 0}
+                  activeOpacity={0.8}
+                >
+                  <Text
+                    style={[
+                      styles.quantityButtonText,
+                      quantity <= 0 && styles.quantityButtonTextDisabled,
+                    ]}
+                  >
+                    -
+                  </Text>
+                </TouchableOpacity>
 
-        {/* Action Buttons */}
-        {quantity > 0 ? (
-          <View style={styles.quantityContainer}>
-            <TouchableOpacity
-              style={[styles.quantityButton, styles.decrementButton]}
-              onPress={() =>
-                dispatch(
-                  updateCartQuantity({ id: item._id, item: item, change: -1 })
-                )
-              }
-            >
-              <Text style={styles.quantityButtonText}>-</Text>
-            </TouchableOpacity>
+                {isEditing ? (
+                  <TextInput
+                    ref={inputRef}
+                    style={styles.quantityInput}
+                    value={inputValue}
+                    onChangeText={handleQuantityChange}
+                    keyboardType="numeric"
+                    selectTextOnFocus
+                    autoFocus
+                    onEndEditing={handleQuantitySubmit}
+                    blurOnSubmit
+                    maxLength={3}
+                    returnKeyType="done"
+                  />
+                ) : (
+                  <TouchableOpacity
+                    style={styles.quantityDisplay}
+                    onPress={handleQuantityInputFocus}
+                    activeOpacity={0.7}
+                  >
+                    <View style={styles.quantityUnitContainer}>
+                      <Text style={styles.quantityText}>{quantity}</Text>
+                      <Text style={styles.quantityUnitText}>{unit}</Text>
+                    </View>
+                  </TouchableOpacity>
+                )}
 
-            {isEditing ? (
-              <TextInput
-                ref={inputRef}
-                style={styles.quantityInput}
-                value={inputValue}
-                onChangeText={handleQuantityChange}
-                keyboardType="numeric"
-                selectTextOnFocus
-                autoFocus
-                onEndEditing={handleQuantitySubmit} // <-- only event that commits
-                blurOnSubmit
-                maxLength={3}
-              />
+                <TouchableOpacity
+                  style={[styles.quantityButton, styles.incrementButton]}
+                  onPress={() => handleQuantityChangeWithAnimation(1)}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.quantityButtonText}>+</Text>
+                </TouchableOpacity>
+              </Animated.View>
             ) : (
               <TouchableOpacity
-                style={styles.quantityDisplay}
-                onPress={handleQuantityInputFocus}
-                activeOpacity={0.7}
+                style={styles.addToCartButton}
+                onPress={handleAddToCart}
+                activeOpacity={0.9}
               >
-                <View style={styles.quantityUnitContainer}>
-                  <Text style={styles.quantityText}>{quantity}</Text>
-                  <Text style={styles.quantityUnitText}>{unit}</Text>
-                </View>
+                <Ionicons
+                  name="add"
+                  size={16}
+                  color="#fff"
+                  style={{ marginRight: 4 }}
+                />
+                <Text style={styles.addToCartText}>Add to cart</Text>
               </TouchableOpacity>
             )}
-
-            <TouchableOpacity
-              style={[styles.quantityButton, styles.incrementButton]}
-              onPress={() =>
-                dispatch(
-                  updateCartQuantity({ id: item._id, item: item, change: 1 })
-                )
-              }
-            >
-              <Text style={styles.quantityButtonText}>+</Text>
-            </TouchableOpacity>
           </View>
-        ) : (
-          <TouchableOpacity
-            style={styles.addToCartButton}
-            onPress={() =>
-              dispatch(
-                updateCartQuantity({ id: item._id, item: item, change: 1 })
-              )
-            }
-          >
-            <Text style={styles.addToCartText}>Add to cart</Text>
-          </TouchableOpacity>
-        )}
-      </View>
-    </View>
+        </View>
+      </TouchableOpacity>
+    </Animated.View>
   );
 };
 
+// styles remain unchanged
 const styles = StyleSheet.create({
   card: {
-    width: "47%",
-    backgroundColor: "white",
-    borderRadius: 12,
+    width: screenWidth < 400 ? "47%" : "48%",
+    backgroundColor: "#fff",
+    borderRadius: 16,
     marginBottom: 16,
     marginTop: 10,
     marginHorizontal: 4,
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 0 },
-    shadowOpacity: 0.2,
-    shadowRadius: 20,
-    elevation: 7,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 12,
+    elevation: 8,
     position: "relative",
-    overflow: "visible", // Prevents shadow clipping
+    overflow: "hidden",
+  },
+  gradientOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 40,
+    background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, transparent 100%)",
+    zIndex: 1,
   },
   favoriteButton: {
     position: "absolute",
-    top: 8,
-    right: 8,
+    top: 10,
+    right: 10,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    justifyContent: "center",
+    alignItems: "center",
     zIndex: 10,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  favoriteButtonActive: {
+    backgroundColor: primary,
   },
   discountTag: {
     position: "absolute",
     top: 0,
     left: 0,
-    backgroundColor: primary,
-    paddingHorizontal: 8,
-    borderTopStartRadius: 10,
-    paddingVertical: 4,
-    borderBottomRightRadius: 8,
+    backgroundColor: "#FF4757",
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderTopLeftRadius: 16,
+    borderBottomRightRadius: 12,
     zIndex: 5,
+    shadowColor: "#FF4757",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 4,
   },
   discountText: {
-    color: "white",
+    color: "#fff",
     fontSize: 10,
     fontWeight: "bold",
+    letterSpacing: 0.5,
   },
   imageContainer: {
     width: "100%",
-    height: 120, // Fixed height for uniformity
+    height: 140,
     overflow: "hidden",
-    borderTopRightRadius: 10,
-    borderTopLeftRadius: 10,
+    backgroundColor: "#f8f9fa",
   },
   productImage: {
     width: "100%",
     height: "100%",
-    borderTopRightRadius: 10,
-    borderTopLeftRadius: 10,
   },
   detailsContainer: {
-    padding: 12,
+    padding: 14,
+    flex: 1,
   },
   productName: {
-    color: "#333",
-    fontWeight: "500",
-    marginBottom: 6,
-    fontSize: 14,
-  },
-  priceUnitContainer: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    color: "#1a1a1a",
+    fontWeight: "600",
     marginBottom: 8,
+    fontSize: 14,
+    lineHeight: 20,
   },
   priceContainer: {
+    marginBottom: 8,
+  },
+  priceRow: {
     flexDirection: "row",
     alignItems: "baseline",
+    gap: 4,
   },
-  priceText: {
-    color: "#333",
+  currentPrice: {
+    color: primary,
     fontWeight: "bold",
     fontSize: 16,
+  },
+  originalPrice: {
+    color: "#999",
+    fontSize: 12,
+    textDecorationLine: "line-through",
+    fontWeight: "500",
   },
   unitText: {
     color: "#666",
     fontSize: 12,
-    marginLeft: 1,
-  },
-  weightText: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 8,
+    fontWeight: "500",
   },
   ratingContainer: {
     flexDirection: "row",
     alignItems: "center",
+    marginBottom: 12,
+    gap: 2,
   },
   ratingText: {
     fontSize: 12,
-    marginRight: 2,
-    color: "#888",
+    color: "#666",
+    fontWeight: "500",
+  },
+  actionContainer: {
+    marginTop: "auto",
   },
   quantityContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    height: 36,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 12,
+    padding: 4,
+    minHeight: 40,
   },
   quantityButton: {
-    width: 35,
-    height: 35,
-    borderRadius: 12,
+    width: 32,
+    height: 32,
+    borderRadius: 10,
+    backgroundColor: primary,
     alignItems: "center",
     justifyContent: "center",
+    shadowColor: primary,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  quantityButtonDisabled: {
+    backgroundColor: "#ddd",
+    shadowOpacity: 0,
+    elevation: 0,
   },
   decrementButton: {
     backgroundColor: primary,
@@ -379,15 +565,18 @@ const styles = StyleSheet.create({
     backgroundColor: primary,
   },
   quantityButtonText: {
-    color: "white",
+    color: "#fff",
     fontWeight: "bold",
     fontSize: 16,
+  },
+  quantityButtonTextDisabled: {
+    color: "#999",
   },
   quantityDisplay: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 5,
+    paddingHorizontal: 8,
   },
   quantityUnitContainer: {
     flexDirection: "row",
@@ -395,336 +584,48 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   quantityText: {
-    color: "#333",
-    fontWeight: "500",
-    fontSize: 14,
+    color: "#1a1a1a",
+    fontWeight: "600",
+    fontSize: 16,
     textAlign: "center",
   },
   quantityUnitText: {
     color: "#666",
     fontSize: 10,
     marginLeft: 2,
+    fontWeight: "500",
   },
   quantityInput: {
     flex: 1,
-    color: "#333",
-    fontWeight: "500",
-    minWidth: 30,
+    color: "#1a1a1a",
+    fontWeight: "600",
+    fontSize: 16,
     textAlign: "center",
-    borderBottomWidth: 1,
+    borderBottomWidth: 2,
     borderBottomColor: primary,
-    paddingVertical: 0,
-    marginHorizontal: 5,
-    height: 30,
+    paddingVertical: 4,
+    marginHorizontal: 8,
+    minHeight: 32,
   },
   addToCartButton: {
-    height: 36,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: primary,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: primary,
     alignItems: "center",
     justifyContent: "center",
+    flexDirection: "row",
+    shadowColor: primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
   },
   addToCartText: {
-    color: primary,
-    fontWeight: "500",
-    fontSize: 13,
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 14,
+    letterSpacing: 0.5,
   },
 });
 
 export default ProductItemCard;
-
-/* ProductItemCard.tsx
-   — keeps heart state in sync with the Redux pantry slice —
-*/
-// "use client";
-
-// import { useRef, useEffect, useMemo, useState } from "react";
-// import {
-//   View,
-//   Text,
-//   Image,
-//   StyleSheet,
-//   TouchableOpacity,
-//   TextInput,
-//   Keyboard,
-// } from "react-native";
-// import { Ionicons } from "@expo/vector-icons";
-// import { useDispatch, useSelector } from "react-redux";
-// import Constants from "expo-constants";
-
-// import { primary } from "@/constants/colors";
-// import { updateCartQuantity } from "@/store/reducers/cartSlice";
-// import {
-//   makeProductPantry,
-//   getPantryProducts, // <-- still used when we’re on the pantry screen
-// } from "@/store/actions/pantryActions";
-
-// const { apiUrl } = Constants.expoConfig?.extra ?? { apiUrl: "" };
-
-// /* -------------------------------------------------------------------------- */
-// /*                                    Card                                    */
-// /* -------------------------------------------------------------------------- */
-// const ProductItemCard = ({
-//   item,
-//   inPantry = false, // screen can pass “true” if this card lives in Pantry view
-// }) => {
-//   const dispatch = useDispatch();
-
-//   /* ──────────────── selectors ──────────────── */
-//   const cartItems = useSelector((s: any) => s.cart.data);
-
-//   // Build a Set with *all* favourited product ids → O(1) lookup
-//   const pantryIds: Set<string> = useSelector(
-//     (s: any) =>
-//       new Set(
-//         (s.pantry.data ?? [])
-//           .filter((p: any) => p.product)
-//           .map((p: any) => p.product._id)
-//       )
-//   );
-
-//   /* ─────────────── derived props ───────────── */
-//   const quantity =
-//     cartItems.find((ci: any) => ci._id === item._id)?.orderQuantity ?? 0;
-
-//   const isFavourite = pantryIds.has(item._id);
-//   const unit = item?.uom?.slug ?? "kg";
-
-//   /* ─────────────── local state (for qty edit) ───────────── */
-//   const [inputValue, setInputValue] = useState(quantity.toString());
-//   const [isEditing, setIsEditing] = useState(false);
-//   const inputRef = useRef<TextInput | null>(null);
-//   const hasSubmitted = useRef(false);
-
-//   /* keep input text in sync when quantity changes from elsewhere */
-//   useEffect(() => {
-//     if (!isEditing) setInputValue(quantity.toString());
-//   }, [quantity, isEditing]);
-
-//   /* auto-commit when keyboard is dismissed */
-//   useEffect(() => {
-//     const hide = Keyboard.addListener("keyboardDidHide", () => {
-//       if (isEditing) handleQuantitySubmit();
-//     });
-//     return () => hide.remove();
-//   }, [isEditing, inputValue]);
-
-//   /* ─────────────── helpers ───────────── */
-//   const changeQty = (delta: number) =>
-//     dispatch(updateCartQuantity({ id: item._id, item, change: delta }));
-
-//   const handleQuantitySubmit = () => {
-//     if (!isEditing) return;
-
-//     let newQty = parseInt(inputValue, 10);
-//     if (Number.isNaN(newQty)) newQty = 0;
-//     newQty = Math.max(0, newQty);
-
-//     if (newQty !== quantity) changeQty(newQty - quantity);
-
-//     setIsEditing(false);
-//     setTimeout(() => (hasSubmitted.current = false), 150);
-//   };
-
-//   const beginEdit = () => {
-//     if (hasSubmitted.current) return;
-//     hasSubmitted.current = true;
-//     setIsEditing(true);
-//     setTimeout(() => inputRef.current?.focus(), 50);
-//   };
-
-//   const toggleFavourite = async () => {
-//     try {
-//       await dispatch(makeProductPantry({ product: item._id })).unwrap();
-//       if (inPantry) dispatch(getPantryProducts()); // keep pantry screen fresh
-//     } catch (err) {
-//       console.warn("Favourite toggle failed", err);
-//     }
-//   };
-
-//   /* ─────────────── render ───────────── */
-//   return (
-//     <View style={styles.card}>
-//       {/* heart */}
-//       <TouchableOpacity style={styles.heart} onPress={toggleFavourite}>
-//         <Ionicons
-//           name={isFavourite ? "heart" : "heart-outline"}
-//           size={20}
-//           color={isFavourite ? primary : "#BDBDBD"}
-//         />
-//       </TouchableOpacity>
-
-//       {/* discount */}
-//       {item.promotion_status === "active" && (
-//         <View style={styles.discount}>
-//           <Text style={styles.discountTxt}>
-//             {item.promotion_type === "percentage"
-//               ? `${item.promotion_value}% OFF`
-//               : `-$${item.promotion_value}`}
-//           </Text>
-//         </View>
-//       )}
-
-//       {/* image */}
-//       <View style={styles.imgWrap}>
-//         <Image
-//           source={{
-//             uri:
-//               item.photo && apiUrl
-//                 ? `${apiUrl}products/photo/${item.photo}`
-//                 : "https://via.placeholder.com/150",
-//           }}
-//           style={styles.img}
-//         />
-//       </View>
-
-//       {/* details */}
-//       <View style={styles.body}>
-//         <Text style={styles.name} numberOfLines={1}>
-//           {item.name}
-//         </Text>
-
-//         <View style={styles.row}>
-//           <Text style={styles.price}>${item.sale_price}</Text>
-//           <Text style={styles.unit}>/{unit}</Text>
-//         </View>
-
-//         {/* cart controls */}
-//         {quantity > 0 ? (
-//           <View style={styles.qtyBox}>
-//             <TouchableOpacity
-//               style={styles.qtyBtn}
-//               onPress={() => changeQty(-1)}
-//             >
-//               <Text style={styles.qtyBtnTxt}>-</Text>
-//             </TouchableOpacity>
-
-//             {isEditing ? (
-//               <TextInput
-//                 ref={inputRef}
-//                 style={styles.qtyInput}
-//                 value={inputValue}
-//                 onChangeText={(t) => /^\d*$/.test(t) && setInputValue(t)}
-//                 keyboardType="numeric"
-//                 blurOnSubmit
-//                 onEndEditing={handleQuantitySubmit}
-//                 maxLength={3}
-//               />
-//             ) : (
-//               <TouchableOpacity
-//                 style={styles.qtyDisplay}
-//                 onPress={beginEdit}
-//                 activeOpacity={0.7}
-//               >
-//                 <Text style={styles.qtyTxt}>{quantity}</Text>
-//                 <Text style={styles.qtyUnit}>{unit}</Text>
-//               </TouchableOpacity>
-//             )}
-
-//             <TouchableOpacity
-//               style={styles.qtyBtn}
-//               onPress={() => changeQty(1)}
-//             >
-//               <Text style={styles.qtyBtnTxt}>+</Text>
-//             </TouchableOpacity>
-//           </View>
-//         ) : (
-//           <TouchableOpacity style={styles.addBtn} onPress={() => changeQty(1)}>
-//             <Text style={styles.addTxt}>Add to cart</Text>
-//           </TouchableOpacity>
-//         )}
-//       </View>
-//     </View>
-//   );
-// };
-
-// export default ProductItemCard;
-
-// /* -------------------------------------------------------------------------- */
-// /*                                  styles                                    */
-// /* -------------------------------------------------------------------------- */
-// const styles = StyleSheet.create({
-//   card: {
-//     width: "47%",
-//     marginHorizontal: 4,
-//     marginTop: 10,
-//     marginBottom: 16,
-//     borderRadius: 12,
-//     backgroundColor: "#fff",
-//     elevation: 7,
-//     overflow: "visible",
-//   },
-
-//   heart: { position: "absolute", top: 8, right: 8, zIndex: 5 },
-
-//   discount: {
-//     position: "absolute",
-//     top: 0,
-//     left: 0,
-//     backgroundColor: primary,
-//     paddingHorizontal: 8,
-//     paddingVertical: 4,
-//     borderTopLeftRadius: 10,
-//     borderBottomRightRadius: 8,
-//     zIndex: 5,
-//   },
-//   discountTxt: { color: "#fff", fontSize: 10, fontWeight: "bold" },
-
-//   imgWrap: {
-//     height: 120,
-//     overflow: "hidden",
-//     borderTopLeftRadius: 10,
-//     borderTopRightRadius: 10,
-//   },
-//   img: { width: "100%", height: "100%" },
-
-//   body: { padding: 12 },
-//   name: { fontSize: 14, fontWeight: "500", marginBottom: 6, color: "#333" },
-
-//   row: { flexDirection: "row", alignItems: "baseline", marginBottom: 8 },
-//   price: { fontSize: 16, fontWeight: "bold", color: "#333" },
-//   unit: { fontSize: 12, color: "#666", marginLeft: 1 },
-
-//   /* quantity area */
-//   qtyBox: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     justifyContent: "space-between",
-//     height: 36,
-//   },
-//   qtyBtn: {
-//     width: 35,
-//     height: 35,
-//     borderRadius: 12,
-//     backgroundColor: primary,
-//     alignItems: "center",
-//     justifyContent: "center",
-//   },
-//   qtyBtnTxt: { color: "#fff", fontSize: 16, fontWeight: "bold" },
-
-//   qtyDisplay: { flex: 1, alignItems: "center", justifyContent: "center" },
-//   qtyTxt: { fontSize: 14, fontWeight: "500", color: "#333" },
-//   qtyUnit: { fontSize: 10, color: "#666", marginLeft: 2 },
-
-//   qtyInput: {
-//     flex: 1,
-//     height: 30,
-//     textAlign: "center",
-//     borderBottomWidth: 1,
-//     borderBottomColor: primary,
-//     color: "#333",
-//     fontWeight: "500",
-//   },
-
-//   /* add-to-cart */
-//   addBtn: {
-//     height: 36,
-//     borderRadius: 8,
-//     borderWidth: 1,
-//     borderColor: primary,
-//     alignItems: "center",
-//     justifyContent: "center",
-//   },
-//   addTxt: { color: primary, fontSize: 13, fontWeight: "500" },
-// });

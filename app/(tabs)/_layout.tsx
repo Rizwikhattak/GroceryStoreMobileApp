@@ -1,16 +1,6 @@
 "use client";
 
-import {
-  View,
-  Image,
-  Pressable,
-  Keyboard,
-  Platform,
-  StyleSheet,
-  Animated,
-  Dimensions,
-} from "react-native";
-import { useEffect, useState, useRef } from "react";
+import { View, Image, Pressable, StyleSheet, Dimensions } from "react-native";
 import { Tabs } from "expo-router";
 import { icons } from "@/constants/icons";
 import { primary } from "@/constants/colors";
@@ -27,116 +17,30 @@ const TabIcon = ({
   customIconStyle = null,
   customTintColor = "#9CA3AF",
 }: any) => {
-  const scaleAnim = useRef(new Animated.Value(focused ? 1 : 0.9)).current;
-  const translateYAnim = useRef(new Animated.Value(focused ? -2 : 0)).current;
-  const pulseAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    if (focused) {
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 1.1,
-          useNativeDriver: true,
-          tension: 250,
-          friction: 6,
-        }),
-        Animated.spring(translateYAnim, {
-          toValue: -4,
-          useNativeDriver: true,
-          tension: 250,
-          friction: 6,
-        }),
-      ]).start();
-
-      // Pulse animation for cart
-      if (title === "Cart") {
-        const pulse = () => {
-          Animated.sequence([
-            Animated.timing(pulseAnim, {
-              toValue: 1.05,
-              duration: 600,
-              useNativeDriver: true,
-            }),
-            Animated.timing(pulseAnim, {
-              toValue: 1,
-              duration: 600,
-              useNativeDriver: true,
-            }),
-          ]).start(() => pulse());
-        };
-        pulse();
-      }
-    } else {
-      Animated.parallel([
-        Animated.spring(scaleAnim, {
-          toValue: 0.9,
-          useNativeDriver: true,
-          tension: 250,
-          friction: 6,
-        }),
-        Animated.spring(translateYAnim, {
-          toValue: 0,
-          useNativeDriver: true,
-          tension: 250,
-          friction: 6,
-        }),
-      ]).start();
-    }
-  }, [focused]);
-
   if (title === "Cart") {
     return (
       <View style={styles.cartContainer}>
-        <Animated.View
-          style={[
-            styles.cartButton,
-            {
-              transform: [{ scale: pulseAnim }],
-            },
-          ]}
-        >
+        <View style={styles.cartButton}>
           <LinearGradient
             colors={[primary, `${primary}DD`]}
             style={styles.cartGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
           >
-            <Animated.View
-              style={{
-                transform: [
-                  { scale: scaleAnim },
-                  { translateY: translateYAnim },
-                ],
-              }}
-            >
-              <Image
-                source={icon}
-                tintColor="#ffffff"
-                style={styles.cartIcon}
-              />
-            </Animated.View>
+            <Image source={icon} tintColor="#ffffff" style={styles.cartIcon} />
           </LinearGradient>
-        </Animated.View>
+        </View>
         {focused && (
-          <Animated.View
-            style={[styles.cartIndicator, { backgroundColor: primary }]}
-          />
+          <View style={[styles.cartIndicator, { backgroundColor: primary }]} />
         )}
       </View>
     );
   }
 
   return (
-    <Animated.View
-      style={[
-        styles.tabIconContainer,
-        {
-          transform: [{ scale: scaleAnim }, { translateY: translateYAnim }],
-        },
-      ]}
-    >
+    <View style={styles.tabIconContainer}>
       {focused && (
-        <Animated.View
+        <View
           style={[styles.activeBackground, { backgroundColor: `${primary}15` }]}
         />
       )}
@@ -148,90 +52,15 @@ const TabIcon = ({
       {focused && (
         <View style={[styles.activeDot, { backgroundColor: primary }]} />
       )}
-    </Animated.View>
+    </View>
   );
 };
 
 const EnhancedTabBar = () => {
-  const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const slideAnim = useRef(new Animated.Value(0)).current;
-  const backgroundAnim = useRef(new Animated.Value(0)).current;
-  const pressAnim = useRef(new Animated.Value(1)).current;
-
-  useEffect(() => {
-    const keyboardDidShowListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillShow" : "keyboardDidShow",
-      () => {
-        setKeyboardVisible(true);
-        Animated.parallel([
-          Animated.timing(slideAnim, {
-            toValue: 100,
-            duration: 180,
-            useNativeDriver: true,
-          }),
-          Animated.timing(backgroundAnim, {
-            toValue: 1,
-            duration: 180,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }
-    );
-
-    const keyboardDidHideListener = Keyboard.addListener(
-      Platform.OS === "ios" ? "keyboardWillHide" : "keyboardDidHide",
-      () => {
-        setKeyboardVisible(false);
-        Animated.parallel([
-          Animated.timing(slideAnim, {
-            toValue: 0,
-            duration: 180,
-            useNativeDriver: true,
-          }),
-          Animated.timing(backgroundAnim, {
-            toValue: 0,
-            duration: 180,
-            useNativeDriver: true,
-          }),
-        ]).start();
-      }
-    );
-
-    return () => {
-      keyboardDidShowListener.remove();
-      keyboardDidHideListener.remove();
-    };
-  }, []);
-
-  const handlePressIn = () => {
-    Animated.spring(pressAnim, {
-      toValue: 0.92,
-      useNativeDriver: true,
-      tension: 300,
-      friction: 8,
-    }).start();
-  };
-
-  const handlePressOut = () => {
-    Animated.spring(pressAnim, {
-      toValue: 1,
-      useNativeDriver: true,
-      tension: 300,
-      friction: 8,
-    }).start();
-  };
-
   return (
     <>
       <StatusBar style="dark" translucent backgroundColor="transparent" />
-      <Animated.View
-        style={[
-          styles.tabBarWrapper,
-          {
-            transform: [{ translateY: slideAnim }],
-          },
-        ]}
-      >
+      <View style={styles.tabBarWrapper}>
         <View style={styles.tabBarBackground}>
           <LinearGradient
             colors={["#FFFFFF", "#F8FAFC"]}
@@ -242,20 +71,17 @@ const EnhancedTabBar = () => {
         </View>
         <Tabs
           screenOptions={{
+            headerShown: false,
             tabBarShowLabel: false,
-            tabBarItemStyle: styles.tabBarItem,
-            tabBarButton: (props) => (
-              <Animated.View style={{ transform: [{ scale: pressAnim }] }}>
-                <Pressable
-                  {...props}
-                  onPressIn={handlePressIn}
-                  onPressOut={handlePressOut}
-                  android_ripple={{ color: `${primary}20`, borderless: true }}
-                  style={styles.pressableArea}
-                />
-              </Animated.View>
-            ),
+            tabBarHideOnKeyboard: true,
             tabBarStyle: styles.tabBar,
+            tabBarButton: (props) => (
+              <Pressable
+                {...props}
+                android_ripple={{ color: `${primary}20`, borderless: true }}
+                style={styles.pressableArea}
+              />
+            ),
           }}
         >
           <Tabs.Screen
@@ -317,7 +143,7 @@ const EnhancedTabBar = () => {
             }}
           />
         </Tabs>
-      </Animated.View>
+      </View>
     </>
   );
 };
@@ -413,10 +239,11 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   cartButton: {
-    width: 75,
-    height: 75,
+    width: 65,
+    height: 65,
     borderRadius: 37.5,
-    marginTop: -25,
+    // marginTop: -25,
+    marginTop: 0,
     elevation: 20,
     shadowColor: primary,
     shadowOffset: {
@@ -436,8 +263,8 @@ const styles = StyleSheet.create({
     borderColor: "#ffffff",
   },
   cartIcon: {
-    width: 30,
-    height: 30,
+    width: 25,
+    height: 25,
   },
   cartIndicator: {
     position: "absolute",

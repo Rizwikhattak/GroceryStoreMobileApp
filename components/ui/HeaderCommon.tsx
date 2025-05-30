@@ -7,11 +7,15 @@ import React, { useState } from "react";
 import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch } from "react-redux";
 import Constants from "expo-constants";
+import { Heart } from "lucide-react-native";
 const HeaderCommon = ({
   title,
   subtitle,
   isSearchEnabled = false,
   isLogoutEnabled = false,
+  isHeartEnabled = false,
+  isFavorite,
+  setIsFavorite,
 }: any) => {
   const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
@@ -73,6 +77,20 @@ const HeaderCommon = ({
               <Ionicons name="log-out-outline" size={22} color={primary} />
             </View>
           </TouchableOpacity>
+        ) : isHeartEnabled ? (
+          <TouchableOpacity
+            style={[
+              styles.headerButton,
+              isFavorite && styles.favoriteButtonActive,
+            ]}
+            onPress={() => setIsFavorite(!isFavorite)}
+          >
+            <Heart
+              color={isFavorite ? "#fff" : "#666"}
+              size={24}
+              fill={isFavorite ? "#fff" : "none"}
+            />
+          </TouchableOpacity>
         ) : (
           <View style={styles.placeholder} />
         )}
@@ -101,6 +119,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowOffset: { width: 0, height: 2 },
     shadowRadius: 4,
+  },
+  headerButton: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+    justifyContent: "center",
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  favoriteButtonActive: {
+    backgroundColor: primary,
   },
   logoutButton: {
     padding: 4,

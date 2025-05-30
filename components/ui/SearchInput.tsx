@@ -9,69 +9,19 @@ import {
   StyleSheet,
   Text,
   Image,
+  KeyboardAvoidingView,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
 import { Search } from "lucide-react-native";
-
+import { getProducts } from "@/store/actions/productsActions";
+import { useDispatch } from "react-redux";
+import { primary } from "@/constants/colors";
+import Constants from "expo-constants";
+import { useRouter } from "expo-router";
+const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 // Sample grocery products data
-const groceryProducts = [
-  {
-    id: 1,
-    name: "Cherries",
-    price: "$3/kg",
-    image:
-      "https://images.unsplash.com/photo-1528821128474-27f963b062bf?w=100&h=100&fit=crop",
-  },
-  {
-    id: 2,
-    name: "Cucumber",
-    price: "$12/kg",
-    image:
-      "https://images.unsplash.com/photo-1449300079323-02e209d9d3a6?w=100&h=100&fit=crop",
-  },
-  {
-    id: 3,
-    name: "Leeche",
-    price: "$6/kg",
-    image:
-      "https://images.unsplash.com/photo-1577234286642-fc512a5f8f11?w=100&h=100&fit=crop",
-  },
-  {
-    id: 4,
-    name: "Tomato",
-    price: "$9/kg",
-    image:
-      "https://images.unsplash.com/photo-1546470427-e26264be0b0d?w=100&h=100&fit=crop",
-  },
-  {
-    id: 5,
-    name: "Chicken Breast",
-    price: "$15/kg",
-    image:
-      "https://images.unsplash.com/photo-1604503468506-a8da13d82791?w=100&h=100&fit=crop",
-  },
-  {
-    id: 6,
-    name: "Beef Steak",
-    price: "$25/kg",
-    image:
-      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=100&h=100&fit=crop",
-  },
-  {
-    id: 7,
-    name: "Fresh Salmon",
-    price: "$20/kg",
-    image:
-      "https://images.unsplash.com/photo-1544943910-4c1dc44aab44?w=100&h=100&fit=crop",
-  },
-  {
-    id: 8,
-    name: "Spinach",
-    price: "$4/kg",
-    image:
-      "https://images.unsplash.com/photo-1576045057995-568f588f82fb?w=100&h=100&fit=crop",
-  },
-];
 
 interface Product {
   id: number;
@@ -89,42 +39,69 @@ const SearchInputAlternative: React.FC<SearchInputProps> = ({
 }) => {
   const [searchText, setSearchText] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
-
-  const handleSearchChange = (text: string) => {
-    setSearchText(text);
-
-    if (text.length > 0) {
-      const filtered = groceryProducts.filter((product) =>
-        product.name.toLowerCase().includes(text.toLowerCase())
-      );
-      setFilteredProducts(filtered);
+  const dispatch = useDispatch();
+  const router = useRouter();
+  const handleSearchChange = async (text: string) => {
+    try {
+      setSearchText(text);
+      setIsLoading(true);
       setShowDropdown(true);
-    } else {
-      setShowDropdown(false);
-      setFilteredProducts([]);
+      if (text.length > 0) {
+        // const filtered = groceryProducts.filter((product) =>
+        //   product.name.toLowerCase().includes(text.toLowerCase())
+        // );
+        // setFilteredProducts(filtered);
+        const filtered = await dispatch(
+          getProducts({ search: text.toLowerCase(), limit: 20 })
+        ).unwrap();
+        console.log(filtered);
+        setFilteredProducts(filtered.list);
+      } else {
+        setShowDropdown(false);
+        setFilteredProducts([]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  const handleProductSelect = (product: Product) => {
-    setSearchText(product.name);
+  const handleProductSelect = (product: any) => {
+    router.push({
+      pathname: "/ProductDetailsPage",
+      params: {
+        productParam: JSON.stringify(product),
+      },
+    });
+    setSearchText("");
     setShowDropdown(false);
     onProductSelect?.(product);
   };
 
-  const renderProductItem = (item: Product) => (
-    <TouchableOpacity
-      key={item.id}
-      style={styles.dropdownItem}
-      onPress={() => handleProductSelect(item)}
-    >
-      <Image source={{ uri: item.image }} style={styles.productImage} />
-      <View style={styles.productInfo}>
-        <Text style={styles.productName}>{item.name}</Text>
-        <Text style={styles.productPrice}>{item.price}</Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const renderProductItem = (item: any) => {
+    const unit = item?.uom?.slug || "kg";
+    return (
+      <TouchableOpacity
+        key={item.id}
+        style={styles.dropdownItem}
+        onPress={() => handleProductSelect(item)}
+      >
+        <Image
+          source={{ uri: `${apiUrl}products/photo/${item.photo}` }}
+          style={styles.productImage}
+        />
+        <View style={styles.productInfo}>
+          <Text style={styles.productName}>{item.name}</Text>
+          <Text style={styles.productPrice}>
+            $ {item.sale_price}/{unit}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   return (
     <View style={styles.container}>
@@ -151,14 +128,20 @@ const SearchInputAlternative: React.FC<SearchInputProps> = ({
       {/* Inline Dropdown - Fixed rendering */}
       {showDropdown && (
         <View style={styles.dropdownContainer /* now overflow hidden */}>
-          <ScrollView
-            style={styles.dropdown}
-            keyboardShouldPersistTaps="handled"
-            nestedScrollEnabled // lets the inner view keep the gesture on Android
-            showsVerticalScrollIndicator
-          >
-            {filteredProducts.map(renderProductItem)}
-          </ScrollView>
+          {isLoading ? (
+            <View style={{ padding: 20 }}>
+              <ActivityIndicator size="large" color={primary} />
+            </View>
+          ) : (
+            <ScrollView
+              style={styles.dropdown}
+              keyboardShouldPersistTaps="handled"
+              nestedScrollEnabled // lets the inner view keep the gesture on Android
+              showsVerticalScrollIndicator
+            >
+              {filteredProducts.map(renderProductItem)}
+            </ScrollView>
+          )}
         </View>
       )}
     </View>
@@ -229,6 +212,11 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 14,
     color: "#666",
+  },
+  weightText: {
+    fontSize: 12,
+    color: "#666",
+    marginBottom: 8,
   },
   noResultsContainer: {
     padding: 20,

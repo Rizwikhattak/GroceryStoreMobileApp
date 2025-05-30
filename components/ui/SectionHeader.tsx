@@ -16,14 +16,10 @@ const SectionHeader = ({
 }: SectionHeaderProps) => {
   return (
     <View style={styles.container}>
-      <AppText variant="semiBold" style={styles.title}>
-        {title}
-      </AppText>
+      <Text style={styles.title}>{title}</Text>
       {showViewAll && (
         <TouchableOpacity style={styles.viewAllButton} onPress={onViewAll}>
-          <AppText variant="bold" style={styles.viewAllText}>
-            View All
-          </AppText>
+          <Text style={styles.viewAllText}>View All</Text>
           <ChevronRight size={16} color={primary} />
         </TouchableOpacity>
       )}

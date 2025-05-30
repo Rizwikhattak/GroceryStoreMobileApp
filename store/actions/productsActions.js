@@ -60,7 +60,7 @@ export const getAllFeaturedProducts = createAsyncThunk(
 );
 export const getAllProducts = createAsyncThunk(
   "products/getAllProducts",
-  async ({ _id = 0 }, { rejectWithValue }) => {
+  async ({ _id = 0, search = "" }, { rejectWithValue }) => {
     try {
       const response = await API_COMMON(
         "getAll",
@@ -78,18 +78,21 @@ export const getAllProducts = createAsyncThunk(
 export const getProducts = createAsyncThunk(
   "products/getProducts",
   async (
-    { category_slug = null, sub_category = null },
+    { category_slug = null, sub_category = null, search = "", limit = 100 },
     { rejectWithValue }
   ) => {
     try {
-      const response = await API_COMMON(
-        "getAll",
-        "json",
+      const url =
         sub_category !== null
           ? `${PRODUCTS_API}?sub_category=${sub_category}`
           : category_slug !== null
           ? `${PRODUCTS_API}?category_slug=${category_slug}`
-          : `${PRODUCTS_API}`,
+          : `${PRODUCTS_API}?name=${search}&limit=${limit}`;
+      console.log(url);
+      const response = await API_COMMON(
+        "getAll",
+        "json",
+        url,
         "Error in fetching products",
         null
       );
