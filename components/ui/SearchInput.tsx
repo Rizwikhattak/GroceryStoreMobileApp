@@ -30,13 +30,11 @@ interface Product {
   image: string;
 }
 
-interface SearchInputProps {
-  onProductSelect?: (product: Product) => void;
-}
-
-const SearchInputAlternative: React.FC<SearchInputProps> = ({
+const SearchInputAlternative = ({
   onProductSelect,
-}) => {
+  searchFilters = {},
+  enableDropdown = true,
+}: any) => {
   const [searchText, setSearchText] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -53,10 +51,13 @@ const SearchInputAlternative: React.FC<SearchInputProps> = ({
         //   product.name.toLowerCase().includes(text.toLowerCase())
         // );
         // setFilteredProducts(filtered);
-        const filtered = await dispatch(
-          getProducts({ search: text.toLowerCase(), limit: 20 })
-        ).unwrap();
-        console.log(filtered);
+        const filtersPayload = {
+          search: text.toLowerCase(),
+          limit: 20,
+          ...searchFilters,
+        };
+        console.log("Wowwwww gogo ogog", filtersPayload);
+        const filtered = await dispatch(getProducts(filtersPayload)).unwrap();
         setFilteredProducts(filtered.list);
       } else {
         setShowDropdown(false);
@@ -126,7 +127,7 @@ const SearchInputAlternative: React.FC<SearchInputProps> = ({
       </View>
 
       {/* Inline Dropdown - Fixed rendering */}
-      {showDropdown && (
+      {showDropdown && enableDropdown && (
         <View style={styles.dropdownContainer /* now overflow hidden */}>
           {isLoading ? (
             <View style={{ padding: 20 }}>

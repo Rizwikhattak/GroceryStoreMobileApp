@@ -311,7 +311,7 @@ const SignupScreen = () => {
 
             {/* File Upload */}
             <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Upload Document</Text>
+              <Text style={styles.inputLabel}>Upload Driver Liscence</Text>
               <TouchableOpacity
                 onPress={pickDocument}
                 style={styles.inputContainer}

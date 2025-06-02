@@ -32,6 +32,35 @@ const categorySkeletonStyles = StyleSheet.create({
     marginRight: 12,
   },
 });
+export const SubcategorySkeleton = ({ length = 4 }) => {
+  return (
+    <SkeletonLoading background="#e0e0e0" highlight="#f5f5f5">
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={SubcategorySkeletonStyles.container}
+      >
+        {Array.from({ length: length }).map((_, index) => (
+          <View key={index} style={SubcategorySkeletonStyles.item} />
+        ))}
+      </ScrollView>
+    </SkeletonLoading>
+  );
+};
+
+const SubcategorySkeletonStyles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+  },
+  item: {
+    width: 80,
+    height: 40,
+    borderRadius: 100,
+    backgroundColor: "#e0e0e0",
+    marginRight: 12,
+  },
+});
 
 export const ProductsSkeleton = ({ length = 4 }) => {
   return (
@@ -40,9 +69,11 @@ export const ProductsSkeleton = ({ length = 4 }) => {
         {Array.from({ length: length }).map((_, index) => (
           <View key={index} style={productsSkeletonStyles.card}>
             <View style={productsSkeletonStyles.image} />
-            <View style={productsSkeletonStyles.textLineShort} />
-            <View style={productsSkeletonStyles.textLineLong} />
-            <View style={productsSkeletonStyles.button} />
+            <View style={{ padding: 5 }}>
+              <View style={productsSkeletonStyles.textLineShort} />
+              <View style={productsSkeletonStyles.textLineLong} />
+              <View style={productsSkeletonStyles.button} />
+            </View>
           </View>
         ))}
       </View>
@@ -60,7 +91,7 @@ const productsSkeletonStyles = StyleSheet.create({
   card: {
     width: "48%",
     marginBottom: 20,
-    padding: 5,
+    // padding: 5,
     borderColor: "#e0e0e0",
     borderWidth: 2,
     borderRadius: 8,
@@ -69,7 +100,7 @@ const productsSkeletonStyles = StyleSheet.create({
   image: {
     width: "100%",
     height: 120,
-    borderRadius: 8,
+    borderRadius: 6,
     backgroundColor: "#e0e0e0",
   },
   textLineShort: {

@@ -16,6 +16,8 @@ const HeaderCommon = ({
   isHeartEnabled = false,
   isFavorite,
   setIsFavorite,
+  searchFilters = {},
+  enableDropdown,
 }: any) => {
   const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
@@ -97,7 +99,10 @@ const HeaderCommon = ({
       </View>
       {showSearch && (
         <View style={styles.searchBox}>
-          <SearchInput />
+          <SearchInput
+            searchFilters={searchFilters}
+            enableDropdown={enableDropdown}
+          />
         </View>
       )}
     </View>

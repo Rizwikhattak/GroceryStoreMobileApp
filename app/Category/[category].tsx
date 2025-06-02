@@ -19,6 +19,11 @@ import { getProducts } from "@/store/actions/productsActions";
 import { getSubCategories } from "@/store/actions/categoriesActions";
 import SearchInput from "@/components/ui/SearchInput";
 import HeaderCommon from "@/components/ui/HeaderCommon";
+import {
+  CategorySkeleton,
+  ProductsSkeleton,
+  SubcategorySkeleton,
+} from "@/components/ui/Skeletons";
 
 /* ---------- local monochrome palette ---------- */
 
@@ -44,8 +49,13 @@ const SubCategoryScreen = () => {
   }, [subcategories?.data]);
 
   const [selectedSubcategory, setSelectedSubcategory] = useState(-10);
+  const [prodLimit, setProdLimit] = useState(20);
   const filteredProducts = products.data || [];
-
+  const searchFilters = {
+    category_slug: `${categories.selectedCategory.slug}`,
+  };
+  if (selectedSubcategory !== -10)
+    searchFilters.sub_category = `${selectedSubcategory}`;
   /* ---------- header animation ---------- */
   const headerOpacity = scrollY.interpolate({
     inputRange: [0, 100],
@@ -77,23 +87,21 @@ const SubCategoryScreen = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        if (selectedSubcategory === -10) {
-          if (categories.selectedCategory?.slug) {
-            await dispatch(
-              getProducts({ category_slug: categories.selectedCategory.slug })
-            ).unwrap();
-          }
-        } else {
-          await dispatch(
-            getProducts({ sub_category: selectedSubcategory })
-          ).unwrap();
-        }
+        const prodFilters = {
+          category_slug: categories.selectedCategory.slug,
+        };
+
+        if (selectedSubcategory !== -10)
+          prodFilters.sub_category = selectedSubcategory;
+        if (prodLimit !== -1) prodFilters.limit = prodLimit;
+
+        dispatch(getProducts(prodFilters)).unwrap();
       } catch (err) {
         console.error("Error fetching products:", err);
       }
     };
     fetchProducts();
-  }, [selectedSubcategory, categories.selectedCategory?.slug, dispatch]);
+  }, [selectedSubcategory, dispatch, prodLimit]);
 
   /* ---------- renderers ---------- */
   const renderSubcategoryItem = ({ item }) => (
@@ -127,6 +135,8 @@ const SubCategoryScreen = () => {
         title={category}
         subtitle={`${filteredProducts?.length || 0} products`}
         isSearchEnabled={true}
+        searchFilters={searchFilters}
+        enableDropdown={false}
       />
 
       {/* ---------- Sub-categories ---------- */}
@@ -140,15 +150,19 @@ const SubCategoryScreen = () => {
           </View>
         </View>
 
-        <FlatList
-          data={subcategoriesList}
-          renderItem={renderSubcategoryItem}
-          keyExtractor={(item) => item._id.toString()}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.subcategoriesScrollContent}
-          ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
-        />
+        {subcategories.isLoading ? (
+          <SubcategorySkeleton />
+        ) : (
+          <FlatList
+            data={subcategoriesList}
+            renderItem={renderSubcategoryItem}
+            keyExtractor={(item) => item._id.toString()}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.subcategoriesScrollContent}
+            ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
+          />
+        )}
       </View>
 
       {/* ---------- Products ---------- */}
@@ -158,27 +172,35 @@ const SubCategoryScreen = () => {
             <Text style={styles.productsTitle}>Products</Text>
             <Text style={styles.productsSubtitle}>Fresh & Quality Items</Text>
           </View>
-          <TouchableOpacity style={styles.viewAllButton} activeOpacity={0.7}>
+          <TouchableOpacity
+            style={styles.viewAllButton}
+            activeOpacity={0.7}
+            onPress={() => setProdLimit(-1)}
+          >
             <Text style={styles.viewAllText}>View All</Text>
             <Ionicons name="chevron-forward" size={16} color={shades.white} />
           </TouchableOpacity>
         </View>
 
         {filteredProducts.length > 0 ? (
-          <Animated.FlatList
-            data={filteredProducts}
-            renderItem={({ item }) => <ProductItemCard item={item} />}
-            keyExtractor={(item) => item._id.toString()}
-            numColumns={2}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.productsGrid}
-            onScroll={Animated.event(
-              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-              { useNativeDriver: true }
-            )}
-            scrollEventThrottle={16}
-            columnWrapperStyle={styles.productRow}
-          />
+          products.isLoading ? (
+            <ProductsSkeleton />
+          ) : (
+            <Animated.FlatList
+              data={filteredProducts}
+              renderItem={({ item }) => <ProductItemCard item={item} />}
+              keyExtractor={(item) => item._id.toString()}
+              numColumns={2}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.productsGrid}
+              onScroll={Animated.event(
+                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+                { useNativeDriver: true }
+              )}
+              scrollEventThrottle={16}
+              columnWrapperStyle={styles.productRow}
+            />
+          )
         ) : (
           <View style={styles.emptyStateContainer}>
             <Text style={styles.emptyStateText}>No products found</Text>

@@ -110,7 +110,9 @@ export default function Cart() {
                             "https://via.placeholder.com/150",
                         }}
                         style={styles.itemImage}
+                        resizeMode="cover"
                       />
+                      {console.log(`${apiUrl}products/photo/${item.photo}`)}
                       <View style={styles.itemDetails}>
                         <Text style={styles.itemName}>{item.name}</Text>
                         <Text style={styles.itemVariation}>

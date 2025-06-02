@@ -511,7 +511,7 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    paddingTop: 20,
+    // paddingTop: 20,
   },
   errorContainer: {
     flex: 1,

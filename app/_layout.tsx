@@ -54,8 +54,8 @@ function AppContent() {
   return (
     <>
       <ToastManager />
-            <StatusBar style="dark" translucent={true} backgroundColor="white" />
-      
+      <StatusBar style="dark" translucent={true} backgroundColor="white" />
+
       <Stack>
         {/* Redirect users based on authentication status */}
         <Stack.Screen
@@ -71,6 +71,10 @@ function AppContent() {
         <Stack.Screen name="CheckoutScreen" options={{ headerShown: false }} />
         <Stack.Screen
           name="ProductDetailsPage"
+          options={{ headerShown: false }}
+        />
+        <Stack.Screen
+          name="TermsAndConditions"
           options={{ headerShown: false }}
         />
         <Stack.Screen name="Category" options={{ headerShown: false }} />

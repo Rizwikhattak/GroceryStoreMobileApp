@@ -256,7 +256,14 @@ const SigupStep3 = () => {
               />
             </TouchableOpacity>
             <Text style={styles.checkboxText}>
-              I agree to the company's credit terms and conditions.
+              I agree to the company's credit{" "}
+              <Text
+                style={{ color: "#0000EE", textDecorationLine: "underline" }}
+                onPress={() => router.push("/TermsAndConditions")}
+              >
+                terms and conditions
+              </Text>
+              .
             </Text>
           </View>
 

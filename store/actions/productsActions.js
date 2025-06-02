@@ -78,16 +78,19 @@ export const getAllProducts = createAsyncThunk(
 export const getProducts = createAsyncThunk(
   "products/getProducts",
   async (
-    { category_slug = null, sub_category = null, search = "", limit = 100 },
+    { category_slug = "", sub_category = "", search = "", limit = 0 },
     { rejectWithValue }
   ) => {
     try {
+      // const url = sub_category
+      //   ? `${PRODUCTS_API}?sub_category=${sub_category}`
+      //   : category_slug
+      //   ? `${PRODUCTS_API}?category_slug=${category_slug}`
+      //   : `${PRODUCTS_API}?name=${search}&limit=${limit}&sub_category=${sub_category}&category_slug=${category_slug}`;
       const url =
-        sub_category !== null
-          ? `${PRODUCTS_API}?sub_category=${sub_category}`
-          : category_slug !== null
-          ? `${PRODUCTS_API}?category_slug=${category_slug}`
-          : `${PRODUCTS_API}?name=${search}&limit=${limit}`;
+        limit !== 0
+          ? `${PRODUCTS_API}?name=${search}&limit=${limit}&sub_category=${sub_category}&category_slug=${category_slug}`
+          : `${PRODUCTS_API}?name=${search}&sub_category=${sub_category}&category_slug=${category_slug}`;
       console.log(url);
       const response = await API_COMMON(
         "getAll",
