@@ -37,7 +37,14 @@ export default function Index() {
   const products = useSelector((state: any) => state.products.featuredProducts);
   // console.log("userrrr", user);
   const pantry = useSelector((state) => state.pantry);
-
+  const pantryData = pantry?.data;
+  const favouriteIds = {};
+  pantryData &&
+    pantryData.forEach((item) => {
+      if (item.product) {
+        favouriteIds[item.product._id] = true;
+      }
+    });
   useFocusEffect(
     useCallback(() => {
       const fetchPantryProducts = async () => {
@@ -48,6 +55,7 @@ export default function Index() {
           console.log("Error fetching pantry products", err);
         }
       };
+      fetchPantryProducts();
       const fetchFeaturedProducts = async () => {
         try {
           await dispatch(getFeaturedProducts()).unwrap();
@@ -55,11 +63,9 @@ export default function Index() {
           console.log("Error fetching prods", err);
         }
       };
-      fetchPantryProducts();
       fetchFeaturedProducts();
     }, [dispatch])
   );
-  useEffect(() => {}, [dispatch]);
 
   // Function to dismiss keyboard when tapping outside of input
   const dismissKeyboard = () => {
@@ -150,7 +156,11 @@ export default function Index() {
                 )
               }
             />
-            <ProductsList products={products} pantryData={pantry?.data} />
+            <ProductsList
+              products={products}
+              pantryData={pantry?.data}
+              favouriteIds={favouriteIds}
+            />
           </View>
         </ScrollView>
       </View>

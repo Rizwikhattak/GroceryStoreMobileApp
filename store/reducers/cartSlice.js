@@ -1,3 +1,4 @@
+import { logout } from "@/store/reducers/authSlice";
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
@@ -5,7 +6,6 @@ const initialState = {
   data: [],
   pagination: {},
   error: null,
-  data: [],
 };
 const cartSlice = createSlice({
   name: "cart",
@@ -23,7 +23,23 @@ const cartSlice = createSlice({
         }
       }
     },
+    resetCartState: (state, action) => {
+      state.isLoading = false;
+      state.data = [];
+      state.pagination = {};
+      state.error = null;
+    },
+  },
+  extraReducers: (builder) => {
+    builder.addCase(logout, (state) => {
+      // Reset cart when logout action is dispatched
+      state.isLoading = false;
+      state.data = [];
+      state.pagination = {};
+      state.error = null;
+    });
   },
 });
-export const { updateCartQuantity } = cartSlice.actions;
+
+export const { updateCartQuantity, resetCartState } = cartSlice.actions;
 export default cartSlice.reducer;

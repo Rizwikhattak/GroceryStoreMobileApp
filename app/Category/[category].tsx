@@ -15,7 +15,10 @@ import { light, primary, shades } from "@/constants/colors";
 import ProductItemCard from "@/components/ui/ProductItemCard";
 import { useGlobalSearchParams, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import { getProducts } from "@/store/actions/productsActions";
+import {
+  getPantryProducts,
+  getProducts,
+} from "@/store/actions/productsActions";
 import { getSubCategories } from "@/store/actions/categoriesActions";
 import SearchInput from "@/components/ui/SearchInput";
 import HeaderCommon from "@/components/ui/HeaderCommon";
@@ -37,6 +40,17 @@ const SubCategoryScreen = () => {
     category: "Meat & Poultry",
   };
   const categories = useSelector((state: any) => state.categories);
+  const pantry = useSelector((state) => state.pantry);
+  const pantryData = pantry?.data;
+  const favouriteIds = {};
+  pantryData &&
+    pantryData?.forEach((item) => {
+      if (item.product) {
+        favouriteIds[item.product._id] = true;
+      }
+    });
+
+  console.log("New gog gog ", favouriteIds);
   const subcategories = useSelector(
     (state: any) => state.categories.SubCategories
   );
@@ -83,6 +97,18 @@ const SubCategoryScreen = () => {
     };
     fetchSubCategories();
   }, [categories.selectedCategory?._id, dispatch]);
+
+  useEffect(() => {
+    const fetchPantryProducts = async () => {
+      try {
+        console.log("Nice calling u gog gog");
+        await dispatch(getPantryProducts()).unwrap();
+      } catch (err) {
+        console.log("Error fetching pantry products", err);
+      }
+    };
+    fetchPantryProducts();
+  }, []);
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -183,12 +209,14 @@ const SubCategoryScreen = () => {
         </View>
 
         {filteredProducts.length > 0 ? (
-          products.isLoading ? (
+          products.isLoading || pantry.isLoading ? (
             <ProductsSkeleton />
           ) : (
             <Animated.FlatList
               data={filteredProducts}
-              renderItem={({ item }) => <ProductItemCard item={item} />}
+              renderItem={({ item }) => (
+                <ProductItemCard item={item} favouriteIds={favouriteIds} />
+              )}
               keyExtractor={(item) => item._id.toString()}
               numColumns={2}
               showsVerticalScrollIndicator={false}

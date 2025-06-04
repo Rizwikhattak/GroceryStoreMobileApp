@@ -8,6 +8,7 @@ import {
 } from "../actions/authActions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Toast } from "toastify-react-native";
+import { resetCartState } from "@/store/reducers/cartSlice";
 
 const initialState = {
   isLoading: false,

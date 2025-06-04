@@ -29,18 +29,10 @@ import { useRouter } from "expo-router";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 const { width: screenWidth } = Dimensions.get("window");
 
-const ProductItemCard = ({ item, inPantry, pantryData }) => {
+const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
   const dispatch = useDispatch();
   const cartState = useSelector((state) => state.cart.data);
   const router = useRouter();
-  const favouriteIds = {};
-  pantryData &&
-    pantryData.forEach((item) => {
-      if (item.product) {
-        favouriteIds[item.product._id] = true;
-      }
-    });
-
   const [favorites, setFavorites] = useState(favouriteIds || {});
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -379,7 +371,7 @@ const ProductItemCard = ({ item, inPantry, pantryData }) => {
           <View style={styles.priceContainer}>
             <View style={styles.priceRow}>
               <Text style={styles.currentPrice}>
-                ${discountedPrice.toFixed(2)}
+                ${discountedPrice?.toFixed(2)}
               </Text>
               <Text style={styles.unitText}>/{unit}</Text>
               {hasPromotion && (
