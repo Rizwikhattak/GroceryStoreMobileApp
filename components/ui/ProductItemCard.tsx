@@ -195,7 +195,7 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
     router.push({
       pathname: "/ProductDetailsPage",
       params: {
-        productParam: JSON.stringify(item),
+        productParam: JSON.stringify({ ...item, inPantry, isFavorite }),
       },
     });
   };

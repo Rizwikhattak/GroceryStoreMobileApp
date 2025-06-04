@@ -28,6 +28,7 @@ import {
 import { logout } from "@/store/reducers/authSlice";
 import Constants from "expo-constants";
 import HeaderCommon from "@/components/ui/HeaderCommon";
+import { ProfileHeaderSkeleton } from "@/components/ui/Skeletons";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 const ProfileScreen = () => {
@@ -188,31 +189,36 @@ const ProfileScreen = () => {
       />
 
       {/* Profile Summary */}
-      <View style={styles.profileSummary}>
-        <View style={styles.profileImageContainer}>
-          <Image
-            source={{
-              // uri: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=100&width=100",
-              uri:
-                `${apiUrl}users/photo/${customer?.data?.photo}` ||
-                "https://via.placeholder.com/150",
-            }}
-            style={styles.profileImage}
-          />
-          <TouchableOpacity
-            style={styles.editProfileImageButton}
-            onPress={pickAndUploadPhoto}
-          >
-            <Ionicons name="camera" size={16} color="#fff" />
-          </TouchableOpacity>
+      {customer?.isLoading ? (
+        <ProfileHeaderSkeleton />
+      ) : (
+        <View style={styles.profileSummary}>
+          <View style={styles.profileImageContainer}>
+            <Image
+              source={{
+                // uri: "https://hebbkx1anhila5yf.public.blob.vercel-storage.com/placeholder-ob7miW3mUreePYfXdVwkpFWHthzoR5.svg?height=100&width=100",
+                uri:
+                  `${apiUrl}users/photo/${customer?.data?.photo}` ||
+                  "https://via.placeholder.com/150",
+              }}
+              style={styles.profileImage}
+            />
+            <TouchableOpacity
+              style={styles.editProfileImageButton}
+              onPress={pickAndUploadPhoto}
+            >
+              <Ionicons name="camera" size={16} color="#fff" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.profileInfo}>
+            <Text style={styles.profileName}>
+              {customer?.data?.first_name} {customer?.data?.last_name}
+            </Text>
+            <Text style={styles.profileEmail}>{customer?.data?.email}</Text>
+          </View>
         </View>
-        <View style={styles.profileInfo}>
-          <Text style={styles.profileName}>
-            {customer?.data?.first_name} {customer?.data?.last_name}
-          </Text>
-          <Text style={styles.profileEmail}>{customer?.data?.email}</Text>
-        </View>
-      </View>
+      )}
 
       {/* Custom Tab Navigation */}
       <View style={styles.tabBar}>

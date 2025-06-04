@@ -29,7 +29,11 @@ import { primary } from "@/constants/colors";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Constants from "expo-constants";
 import HeaderCommon from "@/components/ui/HeaderCommon";
-
+import { useDispatch } from "react-redux";
+import {
+  getPantryProducts,
+  makeProductPantry,
+} from "@/store/actions/pantryActions";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -69,9 +73,20 @@ interface Product {
 }
 
 const ProductDetailPage = () => {
+  const { productParam } = useLocalSearchParams();
+  // Safe parsing with error handling
+  const dispatch = useDispatch();
+  let product: Product | null = null;
+  try {
+    product = productParam ? JSON.parse(productParam as string) : null;
+  } catch (error) {
+    console.error("Error parsing product data:", error);
+  }
   const router = useRouter();
   const [selectedQuantity, setSelectedQuantity] = useState(0); // Start with 0
-  const [isFavorite, setIsFavorite] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(
+    product?.inPantry || product?.isFavorite || false
+  );
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [showQuantityControls, setShowQuantityControls] = useState(false);
@@ -79,16 +94,6 @@ const ProductDetailPage = () => {
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
-
-  const { productParam } = useLocalSearchParams();
-
-  // Safe parsing with error handling
-  let product: Product | null = null;
-  try {
-    product = productParam ? JSON.parse(productParam as string) : null;
-  } catch (error) {
-    console.error("Error parsing product data:", error);
-  }
 
   // Animation effect when quantity controls visibility changes
   useEffect(() => {
@@ -223,7 +228,12 @@ const ProductDetailPage = () => {
           title={product.name}
           isHeartEnabled={true}
           isFavorite={isFavorite}
-          setIsFavorite={setIsFavorite}
+          setIsFavorite={async (isFav) => {
+            setIsFavorite(isFav);
+            await dispatch(
+              makeProductPantry({ product: product?._id })
+            ).unwrap();
+          }}
         />
 
         {/* Product Images */}

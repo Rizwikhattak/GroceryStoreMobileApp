@@ -3,6 +3,49 @@ import { View, StyleSheet, ScrollView, Dimensions } from "react-native";
 import SkeletonLoading from "expo-skeleton-loading";
 const { width: screenWidth } = Dimensions.get("window");
 
+export const ProfileHeaderSkeleton = () => {
+  return (
+    <SkeletonLoading background="#e0e0e0" highlight="#f5f5f5">
+      <View style={ProfileHeaderSkeletonStyles.container}>
+        <View style={ProfileHeaderSkeletonStyles.profilePic}></View>
+        <View style={{ gap: 10 }}>
+          <View style={ProfileHeaderSkeletonStyles.name} />
+          <View style={ProfileHeaderSkeletonStyles.gmail} />
+        </View>
+      </View>
+    </SkeletonLoading>
+  );
+};
+
+const ProfileHeaderSkeletonStyles = StyleSheet.create({
+  container: {
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    gap: 10,
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  profilePic: {
+    borderRadius: 100,
+    width: 80,
+    height: 80,
+    backgroundColor: "#e0e0e0",
+  },
+  name: {
+    width: 100,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#e0e0e0",
+    marginRight: 12,
+  },
+  gmail: {
+    width: 150,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: "#e0e0e0",
+    marginRight: 12,
+  },
+});
 export const CategorySkeleton = () => {
   return (
     <SkeletonLoading background="#e0e0e0" highlight="#f5f5f5">

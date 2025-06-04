@@ -109,6 +109,7 @@ const EnhancedTabBar = () => {
             options={{
               title: "Cart",
               headerShown: false,
+              tabBarStyle: { display: "none" },
               tabBarIcon: ({ focused }) => (
                 <TabIcon focused={focused} icon={icons.cart} title="Cart" />
               ),
