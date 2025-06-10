@@ -206,27 +206,25 @@ const SubCategoryScreen = () => {
           </TouchableOpacity>
         </View>
 
-        {filteredProducts.length > 0 ? (
-          products.isLoading || pantry.isLoading ? (
-            <ProductsSkeleton />
-          ) : (
-            <Animated.FlatList
-              data={filteredProducts}
-              renderItem={({ item }) => (
-                <ProductItemCard item={item} favouriteIds={favouriteIds} />
-              )}
-              keyExtractor={(item) => item._id.toString()}
-              numColumns={2}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.productsGrid}
-              onScroll={Animated.event(
-                [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-                { useNativeDriver: true }
-              )}
-              scrollEventThrottle={16}
-              columnWrapperStyle={styles.productRow}
-            />
-          )
+        {products.isLoading || pantry.isLoading ? (
+          <ProductsSkeleton />
+        ) : filteredProducts.length > 0 ? (
+          <Animated.FlatList
+            data={filteredProducts}
+            renderItem={({ item }) => (
+              <ProductItemCard item={item} favouriteIds={favouriteIds} />
+            )}
+            keyExtractor={(item) => item._id.toString()}
+            numColumns={2}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.productsGrid}
+            onScroll={Animated.event(
+              [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+              { useNativeDriver: true }
+            )}
+            scrollEventThrottle={16}
+            columnWrapperStyle={styles.productRow}
+          />
         ) : (
           <View style={styles.emptyStateContainer}>
             <Text style={styles.emptyStateText}>No products found</Text>
@@ -325,7 +323,7 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
     alignItems: "center",
     paddingHorizontal: 20,
-    marginBottom: 20,
+    // marginBottom: 20,
     borderBottomWidth: 1,
     borderBottomColor: shades.lighterGray,
     paddingBottom: 12,

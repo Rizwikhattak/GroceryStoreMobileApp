@@ -1,5 +1,5 @@
 "use client";
-import {Image}  from "expo-image";
+import { Image } from "expo-image";
 import { primary } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useRef, useEffect } from "react";
@@ -256,20 +256,23 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
   const handleAddToCart = () => {
     if (quantity === 0) {
       // Animate button press
-      Animated.sequence([
-        Animated.timing(cardScaleAnim, {
-          toValue: 0.98,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-        Animated.timing(cardScaleAnim, {
-          toValue: 1,
-          duration: 100,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      if (item?.variation_exists) handleCardPress();
+      else {
+        Animated.sequence([
+          Animated.timing(cardScaleAnim, {
+            toValue: 0.98,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(cardScaleAnim, {
+            toValue: 1,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+        ]).start();
 
-      dispatch(updateCartQuantity({ id: item._id, item: item, change: 1 }));
+        dispatch(updateCartQuantity({ id: item._id, item: item, change: 1 }));
+      }
     }
   };
 

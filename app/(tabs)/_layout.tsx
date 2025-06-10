@@ -1,11 +1,19 @@
 "use client";
 
-import { View, Image, Pressable, StyleSheet, Dimensions } from "react-native";
+import {
+  View,
+  Image,
+  Pressable,
+  StyleSheet,
+  Dimensions,
+  Text,
+} from "react-native";
 import { Tabs } from "expo-router";
 import { icons } from "@/constants/icons";
 import { primary } from "@/constants/colors";
 import { StatusBar } from "expo-status-bar";
 import { LinearGradient } from "expo-linear-gradient";
+import { useSelector } from "react-redux";
 
 const { width: screenWidth } = Dimensions.get("window");
 
@@ -17,6 +25,15 @@ const TabIcon = ({
   customIconStyle = null,
   customTintColor = "#9CA3AF",
 }: any) => {
+  // Get cart data from Redux store
+  const cart = useSelector((state) => state.cart);
+
+  // Calculate total items in cart
+  const cartItemCount =
+    cart?.data?.reduce((total, item) => {
+      return total + (item?.orderQuantity || 0);
+    }, 0) || 0;
+
   if (title === "Cart") {
     return (
       <View style={styles.cartContainer}>
@@ -29,6 +46,15 @@ const TabIcon = ({
           >
             <Image source={icon} tintColor="#ffffff" style={styles.cartIcon} />
           </LinearGradient>
+
+          {/* Cart Count Badge */}
+          {cartItemCount > 0 && (
+            <View style={styles.cartBadge}>
+              <Text style={styles.cartBadgeText}>
+                {cartItemCount > 99 ? "99+" : cartItemCount.toString()}
+              </Text>
+            </View>
+          )}
         </View>
         {focused && (
           <View style={[styles.cartIndicator, { backgroundColor: primary }]} />
@@ -129,28 +155,12 @@ const EnhancedTabBar = () => {
               ),
             }}
           />
-          {/* <Tabs.Screen
-            name="profile"
-            options={{
-              title: "Profile",
-              headerShown: false,
-              tabBarIcon: ({ focused }) => (
-                <TabIcon
-                  focused={focused}
-                  icon={icons.profile}
-                  title="Profile"
-                />
-              ),
-            }}
-          /> */}
           <Tabs.Screen
             name="profile"
             options={{
               title: "Profile",
               headerShown: false,
-              /* 👇 this style is applied only while the profile tab is active */
               tabBarStyle: { display: "none" },
-
               tabBarIcon: ({ focused }) => (
                 <TabIcon
                   focused={focused}
@@ -260,7 +270,6 @@ const styles = StyleSheet.create({
     width: 65,
     height: 65,
     borderRadius: 37.5,
-    // marginTop: -25,
     marginTop: 0,
     elevation: 20,
     shadowColor: primary,
@@ -270,6 +279,7 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.4,
     shadowRadius: 15,
+    position: "relative",
   },
   cartGradient: {
     width: "100%",
@@ -290,6 +300,37 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
+  },
+  // New styles for cart badge
+  cartBadge: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    backgroundColor: "#FF4757",
+    minWidth: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 6,
+    borderWidth: 2,
+    borderColor: "#ffffff",
+    elevation: 3,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  cartBadgeText: {
+    color: "#ffffff",
+    fontSize: 11,
+    fontWeight: "700",
+    textAlign: "center",
+    includeFontPadding: false,
+    textAlignVertical: "center",
   },
 });
 

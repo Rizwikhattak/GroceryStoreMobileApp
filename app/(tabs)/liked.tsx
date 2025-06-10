@@ -32,7 +32,9 @@ const LikedScreen = () => {
   /* ---------- UI state ---------- */
   const [showSearch, setShowSearch] = useState(false);
   const [searchText, setSearchText] = useState("");
-
+  const handleSearchInput = (txt) => {
+    setSearchText(txt);
+  };
   /* ---------- fetch once ---------- */
   useEffect(() => {
     dispatch(getPantryProducts());
@@ -56,12 +58,14 @@ const LikedScreen = () => {
         title="Liked Products"
         subtitle={`${pantryItems.length} items`}
         isSearchEnabled={true}
+        enableDropdown={false}
+        handleSearchInput={handleSearchInput}
       />
       {pantrySlice.isLoading || pantrySlice.isPostLoading ? (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={primary} />
         </View>
-      ) : (
+      ) : visibleItems.length > 0 ? (
         <FlatList
           data={visibleItems}
           keyExtractor={(it: any) => it.product._id}
@@ -72,6 +76,8 @@ const LikedScreen = () => {
             <ProductItemCard item={item.product} inPantry={true} />
           )}
         />
+      ) : (
+       <View style> <Text style={{fontWeight:"bold"}}>No products</Text></View>
       )}
     </SafeAreaView>
   );

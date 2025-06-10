@@ -77,7 +77,7 @@ interface Product {
 }
 
 // Size options for the dropdown
-const sizeOptions = [
+const variations = [
   { label: "Size 9-10", value: "9-10" },
   { label: "Size 14", value: "14" },
   { label: "Size 16", value: "16" },
@@ -90,20 +90,44 @@ const sizeOptions = [
 
 const ProductDetailPage = () => {
   const { productParam } = useLocalSearchParams();
-  // Safe parsing with error handling
   const dispatch = useDispatch();
   let product: Product | null = null;
+
   try {
     product = productParam ? JSON.parse(productParam as string) : null;
   } catch (error) {
     console.error("Error parsing product data:", error);
   }
+
   const router = useRouter();
   const cart = useSelector((state) => state.cart);
-  const selectedProd = cart.data.find((item) => item._id === product._id);
+
+  // Size dropdown states
+  const [selectedSize, setSelectedSize] = useState(
+    product?.variations ? product?.variations[0] : {}
+  );
+  const [showSizeDropdown, setShowSizeDropdown] = useState(false);
+
+  // Get current cart item for the selected size
+  const getCurrentCartItem = () => {
+    if (!product?.variations || product?.variations?.length === 0) {
+      // For products without variations
+      return cart?.data?.find((item) => item?._id === product?._id);
+    } else {
+      // For products with variations, find by product ID and selected size
+      return cart?.data?.find(
+        (item) =>
+          item?._id === product?._id &&
+          item?.selectedVariant?.[0]?._id === selectedSize?._id
+      );
+    }
+  };
+
+  const currentCartItem = getCurrentCartItem();
   const [selectedQuantity, setSelectedQuantity] = useState(
-    selectedProd?.orderQuantity || 0
-  ); // Start with 0
+    currentCartItem?.orderQuantity || 0
+  );
+
   const [isFavorite, setIsFavorite] = useState(
     product?.inPantry || product?.isFavorite || false
   );
@@ -113,13 +137,17 @@ const ProductDetailPage = () => {
     selectedQuantity !== 0
   );
 
-  // Size dropdown states
-  const [selectedSize, setSelectedSize] = useState(sizeOptions[5]); // Default to Size 22
-  const [showSizeDropdown, setShowSizeDropdown] = useState(false);
-
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
+
+  // Update selected quantity when size changes
+  useEffect(() => {
+    const newCartItem = getCurrentCartItem();
+    const newQuantity = newCartItem?.orderQuantity || 0;
+    setSelectedQuantity(newQuantity);
+    setShowQuantityControls(newQuantity !== 0);
+  }, [selectedSize, cart.data]);
 
   // Animation effect when quantity controls visibility changes
   useEffect(() => {
@@ -174,19 +202,30 @@ const ProductDetailPage = () => {
     );
   }
 
+  // Calculate price based on selected size (if variations exist) or base product price
+  const getCurrentPrice = () => {
+    if (
+      product?.variations &&
+      product?.variations?.length > 0 &&
+      selectedSize?.price
+    ) {
+      return selectedSize.price;
+    }
+    return product.sale_price;
+  };
+
+  const currentPrice = getCurrentPrice();
+
   const hasPromotion =
     product.promotion_status === "active" && product.promotion_value > 0;
   const discountedPrice = hasPromotion
     ? product.promotion_type === "fixed"
-      ? product.sale_price - product.promotion_value
-      : product.sale_price -
-        (product.sale_price * product.promotion_value) / 100
-    : product.sale_price;
+      ? currentPrice - product.promotion_value
+      : currentPrice - (currentPrice * product.promotion_value) / 100
+    : currentPrice;
 
   const discountPercentage = hasPromotion
-    ? Math.round(
-        ((product.sale_price - discountedPrice) / product.sale_price) * 100
-      )
+    ? Math.round(((currentPrice - discountedPrice) / currentPrice) * 100)
     : 0;
 
   const handleQuantityChange = (change: number) => {
@@ -196,9 +235,22 @@ const ProductDetailPage = () => {
       (product.is_unlimited || newQuantity <= product.quantity)
     ) {
       setSelectedQuantity(newQuantity);
+
+      // Create the item object with selected variant if product has variations
+      const itemToUpdate =
+        product?.variations && product?.variations?.length > 0
+          ? { ...product, selectedVariant: [selectedSize] }
+          : product;
+
       dispatch(
-        updateCartQuantity({ id: product._id, item: product, change: change })
+        updateCartQuantity({
+          id: product._id,
+          item: itemToUpdate,
+          change: change,
+          selectedSizeId: selectedSize?._id, // Add this to help identify the specific variant
+        })
       );
+
       // Hide quantity controls when quantity reaches 0
       if (newQuantity === 0) {
         setTimeout(() => {
@@ -213,20 +265,30 @@ const ProductDetailPage = () => {
       // First tap - show quantity controls and set quantity to 1
       setSelectedQuantity(1);
       setShowQuantityControls(true);
+
+      const itemToAdd =
+        product?.variations && product?.variations?.length > 0
+          ? { ...product, selectedVariant: [selectedSize] }
+          : product;
+
       dispatch(
-        updateCartQuantity({ id: product._id, item: product, change: 1 })
+        updateCartQuantity({
+          id: product._id,
+          item: itemToAdd,
+          change: 1,
+          selectedSizeId: selectedSize?._id,
+        })
       );
     } else {
-      // Subsequent taps - add current quantity to cart
+      // Subsequent taps - you can add additional logic here if needed
       console.log(
         "Adding to cart:",
         product.name,
         "Quantity:",
         selectedQuantity,
         "Size:",
-        selectedSize.label
+        selectedSize?.size || "No size"
       );
-      // Add your cart logic here
     }
   };
 
@@ -258,7 +320,7 @@ const ProductDetailPage = () => {
           style={styles.sizeSelector}
           onPress={() => setShowSizeDropdown(true)}
         >
-          <Text style={styles.sizeText}>{selectedSize.label}</Text>
+          <Text style={styles.sizeText}>{selectedSize?.size}</Text>
           <ChevronDown color="#666" size={20} />
         </TouchableOpacity>
       </View>
@@ -279,14 +341,15 @@ const ProductDetailPage = () => {
               style={styles.dropdownList}
               showsVerticalScrollIndicator={false}
             >
-              {sizeOptions.map((option, index) => (
+              {product?.variations?.map((option, index) => (
                 <TouchableOpacity
-                  key={option.value}
+                  key={option?._id}
                   style={[
                     styles.dropdownItem,
-                    selectedSize.value === option.value &&
+                    selectedSize?._id === option?._id &&
                       styles.selectedDropdownItem,
-                    index === sizeOptions.length - 1 && styles.lastDropdownItem,
+                    index === product?.variations?.length - 1 &&
+                      styles.lastDropdownItem,
                   ]}
                   onPress={() => {
                     setSelectedSize(option);
@@ -296,15 +359,32 @@ const ProductDetailPage = () => {
                   <Text
                     style={[
                       styles.dropdownItemText,
-                      selectedSize.value === option.value &&
+                      selectedSize?._id === option?._id &&
                         styles.selectedDropdownItemText,
                     ]}
                   >
-                    {option.label}
+                    {option?.size}
                   </Text>
-                  {selectedSize.value === option.value && (
-                    <Check color="#fff" size={16} />
-                  )}
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      gap: 2,
+                    }}
+                  >
+                    <Text
+                      style={[
+                        styles.dropdownItemText,
+                        selectedSize?._id === option?._id &&
+                          styles.selectedDropdownItemText,
+                      ]}
+                    >
+                      $ {option?.price}
+                    </Text>
+                    {selectedSize._id === option._id && (
+                      <Check color="#fff" size={16} />
+                    )}
+                  </View>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -414,8 +494,8 @@ const ProductDetailPage = () => {
           <Text style={styles.productName}>{product.name}</Text>
           <Text style={styles.productSku}>SKU: {product.sku}</Text>
 
-          {/* Size Dropdown */}
-          {product._id === "6632d8c98636f41ae412c6e5" && <SizeDropdown />}
+          {/* Size Dropdown - Show for products with variations */}
+          {product?.variation_exists && <SizeDropdown />}
 
           {/* Price Section */}
           <View style={styles.priceContainer}>
@@ -428,7 +508,7 @@ const ProductDetailPage = () => {
               </Text>
               {hasPromotion && (
                 <Text style={styles.originalPrice}>
-                  ${product.sale_price.toFixed(2)}
+                  ${currentPrice.toFixed(2)}
                 </Text>
               )}
             </View>
@@ -436,41 +516,6 @@ const ProductDetailPage = () => {
               {product.uom_value} {product.uom?.name || "unit"} per unit
             </Text>
           </View>
-
-          {/* Stock Status */}
-          {/* <View style={styles.stockContainer}>
-            {product.is_unlimited ? (
-              <View style={styles.stockBadge}>
-                <Text style={styles.stockText}>✓ Always Available</Text>
-              </View>
-            ) : (
-              <View
-                style={[
-                  styles.stockBadge,
-                  product.quantity < 10 &&
-                    product.quantity > 0 &&
-                    styles.lowStockBadge,
-                  product.quantity === 0 && styles.outOfStockBadge,
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.stockText,
-                    product.quantity < 10 &&
-                      product.quantity > 0 &&
-                      styles.lowStockText,
-                    product.quantity === 0 && styles.outOfStockTextSmall,
-                  ]}
-                >
-                  {product.quantity > 0
-                    ? `${product.quantity} ${
-                        product.quantity === 1 ? "item" : "items"
-                      } left`
-                    : "Currently Unavailable"}
-                </Text>
-              </View>
-            )}
-          </View> */}
 
           {/* Description */}
           {product.description && product.description.trim() && (
@@ -519,23 +564,6 @@ const ProductDetailPage = () => {
               </View>
             </View>
           </View>
-
-          {/* Supplier Info */}
-          {/* {product.supplier && (
-            <View style={styles.supplierContainer}>
-              <Text style={styles.sectionTitle}>Supplier Information</Text>
-              <View style={styles.supplierInfo}>
-                <Text style={styles.supplierName}>
-                  {product.supplier.company_name || product.supplier.name}
-                </Text>
-                {product.supplier.name && product.supplier.company_name && (
-                  <Text style={styles.supplierContact}>
-                    Contact: {product.supplier.name}
-                  </Text>
-                )}
-              </View>
-            </View>
-          )} */}
         </View>
       </ScrollView>
 

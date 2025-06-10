@@ -56,7 +56,15 @@ function AppContent() {
       <ToastManager />
       <StatusBar style="dark" translucent={true} backgroundColor="white" />
 
-      <Stack>
+      <Stack
+        screenOptions={{
+          // “fade” feels snappy on both OSs; try 'slide_from_right' or 'none'
+          animation: "slide_from_right", // preset
+          animationDuration: 280, // ms
+          gestureEnabled: true, // keeps swipes responsive
+          gestureDirection: "horizontal",
+        }}
+      >
         {/* Redirect users based on authentication status */}
         <Stack.Screen
           name="(tabs)"

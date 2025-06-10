@@ -170,13 +170,7 @@ const CheckoutScreen = () => {
       items, // ➜ [{ productId, uniqueId }]
       quantities, // ➜ [4, 2, …] (same length as items)
       weights, // ➜ [null, {value:2,uom:"kg"}, …]
-      selectedVariations: [
-        {
-          size: "Size 13",
-          price: 11.5,
-          _id: "66736bbdf10d441b64482db5",
-        },
-      ], // ➜ [null, {…}, …]
+      selectedVariations: variations, // ➜ [null, {…}, …]
       product_notes: productNotes, // ➜ [{product_id, note}, …]
 
       shipping_address: shippingAddress,
@@ -208,7 +202,7 @@ const CheckoutScreen = () => {
 
     try {
       const resp = await dispatch(placeCustomerOrder(payload)).unwrap();
-      console.log(resp);
+      console.log("Response", resp);
       dispatch(resetCartState());
       Alert.alert("Order Placed", "Your order has been placed successfully!", [
         { text: "OK", onPress: () => router.push("/(tabs)") },
@@ -437,18 +431,18 @@ const CheckoutScreen = () => {
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>Subtotal</Text>
-                <Text style={styles.summaryValue}>${subtotal}</Text>
+                <Text style={styles.summaryValue}>$ {subtotal}</Text>
               </View>
 
               <View style={styles.summaryRow}>
                 <Text style={styles.summaryLabel}>GST (15%)</Text>
-                <Text style={styles.summaryValue}>${gstAmount}</Text>
+                <Text style={styles.summaryValue}>$ {gstAmount}</Text>
               </View>
 
               {deliveryMethod === "delivery" && (
                 <View style={styles.summaryRow}>
                   <Text style={styles.summaryLabel}>Delivery Fee</Text>
-                  <Text style={styles.summaryValue}>${deliveryFee}</Text>
+                  <Text style={styles.summaryValue}>$ {deliveryFee}</Text>
                 </View>
               )}
 
@@ -456,7 +450,7 @@ const CheckoutScreen = () => {
 
               <View style={styles.summaryRow}>
                 <Text style={styles.totalLabel}>Total</Text>
-                <Text style={styles.totalValue}>Rs. {cartTotal}</Text>
+                <Text style={styles.totalValue}>$ {cartTotal}</Text>
               </View>
             </View>
 
@@ -756,37 +750,37 @@ const styles = StyleSheet.create({
 
 export default CheckoutScreen;
 
-const a = {
-  enrichedOrderItems: [
-    {
-      note: [Object],
-      product: [Object],
-      quantity: 2,
-      selectedVariation: null,
-      total: 17.98,
-    },
-  ],
-  item: {
-    _id: "684300448c40fd03f1c90d45",
-    created_at: "2025-06-06T14:50:44.624Z",
-    created_by: "info@destraditions.co.nz",
-    customer: "661c9f97ecd2d11bbc44c55c",
-    deleted_at: null,
-    discount: 0,
-    enrichedItems: [[Object]],
-    instructions: "",
-    items: ["684300448c40fd03f1c90d3f"],
-    order_id: 611,
-    product_notes: [[Object]],
-    shipping_address: "54 Stoddard Road, Wesley, Auckland 1041, New Zealand",
-    shipping_date: "2025-06-08T14:50:42.716Z",
-    status: "Pending",
-    supplier: "6620c92123956016705422af",
-    tax: 17.98,
-    total: 17.98,
-    type: "Delivery",
-    updated_at: "2025-06-06T14:50:44.624Z",
-    xero_invoice_id: null,
-  },
-  message: "Order placed successfully",
-};
+// const a = {
+//   enrichedOrderItems: [
+//     {
+//       note: [Object],
+//       product: [Object],
+//       quantity: 2,
+//       selectedVariation: [Object],
+//       total: 33,
+//     },
+//   ],
+//   item: {
+//     _id: "684842db8c40fd03f1c90fc2",
+//     created_at: "2025-06-10T14:36:11.835Z",
+//     created_by: "info@destraditions.co.nz",
+//     customer: "661c9f97ecd2d11bbc44c55c",
+//     deleted_at: null,
+//     discount: 0,
+//     enrichedItems: [[Object]],
+//     instructions: "New order",
+//     items: ["684842db8c40fd03f1c90fbc"],
+//     order_id: 614,
+//     product_notes: [[Object]],
+//     shipping_address: "54 Stoddard Road, Wesley, Auckland 1041, New Zealand",
+//     shipping_date: "2025-06-16T14:36:06.022Z",
+//     status: "Pending",
+//     supplier: "666805854b5d72033022827c",
+//     tax: 33,
+//     total: 33,
+//     type: "Delivery",
+//     updated_at: "2025-06-10T14:36:11.835Z",
+//     xero_invoice_id: null,
+//   },
+//   message: "Order placed successfully",
+// };

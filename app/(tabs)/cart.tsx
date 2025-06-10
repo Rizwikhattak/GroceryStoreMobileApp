@@ -100,8 +100,8 @@ export default function Cart() {
                 </View>
 
                 {/* Cart Items */}
-                {cartState.map((item: any) => (
-                  <View key={item._id} style={styles.cartItem}>
+                {cartState.map((item: any, index) => (
+                  <View key={item._id + index} style={styles.cartItem}>
                     <View style={styles.productSection}>
                       <Image
                         source={{
@@ -116,7 +116,9 @@ export default function Cart() {
                       <View style={styles.itemDetails}>
                         <Text style={styles.itemName}>{item.name}</Text>
                         <Text style={styles.itemVariation}>
-                          {item.variation || "N/A"}
+                          {item?.selectedVariant
+                            ? item?.selectedVariant[0]?.size
+                            : "N/A"}
                         </Text>
                       </View>
                     </View>
@@ -129,6 +131,7 @@ export default function Cart() {
                             updateCartQuantity({
                               id: item._id,
                               item: item,
+                              selectedSizeId: item?.selectedVariant[0]?._id,
                               change: -1,
                             })
                           )
@@ -146,6 +149,7 @@ export default function Cart() {
                             updateCartQuantity({
                               id: item._id,
                               item: item,
+                              selectedSizeId: item?.selectedVariant[0]?._id,
                               change: 1,
                             })
                           )
