@@ -131,7 +131,9 @@ export default function Cart() {
                             updateCartQuantity({
                               id: item._id,
                               item: item,
-                              selectedSizeId: item?.selectedVariant[0]?._id,
+                              selectedSizeId: item?.selectedVariant
+                                ? item?.selectedVariant[0]?._id
+                                : -1,
                               change: -1,
                             })
                           )

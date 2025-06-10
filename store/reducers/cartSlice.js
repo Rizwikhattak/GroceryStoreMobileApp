@@ -15,7 +15,7 @@ const cartSlice = createSlice({
     updateCartQuantity: (state, action) => {
       const { id, change, item, selectedSizeId } = action.payload;
       let itemIndex = -1;
-
+      console.log(action.payload);
       console.log(
         "Cart update - Product ID:",
         id,
