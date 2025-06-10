@@ -1,10 +1,9 @@
 "use client";
-
+import {Image}  from "expo-image";
 import { primary } from "@/constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useState, useRef, useEffect } from "react";
 import {
-  Image,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -351,7 +350,7 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
 
         {/* Product Image */}
         <View style={styles.imageContainer}>
-          <Image
+          {/* <Image
             source={{
               uri:
                 `${apiUrl}products/photo/${item.photo}` ||
@@ -359,6 +358,12 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
             }}
             style={styles.productImage}
             resizeMode="cover"
+          /> */}
+          <Image
+            source={{ uri: `${apiUrl}products/photo/${item.photo}` }}
+            style={styles.productImage}
+            contentFit="cover"
+            transition={100}
           />
         </View>
 

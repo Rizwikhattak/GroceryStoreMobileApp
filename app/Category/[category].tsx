@@ -15,10 +15,7 @@ import { light, primary, shades } from "@/constants/colors";
 import ProductItemCard from "@/components/ui/ProductItemCard";
 import { useGlobalSearchParams, useRouter } from "expo-router";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  getPantryProducts,
-  getProducts,
-} from "@/store/actions/productsActions";
+import { getProducts } from "@/store/actions/productsActions";
 import { getSubCategories } from "@/store/actions/categoriesActions";
 import SearchInput from "@/components/ui/SearchInput";
 import HeaderCommon from "@/components/ui/HeaderCommon";
@@ -27,6 +24,7 @@ import {
   ProductsSkeleton,
   SubcategorySkeleton,
 } from "@/components/ui/Skeletons";
+import { getPantryProducts } from "@/store/actions/pantryActions";
 
 /* ---------- local monochrome palette ---------- */
 

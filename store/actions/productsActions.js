@@ -23,23 +23,7 @@ export const getFeaturedProducts = createAsyncThunk(
     }
   }
 );
-export const getPantryProducts = createAsyncThunk(
-  "products/getPantryProducts",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await API_COMMON(
-        "getAll",
-        "json",
-        `${PANTRY_PRODUCTS_API}`,
-        "Error in fetching products",
-        null
-      );
-      return response;
-    } catch (err) {
-      return rejectWithValue(err?.message || "Error in fetching products");
-    }
-  }
-);
+
 export const getAllFeaturedProducts = createAsyncThunk(
   "products/getAllFeaturedProducts",
   async ({ limit = 100 }, { rejectWithValue }) => {

@@ -28,6 +28,7 @@ import DeliveryMethod from "@/components/CheckoutScreen/DeliveryMethod";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import HeaderCommon from "@/components/ui/HeaderCommon";
 import { StatusBar } from "expo-status-bar";
+import { resetCartState } from "@/store/reducers/cartSlice";
 const CheckoutScreen = () => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -169,7 +170,13 @@ const CheckoutScreen = () => {
       items, // ➜ [{ productId, uniqueId }]
       quantities, // ➜ [4, 2, …] (same length as items)
       weights, // ➜ [null, {value:2,uom:"kg"}, …]
-      selectedVariations: variations, // ➜ [null, {…}, …]
+      selectedVariations: [
+        {
+          size: "Size 13",
+          price: 11.5,
+          _id: "66736bbdf10d441b64482db5",
+        },
+      ], // ➜ [null, {…}, …]
       product_notes: productNotes, // ➜ [{product_id, note}, …]
 
       shipping_address: shippingAddress,
@@ -200,9 +207,11 @@ const CheckoutScreen = () => {
     );
 
     try {
-      await dispatch(placeCustomerOrder(payload)).unwrap();
+      const resp = await dispatch(placeCustomerOrder(payload)).unwrap();
+      console.log(resp);
+      dispatch(resetCartState());
       Alert.alert("Order Placed", "Your order has been placed successfully!", [
-        { text: "OK", onPress: () => router.push("/") },
+        { text: "OK", onPress: () => router.push("/(tabs)") },
       ]);
     } catch (err) {
       console.error(err);
@@ -746,3 +755,38 @@ const styles = StyleSheet.create({
 });
 
 export default CheckoutScreen;
+
+const a = {
+  enrichedOrderItems: [
+    {
+      note: [Object],
+      product: [Object],
+      quantity: 2,
+      selectedVariation: null,
+      total: 17.98,
+    },
+  ],
+  item: {
+    _id: "684300448c40fd03f1c90d45",
+    created_at: "2025-06-06T14:50:44.624Z",
+    created_by: "info@destraditions.co.nz",
+    customer: "661c9f97ecd2d11bbc44c55c",
+    deleted_at: null,
+    discount: 0,
+    enrichedItems: [[Object]],
+    instructions: "",
+    items: ["684300448c40fd03f1c90d3f"],
+    order_id: 611,
+    product_notes: [[Object]],
+    shipping_address: "54 Stoddard Road, Wesley, Auckland 1041, New Zealand",
+    shipping_date: "2025-06-08T14:50:42.716Z",
+    status: "Pending",
+    supplier: "6620c92123956016705422af",
+    tax: 17.98,
+    total: 17.98,
+    type: "Delivery",
+    updated_at: "2025-06-06T14:50:44.624Z",
+    xero_invoice_id: null,
+  },
+  message: "Order placed successfully",
+};

@@ -119,6 +119,11 @@ const SignupScreen = () => {
         Toast.error("Please fill all fields", "top");
         return;
       }
+      if (formData.password !== formData.confirm_password) {
+        Toast.error("Passwords do not match. Please try again.", "top");
+        return;
+      }
+
       const formObj = new FormData();
 
       Object.entries(formData).forEach(([key, value]) => {

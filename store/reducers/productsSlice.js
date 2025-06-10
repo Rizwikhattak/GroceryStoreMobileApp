@@ -3,7 +3,6 @@ import {
   getAllFeaturedProducts,
   getAllProducts,
   getFeaturedProducts,
-  getPantryProducts,
   getProducts,
 } from "../actions/productsActions";
 const initialState = {
@@ -90,23 +89,7 @@ const productsSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-      .addCase(getPantryProducts.pending, (state, action) => {
-        state.isLoading = true;
-        state.error = null;
-      })
-      .addCase(getPantryProducts.fulfilled, (state, action) => {
-        const data = action.payload.list.filter(
-          (item) => item?.product !== null
-        );
-        state.data = data;
-        state.pagination = action.payload.pagination;
-        state.isLoading = false;
-        state.error = null;
-      })
-      .addCase(getPantryProducts.rejected, (state, action) => {
-        state.isLoading = false;
-        state.error = action.payload;
-      })
+      
       .addCase(getFeaturedProducts.pending, (state, action) => {
         state.featuredProducts.isLoading = true;
         state.featuredProducts.error = null;

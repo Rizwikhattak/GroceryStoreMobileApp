@@ -5,7 +5,7 @@ export default {
   expo: {
     name: "GroceryStore",
     slug: "GroceryStore",
-    owner: "moaaz4529",
+    owner: "mehtab4529",
     userInterfaceStyle: "automatic",
     version: "1.0.0",
     orientation: "portrait",
@@ -13,9 +13,9 @@ export default {
     scheme: "myapp",
     newArchEnabled: true,
     extra: {
-      // eas: {
-      //   projectId: "c0458020-197c-4e3e-8378-145d9ed1897a",
-      // },
+      eas: {
+        projectId: "c25c8c8b-09e6-4a0e-8b76-762ce20d31b3",
+      },
       apiUrl: process.env.API_URL || "https://default.api.url",
     },
     ios: {
@@ -42,12 +42,6 @@ export default {
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff",
-        },
-      ],
-      [
-        "expo-font",
-        {
-          fonts: ["./assets/fonts/OPTIMA.TTF"],
         },
       ],
     ],

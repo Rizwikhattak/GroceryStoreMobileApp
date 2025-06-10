@@ -11,6 +11,7 @@ import {
   SafeAreaView,
   Platform,
   Animated,
+  Modal,
 } from "react-native";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -24,16 +25,19 @@ import {
   Shield,
   Clock,
   Package,
+  ChevronDown,
+  Check,
 } from "lucide-react-native";
 import { primary } from "@/constants/colors";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import Constants from "expo-constants";
 import HeaderCommon from "@/components/ui/HeaderCommon";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import {
   getPantryProducts,
   makeProductPantry,
 } from "@/store/actions/pantryActions";
+import { updateCartQuantity } from "@/store/reducers/cartSlice";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -72,6 +76,18 @@ interface Product {
   type: string;
 }
 
+// Size options for the dropdown
+const sizeOptions = [
+  { label: "Size 9-10", value: "9-10" },
+  { label: "Size 14", value: "14" },
+  { label: "Size 16", value: "16" },
+  { label: "Size 18", value: "18" },
+  { label: "Size 20", value: "20" },
+  { label: "Size 22", value: "22" },
+  { label: "Size 24", value: "24" },
+  { label: "Size 12-13", value: "12-13" },
+];
+
 const ProductDetailPage = () => {
   const { productParam } = useLocalSearchParams();
   // Safe parsing with error handling
@@ -83,13 +99,23 @@ const ProductDetailPage = () => {
     console.error("Error parsing product data:", error);
   }
   const router = useRouter();
-  const [selectedQuantity, setSelectedQuantity] = useState(0); // Start with 0
+  const cart = useSelector((state) => state.cart);
+  const selectedProd = cart.data.find((item) => item._id === product._id);
+  const [selectedQuantity, setSelectedQuantity] = useState(
+    selectedProd?.orderQuantity || 0
+  ); // Start with 0
   const [isFavorite, setIsFavorite] = useState(
     product?.inPantry || product?.isFavorite || false
   );
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
-  const [showQuantityControls, setShowQuantityControls] = useState(false);
+  const [showQuantityControls, setShowQuantityControls] = useState(
+    selectedQuantity !== 0
+  );
+
+  // Size dropdown states
+  const [selectedSize, setSelectedSize] = useState(sizeOptions[5]); // Default to Size 22
+  const [showSizeDropdown, setShowSizeDropdown] = useState(false);
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -170,7 +196,9 @@ const ProductDetailPage = () => {
       (product.is_unlimited || newQuantity <= product.quantity)
     ) {
       setSelectedQuantity(newQuantity);
-
+      dispatch(
+        updateCartQuantity({ id: product._id, item: product, change: change })
+      );
       // Hide quantity controls when quantity reaches 0
       if (newQuantity === 0) {
         setTimeout(() => {
@@ -185,13 +213,18 @@ const ProductDetailPage = () => {
       // First tap - show quantity controls and set quantity to 1
       setSelectedQuantity(1);
       setShowQuantityControls(true);
+      dispatch(
+        updateCartQuantity({ id: product._id, item: product, change: 1 })
+      );
     } else {
       // Subsequent taps - add current quantity to cart
       console.log(
         "Adding to cart:",
         product.name,
         "Quantity:",
-        selectedQuantity
+        selectedQuantity,
+        "Size:",
+        selectedSize.label
       );
       // Add your cart logic here
     }
@@ -216,6 +249,71 @@ const ProductDetailPage = () => {
 
   const isOutOfStock = !product.is_unlimited && product.quantity === 0;
 
+  // Size Dropdown Component
+  const SizeDropdown = () => (
+    <>
+      <View style={styles.sizeContainer}>
+        <Text style={styles.sizeLabel}>Size:</Text>
+        <TouchableOpacity
+          style={styles.sizeSelector}
+          onPress={() => setShowSizeDropdown(true)}
+        >
+          <Text style={styles.sizeText}>{selectedSize.label}</Text>
+          <ChevronDown color="#666" size={20} />
+        </TouchableOpacity>
+      </View>
+
+      <Modal
+        visible={showSizeDropdown}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSizeDropdown(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowSizeDropdown(false)}
+        >
+          <View style={styles.dropdownContainer}>
+            <ScrollView
+              style={styles.dropdownList}
+              showsVerticalScrollIndicator={false}
+            >
+              {sizeOptions.map((option, index) => (
+                <TouchableOpacity
+                  key={option.value}
+                  style={[
+                    styles.dropdownItem,
+                    selectedSize.value === option.value &&
+                      styles.selectedDropdownItem,
+                    index === sizeOptions.length - 1 && styles.lastDropdownItem,
+                  ]}
+                  onPress={() => {
+                    setSelectedSize(option);
+                    setShowSizeDropdown(false);
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.dropdownItemText,
+                      selectedSize.value === option.value &&
+                        styles.selectedDropdownItemText,
+                    ]}
+                  >
+                    {option.label}
+                  </Text>
+                  {selectedSize.value === option.value && (
+                    <Check color="#fff" size={16} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView
@@ -233,6 +331,7 @@ const ProductDetailPage = () => {
             await dispatch(
               makeProductPantry({ product: product?._id })
             ).unwrap();
+            await dispatch(getPantryProducts()).unwrap();
           }}
         />
 
@@ -315,6 +414,9 @@ const ProductDetailPage = () => {
           <Text style={styles.productName}>{product.name}</Text>
           <Text style={styles.productSku}>SKU: {product.sku}</Text>
 
+          {/* Size Dropdown */}
+          {product._id === "6632d8c98636f41ae412c6e5" && <SizeDropdown />}
+
           {/* Price Section */}
           <View style={styles.priceContainer}>
             <View style={styles.priceRow}>
@@ -336,7 +438,7 @@ const ProductDetailPage = () => {
           </View>
 
           {/* Stock Status */}
-          <View style={styles.stockContainer}>
+          {/* <View style={styles.stockContainer}>
             {product.is_unlimited ? (
               <View style={styles.stockBadge}>
                 <Text style={styles.stockText}>✓ Always Available</Text>
@@ -368,7 +470,7 @@ const ProductDetailPage = () => {
                 </Text>
               </View>
             )}
-          </View>
+          </View> */}
 
           {/* Description */}
           {product.description && product.description.trim() && (
@@ -419,7 +521,7 @@ const ProductDetailPage = () => {
           </View>
 
           {/* Supplier Info */}
-          {product.supplier && (
+          {/* {product.supplier && (
             <View style={styles.supplierContainer}>
               <Text style={styles.sectionTitle}>Supplier Information</Text>
               <View style={styles.supplierInfo}>
@@ -433,7 +535,7 @@ const ProductDetailPage = () => {
                 )}
               </View>
             </View>
-          )}
+          )} */}
         </View>
       </ScrollView>
 
@@ -685,6 +787,82 @@ const styles = StyleSheet.create({
     color: "#999",
     marginBottom: 24,
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
+  },
+  // Size Dropdown Styles
+  sizeContainer: {
+    marginBottom: 24,
+  },
+  sizeLabel: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#1a1a1a",
+    marginBottom: 12,
+  },
+  sizeSelector: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    backgroundColor: "#fff",
+    borderWidth: 1.5,
+    borderColor: "#e0e0e0",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  sizeText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#1a1a1a",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  dropdownContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    maxHeight: 300,
+    width: "100%",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.15,
+    shadowRadius: 24,
+    elevation: 8,
+  },
+  dropdownList: {
+    maxHeight: 300,
+  },
+  dropdownItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f0",
+  },
+  selectedDropdownItem: {
+    backgroundColor: "#666",
+  },
+  lastDropdownItem: {
+    borderBottomWidth: 0,
+  },
+  dropdownItemText: {
+    fontSize: 16,
+    fontWeight: "500",
+    color: "#1a1a1a",
+  },
+  selectedDropdownItemText: {
+    color: "#fff",
+    fontWeight: "600",
   },
   priceContainer: {
     marginBottom: 24,

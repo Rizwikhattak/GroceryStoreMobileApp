@@ -6,6 +6,7 @@ export const makeProductPantry = createAsyncThunk(
   "pantry/makeProductPantry",
   async (data, { rejectWithValue }) => {
     try {
+      console.log("id", data.product);
       const response = await API_COMMON(
         "post",
         "json",
