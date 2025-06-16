@@ -254,26 +254,27 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
 
   // Handle add to cart with animation
   const handleAddToCart = () => {
-    if (quantity === 0) {
-      // Animate button press
-      if (item?.variation_exists) handleCardPress();
-      else {
-        Animated.sequence([
-          Animated.timing(cardScaleAnim, {
-            toValue: 0.98,
-            duration: 100,
-            useNativeDriver: true,
-          }),
-          Animated.timing(cardScaleAnim, {
-            toValue: 1,
-            duration: 100,
-            useNativeDriver: true,
-          }),
-        ]).start();
+    handleCardPress();
+    // if (quantity === 0) {
+    //   // Animate button press
+    //   if (item?.variation_exists) handleCardPress();
+    //   else {
+    //     Animated.sequence([
+    //       Animated.timing(cardScaleAnim, {
+    //         toValue: 0.98,
+    //         duration: 100,
+    //         useNativeDriver: true,
+    //       }),
+    //       Animated.timing(cardScaleAnim, {
+    //         toValue: 1,
+    //         duration: 100,
+    //         useNativeDriver: true,
+    //       }),
+    //     ]).start();
 
-        dispatch(updateCartQuantity({ id: item._id, item: item, change: 1 }));
-      }
-    }
+    //     dispatch(updateCartQuantity({ id: item._id, item: item, change: 1 }));
+    //   }
+    // }
   };
 
   // Handle quantity change with animation feedback

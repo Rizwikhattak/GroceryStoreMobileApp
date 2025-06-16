@@ -12,6 +12,7 @@ import {
   Platform,
   Animated,
   Modal,
+  TextInput,
 } from "react-native";
 import { useState, useRef, useEffect } from "react";
 import {
@@ -27,6 +28,10 @@ import {
   Package,
   ChevronDown,
   Check,
+  Edit3,
+  X,
+  MessageSquare,
+  FileText,
 } from "lucide-react-native";
 import { primary } from "@/constants/colors";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -38,6 +43,7 @@ import {
   makeProductPantry,
 } from "@/store/actions/pantryActions";
 import { updateCartQuantity } from "@/store/reducers/cartSlice";
+
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 
@@ -76,18 +82,6 @@ interface Product {
   type: string;
 }
 
-// Size options for the dropdown
-const variations = [
-  { label: "Size 9-10", value: "9-10" },
-  { label: "Size 14", value: "14" },
-  { label: "Size 16", value: "16" },
-  { label: "Size 18", value: "18" },
-  { label: "Size 20", value: "20" },
-  { label: "Size 22", value: "22" },
-  { label: "Size 24", value: "24" },
-  { label: "Size 12-13", value: "12-13" },
-];
-
 const ProductDetailPage = () => {
   const { productParam } = useLocalSearchParams();
   const dispatch = useDispatch();
@@ -108,13 +102,17 @@ const ProductDetailPage = () => {
   );
   const [showSizeDropdown, setShowSizeDropdown] = useState(false);
 
+  // Notes state
+  const [productNotes, setProductNotes] = useState("");
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [tempNotes, setTempNotes] = useState("");
+  const notesInputRef = useRef(null);
+
   // Get current cart item for the selected size
   const getCurrentCartItem = () => {
     if (!product?.variations || product?.variations?.length === 0) {
-      // For products without variations
       return cart?.data?.find((item) => item?._id === product?._id);
     } else {
-      // For products with variations, find by product ID and selected size
       return cart?.data?.find(
         (item) =>
           item?._id === product?._id &&
@@ -136,10 +134,29 @@ const ProductDetailPage = () => {
   const [showQuantityControls, setShowQuantityControls] = useState(
     selectedQuantity !== 0
   );
-
-  // Animation values
+  const [showQuantityModal, setShowQuantityModal] = useState(false);
+  const [tempQuantity, setTempQuantity] = useState(selectedQuantity.toString());
+  const [isEditing, setIsEditing] = useState(false);
+  const inputRef = useRef(null);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
+
+  // Notes handlers
+  const handleNotesPress = () => {
+    setTempNotes(productNotes);
+    setShowNotesModal(true);
+  };
+
+  const handleNotesSubmit = () => {
+    setProductNotes(tempNotes);
+    setShowNotesModal(false);
+  };
+
+  const handleNotesCancel = () => {
+    setTempNotes(productNotes);
+    setShowNotesModal(false);
+  };
 
   // Update selected quantity when size changes
   useEffect(() => {
@@ -236,7 +253,6 @@ const ProductDetailPage = () => {
     ) {
       setSelectedQuantity(newQuantity);
 
-      // Create the item object with selected variant if product has variations
       const itemToUpdate =
         product?.variations && product?.variations?.length > 0
           ? { ...product, selectedVariant: [selectedSize] }
@@ -247,11 +263,10 @@ const ProductDetailPage = () => {
           id: product._id,
           item: itemToUpdate,
           change: change,
-          selectedSizeId: selectedSize?._id, // Add this to help identify the specific variant
+          selectedSizeId: selectedSize?._id,
         })
       );
 
-      // Hide quantity controls when quantity reaches 0
       if (newQuantity === 0) {
         setTimeout(() => {
           setShowQuantityControls(false);
@@ -262,7 +277,6 @@ const ProductDetailPage = () => {
 
   const handleAddToCart = () => {
     if (selectedQuantity === 0) {
-      // First tap - show quantity controls and set quantity to 1
       setSelectedQuantity(1);
       setShowQuantityControls(true);
 
@@ -280,14 +294,15 @@ const ProductDetailPage = () => {
         })
       );
     } else {
-      // Subsequent taps - you can add additional logic here if needed
       console.log(
         "Adding to cart:",
         product.name,
         "Quantity:",
         selectedQuantity,
         "Size:",
-        selectedSize?.size || "No size"
+        selectedSize?.size || "No size",
+        "Notes:",
+        productNotes
       );
     }
   };
@@ -296,7 +311,6 @@ const ProductDetailPage = () => {
     router.back();
   };
 
-  // Better image handling with fallbacks
   const getImageUri = (imageUrl: string) => {
     if (!imageUrl) return null;
     return `${apiUrl}products/photo/${imageUrl}`;
@@ -310,6 +324,51 @@ const ProductDetailPage = () => {
     "https://via.placeholder.com/400x400/f5f5f5/999999?text=No+Image";
 
   const isOutOfStock = !product.is_unlimited && product.quantity === 0;
+
+  useEffect(() => {
+    const pulse = Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 1000,
+          useNativeDriver: true,
+        }),
+      ])
+    );
+    pulse.start();
+    return () => pulse.stop();
+  }, []);
+
+  const handleQuantityPress = () => {
+    setTempQuantity(selectedQuantity.toString());
+    setShowQuantityModal(true);
+    setIsEditing(true);
+  };
+
+  const handleQuantitySubmit = () => {
+    const newQuantity = parseInt(tempQuantity) || 0;
+    const maxQuantity = product.is_unlimited ? 999 : product.quantity;
+
+    if (newQuantity >= 0 && newQuantity <= maxQuantity) {
+      const difference = newQuantity - selectedQuantity;
+      if (difference !== 0) {
+        handleQuantityChange(difference);
+      }
+    }
+    setShowQuantityModal(false);
+    setIsEditing(false);
+  };
+
+  const handleQuantityCancel = () => {
+    setTempQuantity(selectedQuantity.toString());
+    setShowQuantityModal(false);
+    setIsEditing(false);
+  };
 
   // Size Dropdown Component
   const SizeDropdown = () => (
@@ -399,7 +458,7 @@ const ProductDetailPage = () => {
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 140 }}
+        contentContainerStyle={{ paddingBottom: 200 }}
       >
         {/* Header */}
         <HeaderCommon
@@ -525,47 +584,188 @@ const ProductDetailPage = () => {
             </View>
           )}
 
-          {/* Features */}
-          <View style={styles.featuresContainer}>
-            <Text style={styles.sectionTitle}>Why choose us</Text>
-            <View style={styles.featuresList}>
-              <View style={styles.featureItem}>
-                <View style={styles.featureIcon}>
-                  <Truck color={primary} size={20} />
-                </View>
-                <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Fast Delivery</Text>
-                  <Text style={styles.featureSubtitle}>
-                    Same day delivery available
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.featureItem}>
-                <View style={styles.featureIcon}>
-                  <Shield color={primary} size={20} />
-                </View>
-                <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Quality Guaranteed</Text>
-                  <Text style={styles.featureSubtitle}>
-                    100% satisfaction promise
-                  </Text>
-                </View>
-              </View>
-              <View style={styles.featureItem}>
-                <View style={styles.featureIcon}>
-                  <Clock color={primary} size={20} />
-                </View>
-                <View style={styles.featureContent}>
-                  <Text style={styles.featureTitle}>Always Fresh</Text>
-                  <Text style={styles.featureSubtitle}>
-                    Daily restocked inventory
-                  </Text>
-                </View>
-              </View>
+          {/* Product Notes Section */}
+          <View style={styles.notesSection}>
+            <View style={styles.notesSectionHeader}>
+              <MessageSquare color={primary} size={20} />
+              <Text style={styles.notesSectionTitle}>Special Instructions</Text>
             </View>
+            <Text style={styles.notesSectionSubtitle}>
+              Add any special notes or preferences for this product
+            </Text>
+
+            <TouchableOpacity
+              style={styles.notesInputContainer}
+              onPress={handleNotesPress}
+              activeOpacity={0.7}
+            >
+              <View style={styles.notesInputContent}>
+                <FileText color="#999" size={18} />
+                <Text
+                  style={[
+                    styles.notesInputText,
+                    !productNotes && styles.notesPlaceholderText,
+                  ]}
+                  numberOfLines={2}
+                >
+                  {productNotes || "Tap to add special instructions..."}
+                </Text>
+                <Edit3 color="#999" size={16} />
+              </View>
+              {productNotes && (
+                <View style={styles.notesIndicator}>
+                  <Text style={styles.notesIndicatorText}>
+                    {productNotes.length} characters
+                  </Text>
+                </View>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
+
+      {/* Notes Modal */}
+      <Modal
+        visible={showNotesModal}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={handleNotesCancel}
+      >
+        <View style={styles.notesModalOverlay}>
+          <View style={styles.notesModalContainer}>
+            <View style={styles.notesModalHeader}>
+              <View style={styles.notesModalTitleContainer}>
+                <MessageSquare color={primary} size={24} />
+                <Text style={styles.notesModalTitle}>Special Instructions</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.notesModalCloseButton}
+                onPress={handleNotesCancel}
+              >
+                <X color="#666" size={24} />
+              </TouchableOpacity>
+            </View>
+
+            <Text style={styles.notesModalSubtitle}>
+              Add any special notes, preferences, or instructions for this
+              product
+            </Text>
+
+            <View style={styles.notesTextInputContainer}>
+              <TextInput
+                ref={notesInputRef}
+                style={styles.notesTextInput}
+                value={tempNotes}
+                onChangeText={setTempNotes}
+                placeholder="e.g., Extra spicy, no onions, gift wrap, delivery instructions..."
+                placeholderTextColor="#999"
+                multiline={true}
+                numberOfLines={4}
+                textAlignVertical="top"
+                autoFocus={true}
+                maxLength={500}
+              />
+              <View style={styles.notesCharacterCount}>
+                <Text style={styles.notesCharacterCountText}>
+                  {tempNotes.length}/500
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.notesModalActions}>
+              <TouchableOpacity
+                style={styles.notesModalSecondaryButton}
+                onPress={handleNotesCancel}
+              >
+                <Text style={styles.notesModalSecondaryButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.notesModalPrimaryButton}
+                onPress={handleNotesSubmit}
+              >
+                <Check color="#fff" size={20} />
+                <Text style={styles.notesModalPrimaryButtonText}>
+                  Save Notes
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Quantity Modal */}
+      <Modal
+        visible={showQuantityModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={handleQuantityCancel}
+      >
+        <TouchableOpacity
+          style={styles.quantityModalOverlay}
+          activeOpacity={1}
+          onPress={handleQuantityCancel}
+        >
+          <View style={styles.quantityModalContainer}>
+            <View style={styles.quantityModalHeader}>
+              <Text style={styles.quantityModalTitle}>Enter Quantity</Text>
+              <Text style={styles.quantityModalSubtitle}>
+                {product.is_unlimited
+                  ? "Enter desired quantity"
+                  : `Max available: ${product.quantity}`}
+              </Text>
+            </View>
+
+            <View style={styles.quantityInputContainer}>
+              <TextInput
+                ref={inputRef}
+                style={styles.quantityInput}
+                value={tempQuantity}
+                onChangeText={setTempQuantity}
+                keyboardType="numeric"
+                selectTextOnFocus={true}
+                autoFocus={true}
+                placeholder="0"
+                placeholderTextColor="#999"
+                maxLength={3}
+              />
+              <View style={styles.quantityInputSuffix}>
+                <Text style={styles.quantityInputUnit}>
+                  {product.uom?.name || "items"}
+                </Text>
+              </View>
+            </View>
+
+            <View style={styles.quantityModalActions}>
+              <TouchableOpacity
+                style={styles.quantityModalButton}
+                onPress={handleQuantityCancel}
+              >
+                <X color="#666" size={20} />
+                <Text style={styles.quantityModalButtonText}>Cancel</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.quantityModalButton,
+                  styles.quantityModalPrimaryButton,
+                ]}
+                onPress={handleQuantitySubmit}
+              >
+                <Check color="#fff" size={20} />
+                <Text
+                  style={[
+                    styles.quantityModalButtonText,
+                    styles.quantityModalPrimaryButtonText,
+                  ]}
+                >
+                  Update
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableOpacity>
+      </Modal>
 
       {/* Bottom Action Bar */}
       <View style={styles.bottomBar}>
@@ -592,9 +792,25 @@ const ProductDetailPage = () => {
                 size={20}
               />
             </TouchableOpacity>
-            <View style={styles.quantityDisplay}>
-              <Text style={styles.quantityText}>{selectedQuantity}</Text>
-            </View>
+
+            <TouchableOpacity
+              style={styles.quantityDisplay}
+              onPress={handleQuantityPress}
+              activeOpacity={0.8}
+            >
+              <Animated.View
+                style={[
+                  styles.quantityContainer,
+                  { transform: [{ scale: pulseAnim }] },
+                ]}
+              >
+                <Text style={styles.quantityText}>{selectedQuantity}</Text>
+                <View style={styles.editIndicator}>
+                  <Edit3 color="#666" size={12} />
+                </View>
+              </Animated.View>
+            </TouchableOpacity>
+
             <TouchableOpacity
               style={[
                 styles.quantityButton,
@@ -651,7 +867,6 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
-    // paddingTop: 20,
   },
   errorContainer: {
     flex: 1,
@@ -683,16 +898,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === "ios" ? 10 : 20,
-    paddingBottom: 15,
-    zIndex: 10,
-  },
-
   imageContainer: {
     position: "relative",
     marginHorizontal: 20,
@@ -816,7 +1021,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     fontFamily: Platform.OS === "ios" ? "Menlo" : "monospace",
   },
-  // Size Dropdown Styles
   sizeContainer: {
     marginBottom: 24,
   },
@@ -927,33 +1131,6 @@ const styles = StyleSheet.create({
     color: "#666",
     fontWeight: "500",
   },
-  stockContainer: {
-    marginBottom: 28,
-  },
-  stockBadge: {
-    backgroundColor: "#E8F5E8",
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    borderRadius: 24,
-    alignSelf: "flex-start",
-  },
-  lowStockBadge: {
-    backgroundColor: "#FFF3E0",
-  },
-  outOfStockBadge: {
-    backgroundColor: "#FFEBEE",
-  },
-  stockText: {
-    fontSize: 14,
-    color: "#4CAF50",
-    fontWeight: "700",
-  },
-  lowStockText: {
-    color: "#FF9800",
-  },
-  outOfStockTextSmall: {
-    color: "#F44336",
-  },
   descriptionContainer: {
     marginBottom: 28,
   },
@@ -969,66 +1146,298 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     fontWeight: "400",
   },
-  featuresContainer: {
+  // Notes Section Styles
+  notesSection: {
     marginBottom: 28,
+    backgroundColor: "#f8f9fa",
+    borderRadius: 20,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: "#f0f0f0",
   },
-  featuresList: {
-    gap: 16,
+  notesSectionHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    marginBottom: 8,
   },
-  featureItem: {
+  notesSectionTitle: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1a1a1a",
+  },
+  notesSectionSubtitle: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  notesInputContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: "#e8e8e8",
+    overflow: "hidden",
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 8,
+    elevation: 2,
+  },
+  notesInputContent: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    padding: 16,
+    gap: 12,
+  },
+  notesInputText: {
+    flex: 1,
+    fontSize: 16,
+    color: "#1a1a1a",
+    lineHeight: 22,
+    fontWeight: "400",
+  },
+  notesPlaceholderText: {
+    color: "#999",
+    fontStyle: "italic",
+  },
+  notesIndicator: {
+    backgroundColor: "#f5f5f5",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f0",
+  },
+  notesIndicatorText: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "right",
+  },
+  // Notes Modal Styles
+  notesModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "flex-end",
+  },
+  notesModalContainer: {
+    backgroundColor: "#fff",
+    borderTopLeftRadius: 24,
+    borderTopRightRadius: 24,
+    paddingTop: 24,
+    paddingHorizontal: 20,
+    paddingBottom: Platform.OS === "ios" ? 40 : 24,
+    maxHeight: screenHeight * 0.8,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  notesModalHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 16,
+  },
+  notesModalTitleContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  notesModalTitle: {
+    fontSize: 22,
+    fontWeight: "700",
+    color: "#1a1a1a",
+  },
+  notesModalCloseButton: {
+    padding: 4,
+  },
+  notesModalSubtitle: {
+    fontSize: 16,
+    color: "#666",
+    marginBottom: 24,
+    lineHeight: 22,
+  },
+  notesTextInputContainer: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 16,
+    borderWidth: 2,
+    borderColor: "#e8e8e8",
+    marginBottom: 24,
+    overflow: "hidden",
+  },
+  notesTextInput: {
+    fontSize: 16,
+    color: "#1a1a1a",
+    padding: 16,
+    minHeight: 120,
+    maxHeight: 200,
+    lineHeight: 22,
+    fontWeight: "400",
+  },
+  notesCharacterCount: {
+    backgroundColor: "#f0f0f0",
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderTopColor: "#e8e8e8",
+  },
+  notesCharacterCountText: {
+    fontSize: 12,
+    color: "#666",
+    textAlign: "right",
+  },
+  notesModalActions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  notesModalSecondaryButton: {
+    flex: 1,
+    paddingVertical: 16,
+    borderRadius: 16,
+    backgroundColor: "#f5f5f5",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  notesModalSecondaryButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#666",
+  },
+  notesModalPrimaryButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 16,
+    borderRadius: 16,
+    backgroundColor: primary,
+    gap: 8,
+  },
+  notesModalPrimaryButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#fff",
+  },
+  // Existing styles continue...
+  quantityDisplay: {
+    minWidth: 56,
+    alignItems: "center",
+    justifyContent: "center",
+    paddingHorizontal: 4,
+  },
+  quantityContainer: {
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    minWidth: 48,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: "#e0e0e0",
+  },
+  quantityText: {
+    fontSize: 18,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    marginBottom: 2,
+  },
+  editIndicator: {
+    opacity: 0.6,
+  },
+  quantityModalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 20,
+  },
+  quantityModalContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    width: "100%",
+    maxWidth: 320,
+    paddingVertical: 24,
+    paddingHorizontal: 20,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 10 },
+    shadowOpacity: 0.25,
+    shadowRadius: 20,
+    elevation: 10,
+  },
+  quantityModalHeader: {
+    alignItems: "center",
+    marginBottom: 24,
+  },
+  quantityModalTitle: {
+    fontSize: 20,
+    fontWeight: "700",
+    color: "#1a1a1a",
+    marginBottom: 8,
+  },
+  quantityModalSubtitle: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+  },
+  quantityInputContainer: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "#f8f9fa",
-    padding: 16,
     borderRadius: 16,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
+    borderWidth: 2,
+    borderColor: "#e0e0e0",
+    marginBottom: 24,
+    paddingHorizontal: 16,
+    paddingVertical: 4,
   },
-  featureIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: `${primary}15`,
-    justifyContent: "center",
-    alignItems: "center",
-    marginRight: 16,
-  },
-  featureContent: {
+  quantityInput: {
     flex: 1,
-  },
-  featureTitle: {
-    fontSize: 16,
-    color: "#1a1a1a",
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  featureSubtitle: {
-    fontSize: 14,
-    color: "#666",
-    fontWeight: "400",
-  },
-  supplierContainer: {
-    marginBottom: 28,
-  },
-  supplierInfo: {
-    backgroundColor: "#f8f9fa",
-    padding: 20,
-    borderRadius: 16,
-    borderLeftWidth: 4,
-    borderLeftColor: primary,
-    borderWidth: 1,
-    borderColor: "#f0f0f0",
-  },
-  supplierName: {
-    fontSize: 16,
+    fontSize: 24,
     fontWeight: "700",
     color: "#1a1a1a",
-    marginBottom: 4,
+    textAlign: "center",
+    paddingVertical: 16,
+    paddingHorizontal: 8,
   },
-  supplierContact: {
-    fontSize: 14,
+  quantityInputSuffix: {
+    paddingLeft: 8,
+  },
+  quantityInputUnit: {
+    fontSize: 16,
     color: "#666",
     fontWeight: "500",
+  },
+  quantityModalActions: {
+    flexDirection: "row",
+    gap: 12,
+  },
+  quantityModalButton: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 14,
+    borderRadius: 12,
+    gap: 8,
+    backgroundColor: "#f5f5f5",
+  },
+  quantityModalPrimaryButton: {
+    backgroundColor: primary,
+  },
+  quantityModalButtonText: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#666",
+  },
+  quantityModalPrimaryButtonText: {
+    color: "#fff",
   },
   bottomBar: {
     position: "absolute",
@@ -1074,16 +1483,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#ddd",
     shadowOpacity: 0,
     elevation: 0,
-  },
-  quantityDisplay: {
-    minWidth: 48,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  quantityText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#1a1a1a",
   },
   addToCartButton: {
     flex: 1,
