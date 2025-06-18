@@ -1,6 +1,7 @@
 import { Stack } from "expo-router";
 import "./globals.css";
 import { Provider, useDispatch, useSelector } from "react-redux";
+import "react-native-gesture-handler";
 import { persistor, store } from "../store/store";
 import "react-native-svg";
 import { useEffect } from "react";

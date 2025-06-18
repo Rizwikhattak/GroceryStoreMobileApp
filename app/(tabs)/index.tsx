@@ -29,6 +29,7 @@ import { useRouter } from "expo-router";
 import { logout } from "@/store/reducers/authSlice";
 import { getPantryProducts } from "@/store/actions/pantryActions";
 import { useFocusEffect } from "@react-navigation/native";
+import Navbar from "@/components/ui/Navbar";
 
 export default function Index() {
   const user = useSelector((state: any) => state.auth);
@@ -93,78 +94,81 @@ export default function Index() {
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.keyboardAvoidingView}
-    >
-      <View style={styles.container}>
-        <ScrollView
-          style={styles.scrollView}
-          keyboardShouldPersistTaps="handled"
-          keyboardDismissMode="on-drag"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollViewContent}
-        >
-          {/* Title section - can be wrapped with TouchableOpacity to dismiss keyboard */}
-          <TouchableOpacity activeOpacity={1} onPress={dismissKeyboard}>
-            <Logo
-              width={200}
-              height={80}
-              style={{ alignSelf: "center", marginTop: 20 }}
-            />
-          </TouchableOpacity>
-
-          {/* Welcome section */}
-          <View style={styles.welcomeSection}>
+    <>
+      <Navbar />
+      <KeyboardAvoidingView
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        style={styles.keyboardAvoidingView}
+      >
+        <View style={styles.container}>
+          <ScrollView
+            style={styles.scrollView}
+            keyboardShouldPersistTaps="handled"
+            keyboardDismissMode="on-drag"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.scrollViewContent}
+          >
+            {/* Title section - can be wrapped with TouchableOpacity to dismiss keyboard */}
             <TouchableOpacity activeOpacity={1} onPress={dismissKeyboard}>
-              <View style={styles.welcomeTextContainer}>
-                <Text style={styles.welcomeText}>Welcome, </Text>
-                <Text style={styles.welcomeNameText}>
-                  {user.data.first_name}
-                </Text>
-              </View>
+              <Logo
+                width={200}
+                height={80}
+                style={{ alignSelf: "center", marginTop: 20 }}
+              />
             </TouchableOpacity>
 
-            <TouchableOpacity
-              style={styles.logoutButton}
-              onPress={handleLogout}
-            >
-              <Ionicons name="log-out-outline" size={20} color={primary} />
-            </TouchableOpacity>
-          </View>
+            {/* Welcome section */}
+            <View style={styles.welcomeSection}>
+              <TouchableOpacity activeOpacity={1} onPress={dismissKeyboard}>
+                <View style={styles.welcomeTextContainer}>
+                  <Text style={styles.welcomeText}>Welcome, </Text>
+                  <Text style={styles.welcomeNameText}>
+                    {user.data.first_name}
+                  </Text>
+                </View>
+              </TouchableOpacity>
 
-          {/* Search input */}
-          <View style={styles.searchContainer}>
-            <SearchInput />
-          </View>
+              <TouchableOpacity
+                style={styles.logoutButton}
+                onPress={handleLogout}
+              >
+                <Ionicons name="log-out-outline" size={20} color={primary} />
+              </TouchableOpacity>
+            </View>
 
-          {/* DO NOT wrap sliders with TouchableWithoutFeedback */}
-          <View style={styles.promoSliderContainer}>
-            <PromoSlider />
-          </View>
+            {/* Search input */}
+            <View style={styles.searchContainer}>
+              <SearchInput />
+            </View>
 
-          <View style={styles.categorySliderContainer}>
-            <CategorySlider />
-          </View>
+            {/* DO NOT wrap sliders with TouchableWithoutFeedback */}
+            <View style={styles.promoSliderContainer}>
+              <PromoSlider />
+            </View>
 
-          <View style={styles.featuredProductsContainer}>
-            <SectionHeader
-              title="Featured Products"
-              onViewAll={() =>
-                dispatch(
-                  getAllFeaturedProducts({ limit: products.pagination.total })
-                )
-              }
-            />
-            <ProductsList
-              products={products}
-              pantryData={pantry?.data}
-              favouriteIds={favouriteIds}
-            />
-          </View>
-        </ScrollView>
-      </View>
-    </KeyboardAvoidingView>
+            <View style={styles.categorySliderContainer}>
+              <CategorySlider />
+            </View>
+
+            <View style={styles.featuredProductsContainer}>
+              <SectionHeader
+                title="Featured Products"
+                onViewAll={() =>
+                  dispatch(
+                    getAllFeaturedProducts({ limit: products.pagination.total })
+                  )
+                }
+              />
+              <ProductsList
+                products={products}
+                pantryData={pantry?.data}
+                favouriteIds={favouriteIds}
+              />
+            </View>
+          </ScrollView>
+        </View>
+      </KeyboardAvoidingView>
+    </>
   );
 }
 
@@ -183,7 +187,7 @@ const styles = StyleSheet.create({
   scrollViewContent: {
     minHeight: "100%",
     paddingBottom: 80, // Add extra padding at bottom to account for tab bar
-    paddingTop: 50,
+    // paddingTop: 50,
     overflow: "visible",
   },
   titleContainer: {
