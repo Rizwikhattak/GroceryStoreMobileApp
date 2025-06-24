@@ -29,7 +29,10 @@ export default function DrawerLayout() {
         )}
       >
         {/* first screen inside drawer holds the bottom-tabs layout */}
-        <Drawer.Screen name="(tabs)" options={{ drawerLabel: "Home" }} />
+        <Drawer.Screen
+          name="(tabs)"
+          options={{ drawerLabel: "Home", headerShown: false }}
+        />
         {/* <Drawer.Screen name="AboutUs" options={{ drawerLabel: "Home" }} /> */}
         {/* <Drawer.Screen name="ContactUs" options={{ drawerLabel: "Home" }} /> */}
 
