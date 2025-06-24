@@ -1,5 +1,4 @@
 "use client";
-
 import {
   View,
   Text,
@@ -95,18 +94,10 @@ const ProductDetailPage = () => {
 
   const router = useRouter();
   const cart = useSelector((state) => state.cart);
-
   // Size dropdown states
   const [selectedSize, setSelectedSize] = useState(
     product?.variations ? product?.variations[0] : {}
   );
-  const [showSizeDropdown, setShowSizeDropdown] = useState(false);
-
-  // Notes state
-  const [productNotes, setProductNotes] = useState("");
-  const [showNotesModal, setShowNotesModal] = useState(false);
-  const [tempNotes, setTempNotes] = useState("");
-  const notesInputRef = useRef(null);
 
   // Get current cart item for the selected size
   const getCurrentCartItem = () => {
@@ -129,6 +120,13 @@ const ProductDetailPage = () => {
   const [isFavorite, setIsFavorite] = useState(
     product?.inPantry || product?.isFavorite || false
   );
+  const [showSizeDropdown, setShowSizeDropdown] = useState(false);
+
+  // Notes state
+  const [productNotes, setProductNotes] = useState("");
+  const [showNotesModal, setShowNotesModal] = useState(false);
+  const [tempNotes, setTempNotes] = useState("");
+  const notesInputRef = useRef(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
   const [showQuantityControls, setShowQuantityControls] = useState(
@@ -255,13 +253,19 @@ const ProductDetailPage = () => {
 
       const itemToUpdate =
         product?.variations && product?.variations?.length > 0
-          ? { ...product, selectedVariant: [selectedSize] }
+          ? {
+              ...product,
+              selectedVariant: [selectedSize],
+            }
           : product;
 
       dispatch(
         updateCartQuantity({
           id: product._id,
-          item: itemToUpdate,
+          item: {
+            ...itemToUpdate,
+            product_note: { product_id: product?._id, note: productNotes },
+          },
           change: change,
           selectedSizeId: selectedSize?._id,
         })
@@ -282,13 +286,19 @@ const ProductDetailPage = () => {
 
       const itemToAdd =
         product?.variations && product?.variations?.length > 0
-          ? { ...product, selectedVariant: [selectedSize] }
+          ? {
+              ...product,
+              selectedVariant: [selectedSize],
+            }
           : product;
 
       dispatch(
         updateCartQuantity({
           id: product._id,
-          item: itemToAdd,
+          item: {
+            ...itemToAdd,
+            product_note: { product_id: product?._id, note: productNotes },
+          },
           change: 1,
           selectedSizeId: selectedSize?._id,
         })
@@ -458,7 +468,7 @@ const ProductDetailPage = () => {
       <ScrollView
         style={styles.scrollView}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 200 }}
+        contentContainerStyle={{ paddingBottom: 100 }}
       >
         {/* Header */}
         <HeaderCommon
@@ -1509,7 +1519,7 @@ const styles = StyleSheet.create({
   },
   addToCartText: {
     color: "#fff",
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: "700",
   },
 });

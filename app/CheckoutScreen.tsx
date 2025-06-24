@@ -147,6 +147,7 @@ const CheckoutScreen = () => {
     const productNotes: { product_id: string; note: string }[] = [];
 
     cartState.forEach((cartItem) => {
+      
       items.push({
         productId: cartItem._id,
         uniqueId: cartItem.selectedVariation?.uniqueId ?? null,
@@ -156,10 +157,10 @@ const CheckoutScreen = () => {
       weights.push(cartItem.weight ?? null);
       variations.push(cartItem.selectedVariation ?? null);
 
-      if (cartItem.note) {
+      if (cartItem.product_note) {
         productNotes.push({
-          product_id: cartItem._id,
-          note: cartItem.note,
+          product_id: cartItem.product_note.product_id,
+          note: cartItem.product_note.note,
         });
       }
     });
@@ -172,7 +173,6 @@ const CheckoutScreen = () => {
       weights, // ➜ [null, {value:2,uom:"kg"}, …]
       selectedVariations: variations, // ➜ [null, {…}, …]
       product_notes: productNotes, // ➜ [{product_id, note}, …]
-
       shipping_address: shippingAddress,
       shipping_date: shippingDateISO, // ISO string (e.g. "2025-05-24T00:00:00Z")
       type: deliveryMethod, // "Pickup" | "Delivery" | "Delivery/Pickup"
@@ -199,18 +199,18 @@ const CheckoutScreen = () => {
       deliveryMethod === "delivery" ? "Delivery" : "Pickup",
       orderInstructions
     );
-
-    try {
-      const resp = await dispatch(placeCustomerOrder(payload)).unwrap();
-      console.log("Response", resp);
-      dispatch(resetCartState());
-      Alert.alert("Order Placed", "Your order has been placed successfully!", [
-        { text: "OK", onPress: () => router.push("/(tabs)") },
-      ]);
-    } catch (err) {
-      console.error(err);
-      Alert.alert("Error", "Failed to place order. Please try again.");
-    }
+    console.log("Order Payload", payload);
+    // try {
+    //   const resp = await dispatch(placeCustomerOrder(payload)).unwrap();
+    //   console.log("Response", resp);
+    //   dispatch(resetCartState());
+    //   Alert.alert("Order Placed", "Your order has been placed successfully!", [
+    //     { text: "OK", onPress: () => router.push("/(tabs)") },
+    //   ]);
+    // } catch (err) {
+    //   console.error(err);
+    //   Alert.alert("Error", "Failed to place order. Please try again.");
+    // }
   };
 
   // const handlePlaceOrder = async () => {

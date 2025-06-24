@@ -14,6 +14,7 @@ const cartSlice = createSlice({
   reducers: {
     updateCartQuantity: (state, action) => {
       const { id, change, item, selectedSizeId } = action.payload;
+
       let itemIndex = -1;
       console.log(action.payload);
       console.log(
@@ -76,7 +77,12 @@ const cartSlice = createSlice({
     // Helper action to remove a specific item
     removeCartItem: (state, action) => {
       const { id, selectedSizeId } = action.payload;
-
+      console.log(
+        "Removing item - Product ID:",
+        id,
+        "Selected Size ID:",
+        selectedSizeId
+      );
       let itemIndex = -1;
       if (selectedSizeId) {
         // Remove specific size variant
@@ -89,7 +95,7 @@ const cartSlice = createSlice({
         // Remove product without variations
         itemIndex = state.data.findIndex((cartItem) => cartItem._id === id);
       }
-
+      console.log("Item index to remove:", itemIndex);
       if (itemIndex !== -1) {
         state.data.splice(itemIndex, 1);
       }

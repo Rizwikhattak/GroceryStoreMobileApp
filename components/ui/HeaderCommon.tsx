@@ -160,7 +160,7 @@ const styles = StyleSheet.create({
   actionButton: {
     padding: 6,
     borderRadius: 12,
-    backgroundColor: "rgba(105, 17, 18, 0.05)",
+    // backgroundColor: "rgba(105, 17, 18, 0.05)",
     transition: "all 0.2s ease",
   },
   actionButtonActive: {
