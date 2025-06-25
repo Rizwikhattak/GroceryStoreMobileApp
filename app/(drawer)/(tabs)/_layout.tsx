@@ -1,337 +1,349 @@
 "use client";
 
+import React from "react";
+import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   View,
-  Image,
-  Pressable,
-  StyleSheet,
-  Dimensions,
   Text,
+  TouchableOpacity,
+  Dimensions,
+  Animated,
 } from "react-native";
-import { Tabs } from "expo-router";
-import { icons } from "@/constants/icons";
-import { primary } from "@/constants/colors";
-import { StatusBar } from "expo-status-bar";
+import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
-import { useSelector } from "react-redux";
+import HomeScreen from "@/app/(drawer)/(tabs)";
+import LikedScreen from "@/app/(drawer)/(tabs)/liked";
+import Cart from "@/app/(drawer)/(tabs)/cart";
+import NotificationsScreen from "@/app/(drawer)/(tabs)/notifications";
+import ProfileScreen from "@/app/(drawer)/(tabs)/profile";
 
-const { width: screenWidth } = Dimensions.get("window");
+const Tab = createBottomTabNavigator();
+const { width } = Dimensions.get("window");
 
-const TabIcon = ({
-  focused,
-  icon,
-  title,
-  customViewStyle = null,
-  customIconStyle = null,
-  customTintColor = "#9CA3AF",
-}: any) => {
-  // Get cart data from Redux store
-  const cart = useSelector((state) => state.cart);
+// Enhanced Tab Bar Component with modern design
+const ModernTabBar = ({ state, descriptors, navigation }) => {
+  const [animatedValues] = React.useState(
+    state.routes.map(() => new Animated.Value(0))
+  );
 
-  // Calculate total items in cart
-  const cartItemCount =
-    cart?.data?.reduce((total, item) => {
-      return total + (item?.orderQuantity || 0);
-    }, 0) || 0;
-
-  if (title === "Cart") {
-    return (
-      <View style={styles.cartContainer}>
-        <View style={styles.cartButton}>
-          <LinearGradient
-            colors={[primary, `${primary}DD`]}
-            style={styles.cartGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-          >
-            <Image source={icon} tintColor="#ffffff" style={styles.cartIcon} />
-          </LinearGradient>
-
-          {/* Cart Count Badge */}
-          {cartItemCount > 0 && (
-            <View style={styles.cartBadge}>
-              <Text style={styles.cartBadgeText}>
-                {cartItemCount > 99 ? "99+" : cartItemCount.toString()}
-              </Text>
-            </View>
-          )}
-        </View>
-        {focused && (
-          <View style={[styles.cartIndicator, { backgroundColor: primary }]} />
-        )}
-      </View>
-    );
-  }
+  React.useEffect(() => {
+    animatedValues.forEach((animValue, index) => {
+      Animated.timing(animValue, {
+        toValue: state.index === index ? 1 : 0,
+        duration: 200,
+        useNativeDriver: false,
+      }).start();
+    });
+  }, [state.index]);
 
   return (
-    <View style={styles.tabIconContainer}>
-      {focused && (
-        <View
-          style={[styles.activeBackground, { backgroundColor: `${primary}15` }]}
-        />
-      )}
-      <Image
-        source={icon}
-        tintColor={focused ? primary : customTintColor}
-        style={[styles.icon, customIconStyle && styles[customIconStyle]]}
+    <View
+      style={{
+        position: "relative",
+        backgroundColor: "transparent",
+      }}
+    >
+      {/* Background with gradient and blur effect */}
+      <LinearGradient
+        colors={["rgba(255, 255, 255, 0.98)", "rgba(248, 248, 248, 1)"]}
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          borderTopLeftRadius: 30,
+          borderTopRightRadius: 30,
+        }}
       />
-      {focused && (
-        <View style={[styles.activeDot, { backgroundColor: primary }]} />
-      )}
+
+      {/* Subtle top border */}
+      <View
+        style={{
+          position: "absolute",
+          top: 0,
+          left: 20,
+          right: 20,
+          height: 1,
+          backgroundColor: "rgba(105, 17, 18, 0.1)",
+          borderRadius: 1,
+        }}
+      />
+
+      <View
+        style={{
+          paddingBottom: 12,
+          paddingTop: 10,
+          paddingHorizontal: 15, // Reduced from 20 to give more space
+          borderTopLeftRadius: 30,
+          borderTopRightRadius: 30,
+        }}
+      >
+        <View
+          style={{
+            flexDirection: "row",
+            justifyContent: "space-between", // Changed from space-around to space-between
+            alignItems: "center",
+            position: "relative",
+            paddingHorizontal: 10, // Add horizontal padding to prevent overflow
+          }}
+        >
+          {state.routes.map((route, index) => {
+            const { options } = descriptors[route.key];
+            const isFocused = state.index === index;
+            const isCartTab = route.name === "Cart";
+            const animatedValue = animatedValues[index];
+
+            const onPress = () => {
+              const event = navigation.emit({
+                type: "tabPress",
+                target: route.key,
+                canPreventDefault: true,
+              });
+
+              if (!isFocused && !event.defaultPrevented) {
+                navigation.navigate(route.name);
+              }
+            };
+
+            // Enhanced icon mapping with filled/outline variants
+            const getIconName = (routeName: string, focused: boolean) => {
+              switch (routeName) {
+                case "Home":
+                  return focused ? "home" : "home-outline";
+                case "Pantry":
+                  return focused ? "heart" : "heart-outline";
+                case "Cart":
+                  return "bag-handle";
+                case "Notifications":
+                  return focused ? "notifications" : "notifications-outline";
+                case "Profile":
+                  return focused ? "person" : "person-outline";
+                default:
+                  return "home-outline";
+              }
+            };
+
+            const getTabLabel = (routeName: string) => {
+              switch (routeName) {
+                case "Home":
+                  return "Home";
+                case "Pantry":
+                  return "Pantry";
+                case "Cart":
+                  return "Cart";
+                case "Notifications":
+                  return "Alerts";
+                case "Profile":
+                  return "Profile";
+                default:
+                  return routeName;
+              }
+            };
+
+            // Cart tab (center, floating design)
+            if (isCartTab) {
+              return (
+                <TouchableOpacity
+                  key={index}
+                  onPress={onPress}
+                  style={{
+                    position: "relative",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    marginTop: -5,
+                  }}
+                  activeOpacity={0.8}
+                >
+                  {/* Floating background with gradient */}
+                  <LinearGradient
+                    colors={["#691112", "#8B1538", "#691112"]}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={{
+                      width: 75,
+                      height: 75,
+                      borderRadius: 37.5,
+                      alignItems: "center",
+                      justifyContent: "center",
+                    }}
+                  >
+                    <Ionicons
+                      name={getIconName(route.name, true)}
+                      size={30}
+                      color="#ffffff"
+                    />
+                  </LinearGradient>
+
+                  {/* Enhanced notification badge */}
+                  <View
+                    style={{
+                      position: "absolute",
+                      top: -2,
+                      right: -2,
+                      backgroundColor: "#FF6B6B",
+                      borderRadius: 14,
+                      minWidth: 28,
+                      height: 28,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      borderWidth: 3,
+                      borderColor: "#ffffff",
+                    }}
+                  >
+                    <Text
+                      style={{
+                        color: "#ffffff",
+                        fontSize: 12,
+                        fontWeight: "800",
+                        letterSpacing: 0.5,
+                      }}
+                    >
+                      2
+                    </Text>
+                  </View>
+
+                  {/* Floating effect rings */}
+                  <Animated.View
+                    style={{
+                      position: "absolute",
+                      width: 85,
+                      height: 85,
+                      borderRadius: 42.5,
+                      borderWidth: 2,
+                      borderColor: "rgba(105, 17, 18, 0.2)",
+                      opacity: animatedValue.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: [0, 1],
+                      }),
+                      transform: [
+                        {
+                          scale: animatedValue.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0.8, 1],
+                          }),
+                        },
+                      ],
+                    }}
+                  />
+                </TouchableOpacity>
+              );
+            }
+
+            // Regular tabs with enhanced design
+            return (
+              <TouchableOpacity
+                key={index}
+                onPress={onPress}
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  paddingVertical: 4,
+                  paddingHorizontal: 8, // Reduced from 12
+                  minWidth: 55, // Reduced from 60
+                  flex: 1, // Add flex to distribute space evenly
+                  maxWidth: (width - 120) / 4, // Ensure tabs don't exceed available space
+                }}
+                activeOpacity={0.7}
+              >
+                <Animated.View
+                  style={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                    transform: [
+                      {
+                        scale: animatedValue.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [1, 1.1],
+                        }),
+                      },
+                    ],
+                  }}
+                >
+                  {/* Icon container with dynamic background */}
+                  <Animated.View
+                    style={{
+                      width: 45, // Reduced from 50
+                      height: 45, // Reduced from 50
+                      borderRadius: 22.5,
+                      alignItems: "center",
+                      justifyContent: "center",
+                      backgroundColor: animatedValue.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ["transparent", "rgba(105, 17, 18, 0.1)"],
+                      }),
+                      marginBottom: 2,
+                    }}
+                  >
+                    <Ionicons
+                      name={getIconName(route.name, isFocused)}
+                      size={isFocused ? 24 : 22} // Reduced icon sizes
+                      color={isFocused ? "#691112" : "#888888"}
+                    />
+                  </Animated.View>
+
+                  {/* Tab label */}
+                  <Animated.Text
+                    style={{
+                      fontSize: 10, // Reduced from 11
+                      fontWeight: isFocused ? "700" : "500",
+                      color: animatedValue.interpolate({
+                        inputRange: [0, 1],
+                        outputRange: ["#888888", "#691112"],
+                      }),
+                      letterSpacing: 0.2, // Reduced from 0.3
+                      textAlign: "center",
+                    }}
+                  >
+                    {getTabLabel(route.name)}
+                  </Animated.Text>
+
+                  {/* Active indicator dot */}
+                  <Animated.View
+                    style={{
+                      width: 4,
+                      height: 4,
+                      borderRadius: 2,
+                      backgroundColor: "#691112",
+                      marginTop: 1,
+                      opacity: animatedValue,
+                      transform: [
+                        {
+                          scale: animatedValue.interpolate({
+                            inputRange: [0, 1],
+                            outputRange: [0, 1],
+                          }),
+                        },
+                      ],
+                    }}
+                  />
+                </Animated.View>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
     </View>
   );
 };
 
-const EnhancedTabBar = () => {
+export default function ModernBottomTabNavigator() {
   return (
-    <>
-      <StatusBar style="dark" translucent backgroundColor="transparent" />
-      <View style={styles.tabBarWrapper}>
-        <View style={styles.tabBarBackground}>
-          <LinearGradient
-            colors={["#FFFFFF", "#F8FAFC"]}
-            style={styles.backgroundGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 0, y: 1 }}
-          />
-        </View>
-        <Tabs
-          screenOptions={{
-            headerShown: false,
-            tabBarShowLabel: false,
-            tabBarHideOnKeyboard: true,
-            tabBarStyle: styles.tabBar,
-            tabBarButton: (props) => (
-              <Pressable
-                {...props}
-                android_ripple={{ color: `${primary}20`, borderless: true }}
-                style={styles.pressableArea}
-              />
-            ),
-          }}
-        >
-          <Tabs.Screen
-            name="index"
-            options={{
-              title: "Home",
-              headerShown: false,
-              tabBarIcon: ({ focused }) => (
-                <TabIcon focused={focused} icon={icons.home} title="Home" />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="liked"
-            options={{
-              title: "Liked",
-              headerShown: false,
-              tabBarIcon: ({ focused }) => (
-                <TabIcon focused={focused} icon={icons.heart} title="Liked" />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="cart"
-            options={{
-              title: "Cart",
-              headerShown: false,
-              tabBarStyle: { display: "none" },
-              tabBarIcon: ({ focused }) => (
-                <TabIcon focused={focused} icon={icons.cart} title="Cart" />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="notifications"
-            options={{
-              title: "Notification",
-              headerShown: false,
-              tabBarIcon: ({ focused }) => (
-                <TabIcon
-                  focused={focused}
-                  icon={icons.bell}
-                  title="Notification"
-                />
-              ),
-            }}
-          />
-          <Tabs.Screen
-            name="profile"
-            options={{
-              title: "Profile",
-              headerShown: false,
-              tabBarStyle: { display: "none" },
-              tabBarIcon: ({ focused }) => (
-                <TabIcon
-                  focused={focused}
-                  icon={icons.profile}
-                  title="Profile"
-                />
-              ),
-            }}
-          />
-        </Tabs>
-      </View>
-    </>
+    <Tab.Navigator
+      tabBar={(props) => <ModernTabBar {...props} />}
+      screenOptions={{
+        headerShown: false,
+      }}
+      initialRouteName="Home"
+    >
+      <Tab.Screen name="Home" component={() => <HomeScreen />} />
+      <Tab.Screen name="Pantry" component={() => <LikedScreen />} />
+      <Tab.Screen name="Cart" component={() => <Cart />} />
+      <Tab.Screen
+        name="Notifications"
+        component={() => <NotificationsScreen />}
+      />
+      <Tab.Screen name="Profile" component={() => <ProfileScreen />} />
+    </Tab.Navigator>
   );
-};
-
-const styles = StyleSheet.create({
-  contentContainer: {
-    paddingBottom: 90, // Space for the enhanced tab bar
-  },
-  tabBarWrapper: {
-    position: "absolute",
-    height: "100%",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-  },
-  tabBarBackground: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 85,
-    borderTopLeftRadius: 30,
-    borderTopRightRadius: 30,
-    overflow: "hidden",
-    elevation: 25,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: -8,
-    },
-    shadowOpacity: 0.15,
-    shadowRadius: 20,
-  },
-  backgroundGradient: {
-    flex: 1,
-  },
-  tabBar: {
-    backgroundColor: "#ffff",
-    height: 75,
-    position: "absolute",
-    bottom: 0,
-    borderTopRightRadius: 30,
-    borderTopLeftRadius: 30,
-    borderTopWidth: 0,
-    elevation: 0,
-    shadowOpacity: 0,
-    paddingBottom: 5,
-    paddingTop: 5,
-  },
-  tabBarItem: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    height: "100%",
-  },
-  pressableArea: {
-    width: "100%",
-    height: "100%",
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 25,
-  },
-  tabIconContainer: {
-    width: 55,
-    height: 55,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: 27.5,
-    position: "relative",
-  },
-  activeBackground: {
-    position: "absolute",
-    width: 55,
-    height: 55,
-    borderRadius: 27.5,
-    zIndex: -1,
-  },
-  icon: {
-    width: 24,
-    height: 24,
-  },
-  activeDot: {
-    position: "absolute",
-    bottom: -8,
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-  },
-  cartContainer: {
-    alignItems: "center",
-    justifyContent: "center",
-    position: "relative",
-  },
-  cartButton: {
-    width: 65,
-    height: 65,
-    borderRadius: 37.5,
-    marginTop: 0,
-    elevation: 20,
-    shadowColor: primary,
-    shadowOffset: {
-      width: 0,
-      height: 10,
-    },
-    shadowOpacity: 0.4,
-    shadowRadius: 15,
-    position: "relative",
-  },
-  cartGradient: {
-    width: "100%",
-    height: "100%",
-    borderRadius: 37.5,
-    justifyContent: "center",
-    alignItems: "center",
-    borderWidth: 5,
-    borderColor: "#ffffff",
-  },
-  cartIcon: {
-    width: 25,
-    height: 25,
-  },
-  cartIndicator: {
-    position: "absolute",
-    bottom: -15,
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-  },
-  // New styles for cart badge
-  cartBadge: {
-    position: "absolute",
-    top: -2,
-    right: -2,
-    backgroundColor: "#FF4757",
-    minWidth: 20,
-    height: 20,
-    borderRadius: 10,
-    justifyContent: "center",
-    alignItems: "center",
-    paddingHorizontal: 6,
-    borderWidth: 2,
-    borderColor: "#ffffff",
-    elevation: 3,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  cartBadgeText: {
-    color: "#ffffff",
-    fontSize: 11,
-    fontWeight: "700",
-    textAlign: "center",
-    includeFontPadding: false,
-    textAlignVertical: "center",
-  },
-});
-
-export default EnhancedTabBar;
+}

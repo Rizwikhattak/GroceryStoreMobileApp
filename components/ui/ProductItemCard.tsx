@@ -235,7 +235,7 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
   const handleQuantitySubmit = () => {
     if (!isEditing) return;
 
-    let newQuantity = parseInt(inputValue, 10);
+    let newQuantity = Number.parseInt(inputValue, 10);
     if (isNaN(newQuantity)) {
       newQuantity = 0;
     }
@@ -254,31 +254,35 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
 
   // Handle add to cart with animation
   const handleAddToCart = () => {
-    handleCardPress();
-    // if (quantity === 0) {
-    //   // Animate button press
-    //   if (item?.variation_exists) handleCardPress();
-    //   else {
-    //     Animated.sequence([
-    //       Animated.timing(cardScaleAnim, {
-    //         toValue: 0.98,
-    //         duration: 100,
-    //         useNativeDriver: true,
-    //       }),
-    //       Animated.timing(cardScaleAnim, {
-    //         toValue: 1,
-    //         duration: 100,
-    //         useNativeDriver: true,
-    //       }),
-    //     ]).start();
+    if (quantity === 0) {
+      // First time adding - navigate to product details if variations exist
+      if (item?.variation_exists) {
+        handleCardPress();
+      } else {
+        // Add 1 to cart directly
+        Animated.sequence([
+          Animated.timing(cardScaleAnim, {
+            toValue: 0.98,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+          Animated.timing(cardScaleAnim, {
+            toValue: 1,
+            duration: 100,
+            useNativeDriver: true,
+          }),
+        ]).start();
 
-    //     dispatch(updateCartQuantity({ id: item._id, item: item, change: 1 }));
-    //   }
-    // }
+        dispatch(updateCartQuantity({ id: item._id, item: item, change: 1 }));
+      }
+    } else {
+      // Already has quantity - navigate to cart or product details
+      handleCardPress();
+    }
   };
 
-  // Handle quantity change with animation feedback
-  const handleQuantityChangeWithAnimation = (change) => {
+  // Handle adding more quantity when already in cart
+  const handleAddMoreToCart = () => {
     Animated.sequence([
       Animated.timing(scaleAnim, {
         toValue: 1.1,
@@ -292,7 +296,8 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
       }),
     ]).start();
 
-    dispatch(updateCartQuantity({ id: item._id, item: item, change: change }));
+    // Navigate to product details for more options
+    handleCardPress();
   };
 
   return (
@@ -322,7 +327,6 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
       <TouchableOpacity
         style={[
           styles.favoriteButton,
-
           (inPantry || isFavorite) && styles.favoriteButtonActive,
         ]}
         onPress={() => toggleFavorite(item._id)}
@@ -354,15 +358,6 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
 
         {/* Product Image */}
         <View style={styles.imageContainer}>
-          {/* <Image
-            source={{
-              uri:
-                `${apiUrl}products/photo/${item.photo}` ||
-                "https://via.placeholder.com/150x150/f5f5f5/999999?text=No+Image",
-            }}
-            style={styles.productImage}
-            resizeMode="cover"
-          /> */}
           <Image
             source={{ uri: `${apiUrl}products/photo/${item.photo}` }}
             style={styles.productImage}
@@ -398,72 +393,59 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
             </View>
           )}
 
-          {/* Action Buttons */}
+          {/* Fixed Height Action Container - KEY CHANGE */}
           <View style={styles.actionContainer}>
             {showQuantityControls ? (
               <Animated.View
                 style={[
-                  styles.quantityContainer,
+                  styles.quantitySelectedContainer,
                   {
                     opacity: fadeAnim,
                     transform: [{ translateY: slideAnim }],
                   },
                 ]}
               >
-                <TouchableOpacity
-                  style={[
-                    styles.quantityButton,
-                    styles.decrementButton,
-                    quantity <= 0 && styles.quantityButtonDisabled,
-                  ]}
-                  onPress={() => handleQuantityChangeWithAnimation(-1)}
-                  disabled={quantity <= 0}
-                  activeOpacity={0.8}
-                >
-                  <Text
-                    style={[
-                      styles.quantityButtonText,
-                      quantity <= 0 && styles.quantityButtonTextDisabled,
-                    ]}
-                  >
-                    -
-                  </Text>
-                </TouchableOpacity>
+                {/* Horizontal Layout for Quantity + Add to Cart */}
+                <View style={styles.quantityActionRow}>
+                  {/* Compact Quantity Display */}
+                  <View style={styles.compactQuantitySection}>
+                    {isEditing ? (
+                      <TextInput
+                        ref={inputRef}
+                        style={styles.compactQuantityInput}
+                        value={inputValue}
+                        onChangeText={handleQuantityChange}
+                        keyboardType="numeric"
+                        selectTextOnFocus
+                        autoFocus
+                        onEndEditing={handleQuantitySubmit}
+                        blurOnSubmit
+                        maxLength={3}
+                        returnKeyType="done"
+                      />
+                    ) : (
+                      <TouchableOpacity
+                        style={styles.compactQuantityDisplay}
+                        onPress={handleQuantityInputFocus}
+                        activeOpacity={0.7}
+                      >
+                        <Text style={styles.compactQuantityText}>
+                          {quantity} {unit}
+                        </Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
 
-                {isEditing ? (
-                  <TextInput
-                    ref={inputRef}
-                    style={styles.quantityInput}
-                    value={inputValue}
-                    onChangeText={handleQuantityChange}
-                    keyboardType="numeric"
-                    selectTextOnFocus
-                    autoFocus
-                    onEndEditing={handleQuantitySubmit}
-                    blurOnSubmit
-                    maxLength={3}
-                    returnKeyType="done"
-                  />
-                ) : (
+                  {/* Compact Add to Cart Button */}
                   <TouchableOpacity
-                    style={styles.quantityDisplay}
-                    onPress={handleQuantityInputFocus}
-                    activeOpacity={0.7}
+                    style={styles.compactAddToCartButton}
+                    onPress={handleAddMoreToCart}
+                    activeOpacity={0.9}
                   >
-                    <View style={styles.quantityUnitContainer}>
-                      <Text style={styles.quantityText}>{quantity}</Text>
-                      <Text style={styles.quantityUnitText}>{unit}</Text>
-                    </View>
+                    <Ionicons name="bag-add" size={14} color="#fff" />
+                    {/* <Text style={styles.compactAddToCartText}>Add</Text> */}
                   </TouchableOpacity>
-                )}
-
-                <TouchableOpacity
-                  style={[styles.quantityButton, styles.incrementButton]}
-                  onPress={() => handleQuantityChangeWithAnimation(1)}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.quantityButtonText}>+</Text>
-                </TouchableOpacity>
+                </View>
               </Animated.View>
             ) : (
               <TouchableOpacity
@@ -472,12 +454,12 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
                 activeOpacity={0.9}
               >
                 <Ionicons
-                  name="add"
+                  name="information-circle-outline"
                   size={16}
                   color="#fff"
                   style={{ marginRight: 4 }}
                 />
-                <Text style={styles.addToCartText}>Add to cart</Text>
+                <Text style={styles.addToCartText}>View Product</Text>
               </TouchableOpacity>
             )}
           </View>
@@ -628,85 +610,73 @@ const styles = StyleSheet.create({
     color: "#666",
     fontWeight: "500",
   },
+  // FIXED HEIGHT ACTION CONTAINER - KEY CHANGE
   actionContainer: {
     marginTop: "auto",
+    height: 40, // Fixed height to prevent card expansion
+    justifyContent: "center",
   },
-  quantityContainer: {
+  // New compact horizontal layout styles
+  quantitySelectedContainer: {
+    height: 40, // Same height as single button
+  },
+  quantityActionRow: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    height: 40,
+    gap: 8,
+  },
+  compactQuantitySection: {
+    flex: 1,
     backgroundColor: "#f8f9fa",
     borderRadius: 12,
-    padding: 4,
-    minHeight: 40,
-  },
-  quantityButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 10,
-    backgroundColor: primary,
+    justifyContent: "center",
     alignItems: "center",
+    minWidth: 60,
+  },
+  compactQuantityDisplay: {
     justifyContent: "center",
-    shadowColor: primary,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  quantityButtonDisabled: {
-    backgroundColor: "#ddd",
-    shadowOpacity: 0,
-    elevation: 0,
-  },
-  decrementButton: {
-    backgroundColor: primary,
-  },
-  incrementButton: {
-    backgroundColor: primary,
-  },
-  quantityButtonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 16,
-  },
-  quantityButtonTextDisabled: {
-    color: "#999",
-  },
-  quantityDisplay: {
-    flex: 1,
     alignItems: "center",
-    justifyContent: "center",
-    paddingHorizontal: 8,
+    height: "100%",
+    width: "100%",
   },
-  quantityUnitContainer: {
-    flexDirection: "row",
-    alignItems: "baseline",
-    justifyContent: "center",
-  },
-  quantityText: {
+  compactQuantityText: {
     color: "#1a1a1a",
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 12,
     textAlign: "center",
   },
-  quantityUnitText: {
-    color: "#666",
-    fontSize: 10,
-    marginLeft: 2,
-    fontWeight: "500",
-  },
-  quantityInput: {
-    flex: 1,
+  compactQuantityInput: {
     color: "#1a1a1a",
     fontWeight: "600",
-    fontSize: 16,
+    fontSize: 12,
     textAlign: "center",
-    borderBottomWidth: 2,
+    height: "100%",
+    width: "100%",
+    borderBottomWidth: 1,
     borderBottomColor: primary,
-    paddingVertical: 4,
-    marginHorizontal: 8,
-    minHeight: 32,
   },
+  compactAddToCartButton: {
+    flex: 2,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: primary,
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "row",
+    gap: 4,
+    shadowColor: primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 6,
+  },
+  // compactAddToCartText: {
+  //   color: "#fff",
+  //   fontWeight: "600",
+  //   fontSize: 12,
+  //   letterSpacing: 0.5,
+  // },
+  // Original styles (keeping for initial add to cart)
   addToCartButton: {
     height: 40,
     borderRadius: 12,
