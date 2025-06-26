@@ -113,7 +113,7 @@ const styles = StyleSheet.create({
   },
 
   text1: {
-    fontSize: 16,
+    fontSize: 12,
     fontWeight: "600",
     color: "#FFFFFF",
     marginBottom: 2,

@@ -13,6 +13,7 @@ import {
   Platform,
   KeyboardAvoidingView,
   Dimensions,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import {
@@ -29,6 +30,8 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import HeaderCommon from "@/components/ui/HeaderCommon";
 import { StatusBar } from "expo-status-bar";
 import { resetCartState } from "@/store/reducers/cartSlice";
+import { ToastHelper } from "@/utils/ToastHelper";
+import { TOAST_MESSAGES } from "@/constants/constants";
 const CheckoutScreen = () => {
   const router = useRouter();
   const dispatch = useDispatch();
@@ -47,7 +50,7 @@ const CheckoutScreen = () => {
   const [deliveryMethod, setDeliveryMethod] = useState("delivery"); // "delivery" or "pickup"
   const [selectedDate, setSelectedDate] = useState(null);
   const [orderInstructions, setOrderInstructions] = useState("");
-
+  const [isLoading, setIsLoading] = useState(false);
   // Delivery address - now just displayed, not editable
   const deliveryAddress = {
     name: "John Doe",
@@ -238,34 +241,39 @@ const CheckoutScreen = () => {
   // };
   const handlePlaceOrder = async () => {
     if (!selectedDate) {
-      Alert.alert("Select Date", "Please select a delivery/pick-up date");
+      ToastHelper.showError({
+        title: TOAST_MESSAGES.SELECT_DELIVERY_DATE.title,
+      });
       return;
     }
+    try {
+      setIsLoading(true);
+      const isoDate = deliveryDates
+        .find((d) => d.id === selectedDate)!
+        .fullDate.toISOString();
 
-    const isoDate = deliveryDates
-      .find((d) => d.id === selectedDate)!
-      .fullDate.toISOString();
-
-    const payload = mapCartToOrderPayload(
-      cartState,
-      customer?.data?._id,
-      customer?.data?.delivery_address,
-      isoDate,
-      deliveryMethod === "delivery" ? "Delivery" : "Pickup",
-      orderInstructions
-    );
-    console.log("Order Payload", payload);
-    // try {
-    //   const resp = await dispatch(placeCustomerOrder(payload)).unwrap();
-    //   console.log("Response", resp);
-    //   dispatch(resetCartState());
-    //   Alert.alert("Order Placed", "Your order has been placed successfully!", [
-    //     { text: "OK", onPress: () => router.push("/(tabs)") },
-    //   ]);
-    // } catch (err) {
-    //   console.error(err);
-    //   Alert.alert("Error", "Failed to place order. Please try again.");
-    // }
+      const payload = mapCartToOrderPayload(
+        cartState,
+        customer?.data?._id,
+        customer?.data?.delivery_address,
+        isoDate,
+        deliveryMethod === "delivery" ? "Delivery" : "Pickup",
+        orderInstructions
+      );
+      console.log("Order Payload", payload);
+      // const resp = await dispatch(placeCustomerOrder(payload)).unwrap();
+      // console.log("Response", resp);
+      ToastHelper.showSuccess({
+        title: TOAST_MESSAGES.ORDER_PLACED.title,
+      });
+      await dispatch(resetCartState());
+      router.push("/(tabs)");
+    } catch (err) {
+      console.error(err);
+      Alert.alert("Error", "Failed to place order. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   // const handlePlaceOrder = async () => {
@@ -521,13 +529,19 @@ const CheckoutScreen = () => {
             onPress={handlePlaceOrder}
             activeOpacity={0.7}
           >
-            <Text style={styles.checkoutButtonText}>Place Order</Text>
-            <Ionicons
-              name="arrow-forward"
-              size={20}
-              color="white"
-              style={{ marginLeft: 8 }}
-            />
+            {isLoading ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <>
+                <Text style={styles.checkoutButtonText}>Place Order</Text>
+                <Ionicons
+                  name="arrow-forward"
+                  size={20}
+                  color="white"
+                  style={{ marginLeft: 8 }}
+                />
+              </>
+            )}
           </TouchableOpacity>
         </View>
       </View>

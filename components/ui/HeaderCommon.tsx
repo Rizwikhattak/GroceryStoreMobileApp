@@ -8,6 +8,8 @@ import { Alert, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { useDispatch } from "react-redux";
 import Constants from "expo-constants";
 import { Heart } from "lucide-react-native";
+import { ToastHelper } from "@/utils/ToastHelper";
+import { TOAST_MESSAGES } from "@/constants/constants";
 
 const HeaderCommon = ({
   title,
@@ -100,7 +102,17 @@ const HeaderCommon = ({
         ) : isHeartEnabled ? (
           <TouchableOpacity
             style={[styles.heartButton, isFavorite && styles.heartButtonActive]}
-            onPress={() => setIsFavorite(!isFavorite)}
+            onPress={() => {
+              setIsFavorite(!isFavorite);
+              if (!isFavorite)
+                ToastHelper.showSuccess({
+                  title: TOAST_MESSAGES.ADDED_TO_WISH_LIST.title,
+                });
+              else
+                ToastHelper.showWarning({
+                  title: TOAST_MESSAGES.REMOVED_FROM_WISH_LIST.title,
+                });
+            }}
             activeOpacity={0.8}
           >
             <Heart

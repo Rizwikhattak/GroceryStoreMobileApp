@@ -23,6 +23,8 @@ import HeaderCommon from "@/components/ui/HeaderCommon";
 import CustomModal from "@/components/ui/CustomModak";
 import { useState } from "react";
 import { useModal } from "@/utils/useModal";
+import { ToastHelper } from "@/utils/ToastHelper";
+import { TOAST_MESSAGES } from "@/constants/constants";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 export default function Cart() {
@@ -125,6 +127,9 @@ export default function Cart() {
             removeFinalized: true, // Allow removal of finalized items
           })
         );
+        ToastHelper.showWarning({
+          title: TOAST_MESSAGES.PRODUCT_REMOVED_FROM_CART.title,
+        });
         hideModal();
       }
     );

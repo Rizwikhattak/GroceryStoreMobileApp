@@ -46,6 +46,8 @@ import {
   finalizeCartItem,
   updateCartItemNotes,
 } from "@/store/reducers/cartSlice";
+import { ToastHelper } from "@/utils/ToastHelper";
+import { TOAST_MESSAGES } from "@/constants/constants";
 
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -402,7 +404,9 @@ const ProductDetailPage = () => {
           cartItemId: currentItem.cartItemId,
         })
       );
-
+      ToastHelper.showSuccess({
+        title: TOAST_MESSAGES.PRODUCT_ADDED_TO_CART.title,
+      });
       // Reset UI state but keep controls visible for next addition
       setSelectedQuantity(0);
 

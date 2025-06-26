@@ -32,7 +32,6 @@ import { logout } from "@/store/reducers/authSlice";
 import { getPantryProducts } from "@/store/actions/pantryActions";
 import { useFocusEffect } from "@react-navigation/native";
 import Navbar from "@/components/ui/Navbar";
-import Toast from "react-native-toast-message";
 
 // Pre-defined styles to prevent recreation
 const styles = StyleSheet.create({
@@ -286,7 +285,6 @@ export default function HomeScreen() {
           </ScrollView>
         </View>
       </KeyboardAvoidingView>
-      <Toast />
     </>
   );
 }

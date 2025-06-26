@@ -13,11 +13,11 @@ import * as SplashScreen from "expo-splash-screen";
 import { useFonts } from "expo-font";
 import { Buffer } from "buffer";
 
-import ToastManager from "toastify-react-native";
 import { StatusBar } from "expo-status-bar";
-
+import Toast from "react-native-toast-message";
 import { checkAuthStatus } from "@/store/actions/authActions";
 import LoadingScreen from "@/components/ui/LoadingSpinner";
+import { toastConfig } from "@/components/ui/CustomToast";
 
 // ---------------------------------------------------------------------
 // Enable LayoutAnimation on Android (nice little UX boost for lists)
@@ -116,9 +116,7 @@ function AppContent() {
         <Stack.Screen name="AboutUs" options={{ headerShown: false }} />
         <Stack.Screen name="ContactUs" options={{ headerShown: false }} />
       </Stack>
-
-      {/* Toasts are rendered once at root so every screen can trigger them */}
-      <ToastManager />
+      <Toast config={toastConfig} />
     </>
   );
 }

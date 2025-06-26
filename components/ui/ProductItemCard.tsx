@@ -27,6 +27,8 @@ import {
 } from "@/store/actions/pantryActions";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
+import { TOAST_MESSAGES } from "@/constants/constants";
+import { ToastHelper } from "@/utils/ToastHelper";
 
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 const { width: screenWidth } = Dimensions.get("window");
@@ -210,10 +212,21 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
   // Toggle favorite WITHOUT animation
   const toggleFavorite = async (id) => {
     try {
-      setFavorites((prev) => ({
-        ...prev,
-        [id]: !prev[id],
-      }));
+      setFavorites((prev) => {
+        if (!prev[id])
+          ToastHelper.showSuccess({
+            title: TOAST_MESSAGES.ADDED_TO_WISH_LIST.title,
+          });
+        else
+          ToastHelper.showWarning({
+            title: TOAST_MESSAGES.REMOVED_FROM_WISH_LIST.title,
+          });
+        return {
+          ...prev,
+          [id]: !prev[id],
+        };
+      });
+
       await dispatch(makeProductPantry({ product: id })).unwrap();
       await dispatch(getPantryProducts()).unwrap();
     } catch (err) {
@@ -317,7 +330,7 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
 
     if (currentItem) {
       // Finalize the existing unfinalized item
-      return dispatch(
+      dispatch(
         finalizeCartItem({
           id: item._id,
           cartItemId: currentItem.cartItemId,
@@ -328,6 +341,9 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
             }),
         })
       );
+      return ToastHelper.showSuccess({
+        title: TOAST_MESSAGES.PRODUCT_ADDED_TO_CART.title,
+      });
     }
 
     // If no current item exists, this shouldn't happen in normal flow
