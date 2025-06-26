@@ -22,36 +22,7 @@ const initialState = {
 const productsSlice = createSlice({
   name: "products",
   initialState,
-  reducers: {
-    updateCartQuantity: (state, action) => {
-      const { id, change, item } = action.payload;
-
-      const itemIndex = state.cartState.findIndex((item) => item._id === id);
-      if (itemIndex === -1) {
-        state.cartState.push({ orderQuantity: change, ...item });
-      }
-      // else if (change === 0) {
-      //   state.cartState.splice(itemIndex, 1);
-      // }
-      else {
-        state.cartState[itemIndex].orderQuantity += change;
-        if (state.cartState[itemIndex].orderQuantity === 0) {
-          state.cartState.splice(itemIndex, 1);
-        }
-      }
-      // state.cartState = state.cartState
-      //   .map((item) => {
-      //     if (item.id === id) {
-      //       return {
-      //         ...item,
-      //         quantity: item.quantity + change,
-      //       };
-      //     }
-      //     return item;
-      //   })
-      //   .filter((item) => item.quantity > 0);
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(getAllProducts.pending, (state, action) => {
@@ -89,7 +60,7 @@ const productsSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload;
       })
-      
+
       .addCase(getFeaturedProducts.pending, (state, action) => {
         state.featuredProducts.isLoading = true;
         state.featuredProducts.error = null;
@@ -134,5 +105,5 @@ const productsSlice = createSlice({
       });
   },
 });
-export const { updateCartQuantity } = productsSlice.actions;
+
 export default productsSlice.reducer;

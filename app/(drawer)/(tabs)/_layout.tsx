@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { memo, useMemo, useCallback } from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import {
   View,
@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Dimensions,
   Animated,
+  StyleSheet,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
@@ -20,312 +21,347 @@ import ProfileScreen from "@/app/(drawer)/(tabs)/profile";
 const Tab = createBottomTabNavigator();
 const { width } = Dimensions.get("window");
 
-// Enhanced Tab Bar Component with modern design
-const ModernTabBar = ({ state, descriptors, navigation }) => {
-  const [animatedValues] = React.useState(
-    state.routes.map(() => new Animated.Value(0))
-  );
+// Pre-calculate static values
+const TAB_WIDTH = (width - 120) / 4;
+const CART_SIZE = 75;
+const REGULAR_ICON_SIZE = 45;
 
-  React.useEffect(() => {
-    animatedValues.forEach((animValue, index) => {
-      Animated.timing(animValue, {
-        toValue: state.index === index ? 1 : 0,
-        duration: 200,
-        useNativeDriver: false,
-      }).start();
-    });
-  }, [state.index]);
+// Static styles to prevent recreation
+const styles = StyleSheet.create({
+  container: {
+    position: "relative",
+    backgroundColor: "transparent",
+  },
+  gradientBackground: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+  },
+  topBorder: {
+    position: "absolute",
+    top: 0,
+    left: 20,
+    right: 20,
+    height: 1,
+    backgroundColor: "rgba(105, 17, 18, 0.1)",
+    borderRadius: 1,
+  },
+  tabContainer: {
+    paddingBottom: 12,
+    paddingTop: 10,
+    paddingHorizontal: 15,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+  },
+  tabRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    position: "relative",
+    paddingHorizontal: 10,
+  },
+  cartTab: {
+    position: "relative",
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: -5,
+  },
+  cartGradient: {
+    width: CART_SIZE,
+    height: CART_SIZE,
+    borderRadius: CART_SIZE / 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  cartBadge: {
+    position: "absolute",
+    top: -2,
+    right: -2,
+    backgroundColor: "#FF6B6B",
+    borderRadius: 14,
+    minWidth: 28,
+    height: 28,
+    alignItems: "center",
+    justifyContent: "center",
+    borderWidth: 3,
+    borderColor: "#ffffff",
+  },
+  cartBadgeText: {
+    color: "#ffffff",
+    fontSize: 12,
+    fontWeight: "800",
+    letterSpacing: 0.5,
+  },
+  regularTab: {
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: 4,
+    paddingHorizontal: 8,
+    minWidth: 55,
+    flex: 1,
+    maxWidth: TAB_WIDTH,
+  },
+  iconContainer: {
+    width: REGULAR_ICON_SIZE,
+    height: REGULAR_ICON_SIZE,
+    borderRadius: REGULAR_ICON_SIZE / 2,
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 2,
+  },
+  tabLabel: {
+    fontSize: 10,
+    letterSpacing: 0.2,
+    textAlign: "center",
+  },
+  activeIndicator: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: "#691112",
+    marginTop: 1,
+  },
+});
+
+// Icon mapping - moved outside component to prevent recreation
+const ICON_MAP = {
+  Home: { focused: "home", unfocused: "home-outline" },
+  Pantry: { focused: "heart", unfocused: "heart-outline" },
+  Cart: { focused: "bag-handle", unfocused: "bag-handle" },
+  Notifications: {
+    focused: "notifications",
+    unfocused: "notifications-outline",
+  },
+  Profile: { focused: "person", unfocused: "person-outline" },
+};
+
+const LABEL_MAP = {
+  Home: "Home",
+  Pantry: "Pantry",
+  Cart: "Cart",
+  Notifications: "Alerts",
+  Profile: "Profile",
+};
+
+// Memoized Cart Tab Component
+const CartTab = memo(({ onPress, animatedValue }) => (
+  <TouchableOpacity
+    onPress={onPress}
+    style={styles.cartTab}
+    activeOpacity={0.8}
+  >
+    <LinearGradient
+      colors={["#691112", "#8B1538", "#691112"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={styles.cartGradient}
+    >
+      <Ionicons name="bag-handle" size={30} color="#ffffff" />
+    </LinearGradient>
+
+    <View style={styles.cartBadge}>
+      <Text style={styles.cartBadgeText}>2</Text>
+    </View>
+
+    {/* Simplified floating effect - only when focused */}
+    <Animated.View
+      style={[
+        {
+          position: "absolute",
+          width: 85,
+          height: 85,
+          borderRadius: 42.5,
+          borderWidth: 2,
+          borderColor: "rgba(105, 17, 18, 0.2)",
+        },
+        {
+          opacity: animatedValue,
+          transform: [
+            {
+              scale: animatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [0.8, 1],
+              }),
+            },
+          ],
+        },
+      ]}
+    />
+  </TouchableOpacity>
+));
+
+// Memoized Regular Tab Component
+const RegularTab = memo(({ route, isFocused, onPress, animatedValue }) => {
+  const iconName =
+    ICON_MAP[route.name]?.[isFocused ? "focused" : "unfocused"] ||
+    "home-outline";
+  const label = LABEL_MAP[route.name] || route.name;
 
   return (
-    <View
-      style={{
-        position: "relative",
-        backgroundColor: "transparent",
-      }}
+    <TouchableOpacity
+      onPress={onPress}
+      style={styles.regularTab}
+      activeOpacity={0.7}
     >
-      {/* Background with gradient and blur effect */}
-      <LinearGradient
-        colors={["rgba(255, 255, 255, 0.98)", "rgba(248, 248, 248, 1)"]}
+      <Animated.View
         style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          borderTopLeftRadius: 30,
-          borderTopRightRadius: 30,
-        }}
-      />
-
-      {/* Subtle top border */}
-      <View
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 20,
-          right: 20,
-          height: 1,
-          backgroundColor: "rgba(105, 17, 18, 0.1)",
-          borderRadius: 1,
-        }}
-      />
-
-      <View
-        style={{
-          paddingBottom: 12,
-          paddingTop: 10,
-          paddingHorizontal: 15, // Reduced from 20 to give more space
-          borderTopLeftRadius: 30,
-          borderTopRightRadius: 30,
+          alignItems: "center",
+          justifyContent: "center",
+          transform: [
+            {
+              scale: animatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: [1, 1.05], // Reduced scale for performance
+              }),
+            },
+          ],
         }}
       >
-        <View
-          style={{
-            flexDirection: "row",
-            justifyContent: "space-between", // Changed from space-around to space-between
-            alignItems: "center",
-            position: "relative",
-            paddingHorizontal: 10, // Add horizontal padding to prevent overflow
-          }}
+        <Animated.View
+          style={[
+            styles.iconContainer,
+            {
+              backgroundColor: animatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: ["transparent", "rgba(105, 17, 18, 0.1)"],
+              }),
+            },
+          ]}
         >
+          <Ionicons
+            name={iconName}
+            size={isFocused ? 24 : 22}
+            color={isFocused ? "#691112" : "#888888"}
+          />
+        </Animated.View>
+
+        <Animated.Text
+          style={[
+            styles.tabLabel,
+            {
+              fontWeight: isFocused ? "700" : "500",
+              color: animatedValue.interpolate({
+                inputRange: [0, 1],
+                outputRange: ["#888888", "#691112"],
+              }),
+            },
+          ]}
+        >
+          {label}
+        </Animated.Text>
+
+        <Animated.View
+          style={[
+            styles.activeIndicator,
+            {
+              opacity: animatedValue,
+              transform: [
+                {
+                  scale: animatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [0, 1],
+                  }),
+                },
+              ],
+            },
+          ]}
+        />
+      </Animated.View>
+    </TouchableOpacity>
+  );
+});
+
+// Enhanced Tab Bar Component with optimizations
+const ModernTabBar = memo(({ state, descriptors, navigation }) => {
+  // Memoize animated values to prevent recreation
+  const animatedValues = useMemo(
+    () => state.routes.map(() => new Animated.Value(0)),
+    [state.routes.length]
+  );
+
+  // Optimize animations with reduced duration and native driver where possible
+  React.useEffect(() => {
+    const animations = animatedValues.map((animValue, index) =>
+      Animated.timing(animValue, {
+        toValue: state.index === index ? 1 : 0,
+        duration: 150, // Reduced from 200ms
+        useNativeDriver: false, // Keep false for color interpolations
+      })
+    );
+
+    // Run animations in parallel for better performance
+    Animated.parallel(animations).start();
+  }, [state.index, animatedValues]);
+
+  // Memoize tab press handlers
+  const createTabPressHandler = useCallback(
+    (route, isFocused) => () => {
+      const event = navigation.emit({
+        type: "tabPress",
+        target: route.key,
+        canPreventDefault: true,
+      });
+
+      if (!isFocused && !event.defaultPrevented) {
+        navigation.navigate(route.name);
+      }
+    },
+    [navigation]
+  );
+
+  return (
+    <View style={styles.container}>
+      <LinearGradient
+        colors={["rgba(255, 255, 255, 0.98)", "rgba(248, 248, 248, 1)"]}
+        style={styles.gradientBackground}
+      />
+
+      <View style={styles.topBorder} />
+
+      <View style={styles.tabContainer}>
+        <View style={styles.tabRow}>
           {state.routes.map((route, index) => {
-            const { options } = descriptors[route.key];
             const isFocused = state.index === index;
             const isCartTab = route.name === "Cart";
             const animatedValue = animatedValues[index];
+            const onPress = createTabPressHandler(route, isFocused);
 
-            const onPress = () => {
-              const event = navigation.emit({
-                type: "tabPress",
-                target: route.key,
-                canPreventDefault: true,
-              });
-
-              if (!isFocused && !event.defaultPrevented) {
-                navigation.navigate(route.name);
-              }
-            };
-
-            // Enhanced icon mapping with filled/outline variants
-            const getIconName = (routeName: string, focused: boolean) => {
-              switch (routeName) {
-                case "Home":
-                  return focused ? "home" : "home-outline";
-                case "Pantry":
-                  return focused ? "heart" : "heart-outline";
-                case "Cart":
-                  return "bag-handle";
-                case "Notifications":
-                  return focused ? "notifications" : "notifications-outline";
-                case "Profile":
-                  return focused ? "person" : "person-outline";
-                default:
-                  return "home-outline";
-              }
-            };
-
-            const getTabLabel = (routeName: string) => {
-              switch (routeName) {
-                case "Home":
-                  return "Home";
-                case "Pantry":
-                  return "Pantry";
-                case "Cart":
-                  return "Cart";
-                case "Notifications":
-                  return "Alerts";
-                case "Profile":
-                  return "Profile";
-                default:
-                  return routeName;
-              }
-            };
-
-            // Cart tab (center, floating design)
             if (isCartTab) {
               return (
-                <TouchableOpacity
-                  key={index}
+                <CartTab
+                  key={route.key}
                   onPress={onPress}
-                  style={{
-                    position: "relative",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginTop: -5,
-                  }}
-                  activeOpacity={0.8}
-                >
-                  {/* Floating background with gradient */}
-                  <LinearGradient
-                    colors={["#691112", "#8B1538", "#691112"]}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={{
-                      width: 75,
-                      height: 75,
-                      borderRadius: 37.5,
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <Ionicons
-                      name={getIconName(route.name, true)}
-                      size={30}
-                      color="#ffffff"
-                    />
-                  </LinearGradient>
-
-                  {/* Enhanced notification badge */}
-                  <View
-                    style={{
-                      position: "absolute",
-                      top: -2,
-                      right: -2,
-                      backgroundColor: "#FF6B6B",
-                      borderRadius: 14,
-                      minWidth: 28,
-                      height: 28,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      borderWidth: 3,
-                      borderColor: "#ffffff",
-                    }}
-                  >
-                    <Text
-                      style={{
-                        color: "#ffffff",
-                        fontSize: 12,
-                        fontWeight: "800",
-                        letterSpacing: 0.5,
-                      }}
-                    >
-                      2
-                    </Text>
-                  </View>
-
-                  {/* Floating effect rings */}
-                  <Animated.View
-                    style={{
-                      position: "absolute",
-                      width: 85,
-                      height: 85,
-                      borderRadius: 42.5,
-                      borderWidth: 2,
-                      borderColor: "rgba(105, 17, 18, 0.2)",
-                      opacity: animatedValue.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: [0, 1],
-                      }),
-                      transform: [
-                        {
-                          scale: animatedValue.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0.8, 1],
-                          }),
-                        },
-                      ],
-                    }}
-                  />
-                </TouchableOpacity>
+                  animatedValue={animatedValue}
+                />
               );
             }
 
-            // Regular tabs with enhanced design
             return (
-              <TouchableOpacity
-                key={index}
+              <RegularTab
+                key={route.key}
+                route={route}
+                isFocused={isFocused}
                 onPress={onPress}
-                style={{
-                  alignItems: "center",
-                  justifyContent: "center",
-                  paddingVertical: 4,
-                  paddingHorizontal: 8, // Reduced from 12
-                  minWidth: 55, // Reduced from 60
-                  flex: 1, // Add flex to distribute space evenly
-                  maxWidth: (width - 120) / 4, // Ensure tabs don't exceed available space
-                }}
-                activeOpacity={0.7}
-              >
-                <Animated.View
-                  style={{
-                    alignItems: "center",
-                    justifyContent: "center",
-                    transform: [
-                      {
-                        scale: animatedValue.interpolate({
-                          inputRange: [0, 1],
-                          outputRange: [1, 1.1],
-                        }),
-                      },
-                    ],
-                  }}
-                >
-                  {/* Icon container with dynamic background */}
-                  <Animated.View
-                    style={{
-                      width: 45, // Reduced from 50
-                      height: 45, // Reduced from 50
-                      borderRadius: 22.5,
-                      alignItems: "center",
-                      justifyContent: "center",
-                      backgroundColor: animatedValue.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ["transparent", "rgba(105, 17, 18, 0.1)"],
-                      }),
-                      marginBottom: 2,
-                    }}
-                  >
-                    <Ionicons
-                      name={getIconName(route.name, isFocused)}
-                      size={isFocused ? 24 : 22} // Reduced icon sizes
-                      color={isFocused ? "#691112" : "#888888"}
-                    />
-                  </Animated.View>
-
-                  {/* Tab label */}
-                  <Animated.Text
-                    style={{
-                      fontSize: 10, // Reduced from 11
-                      fontWeight: isFocused ? "700" : "500",
-                      color: animatedValue.interpolate({
-                        inputRange: [0, 1],
-                        outputRange: ["#888888", "#691112"],
-                      }),
-                      letterSpacing: 0.2, // Reduced from 0.3
-                      textAlign: "center",
-                    }}
-                  >
-                    {getTabLabel(route.name)}
-                  </Animated.Text>
-
-                  {/* Active indicator dot */}
-                  <Animated.View
-                    style={{
-                      width: 4,
-                      height: 4,
-                      borderRadius: 2,
-                      backgroundColor: "#691112",
-                      marginTop: 1,
-                      opacity: animatedValue,
-                      transform: [
-                        {
-                          scale: animatedValue.interpolate({
-                            inputRange: [0, 1],
-                            outputRange: [0, 1],
-                          }),
-                        },
-                      ],
-                    }}
-                  />
-                </Animated.View>
-              </TouchableOpacity>
+                animatedValue={animatedValue}
+              />
             );
           })}
         </View>
       </View>
     </View>
   );
-};
+});
+
+// Memoized screen components to prevent unnecessary re-renders
+const MemoizedHomeScreen = memo(() => <HomeScreen />);
+const MemoizedLikedScreen = memo(() => <LikedScreen />);
+const MemoizedCart = memo(() => <Cart />);
+const MemoizedNotificationsScreen = memo(() => <NotificationsScreen />);
+const MemoizedProfileScreen = memo(() => <ProfileScreen />);
 
 export default function ModernBottomTabNavigator() {
   return (
@@ -333,17 +369,40 @@ export default function ModernBottomTabNavigator() {
       tabBar={(props) => <ModernTabBar {...props} />}
       screenOptions={{
         headerShown: false,
+        // Add lazy loading for better performance
+        lazy: true,
+        // Optimize tab press response
+        tabBarHideOnKeyboard: true,
       }}
       initialRouteName="Home"
+      // Optimize screen options
+      sceneContainerStyle={{ backgroundColor: "transparent" }}
     >
-      <Tab.Screen name="Home" component={() => <HomeScreen />} />
-      <Tab.Screen name="Pantry" component={() => <LikedScreen />} />
-      <Tab.Screen name="Cart" component={() => <Cart />} />
+      <Tab.Screen
+        name="Home"
+        component={MemoizedHomeScreen}
+        options={{ lazy: true }}
+      />
+      <Tab.Screen
+        name="Pantry"
+        component={MemoizedLikedScreen}
+        options={{ lazy: true }}
+      />
+      <Tab.Screen
+        name="Cart"
+        component={MemoizedCart}
+        options={{ lazy: false }} // Keep cart always loaded for quick access
+      />
       <Tab.Screen
         name="Notifications"
-        component={() => <NotificationsScreen />}
+        component={MemoizedNotificationsScreen}
+        options={{ lazy: true }}
       />
-      <Tab.Screen name="Profile" component={() => <ProfileScreen />} />
+      <Tab.Screen
+        name="Profile"
+        component={MemoizedProfileScreen}
+        options={{ lazy: true }}
+      />
     </Tab.Navigator>
   );
 }
