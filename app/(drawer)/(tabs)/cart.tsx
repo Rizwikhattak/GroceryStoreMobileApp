@@ -13,7 +13,11 @@ import {
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
 import { useDispatch, useSelector } from "react-redux";
-import { updateCartQuantity, removeCartItem } from "@/store/reducers/cartSlice";
+import {
+  updateCartQuantity,
+  removeCartItem,
+  updateFinalizedProductsQuantity,
+} from "@/store/reducers/cartSlice";
 import { primary } from "@/constants/colors";
 import HeaderCommon from "@/components/ui/HeaderCommon";
 import CustomModal from "@/components/ui/CustomModak";
@@ -24,7 +28,13 @@ const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 export default function Cart() {
   const dispatch = useDispatch();
   const router = useRouter();
-  const cartState = useSelector((state: any) => state.cart.data);
+  const cartState = useSelector((state) => state.cart.data);
+
+  // Filter to show only finalized items
+  const finalizedCartItems = cartState.filter(
+    (item) => item.isFinalized === true
+  );
+
   const {
     modalState,
     hideModal,
@@ -33,11 +43,12 @@ export default function Cart() {
     showWarning,
     showConfirmation,
   } = useModal();
+
   // GST rate (15%)
   const GST_RATE = 0.15;
 
-  // Calculate subtotal
-  const subtotal = cartState.reduce(
+  // Calculate subtotal using only finalized items
+  const subtotal = finalizedCartItems.reduce(
     (sum, item) => sum + item.sale_price * item.orderQuantity,
     0
   );
@@ -52,26 +63,66 @@ export default function Cart() {
   // Calculate grand total
   const grandTotal = subtotal + gstAmount - discount;
 
-  // Total number of items
-  const totalItems = cartState.reduce(
+  // Total number of finalized items
+  const totalItems = finalizedCartItems.reduce(
     (sum, item) => sum + item.orderQuantity,
     0
   );
 
-  // Function to handle item deletion
+  // Function to handle quantity update (only for finalized items)
+  const handleQuantityUpdate = (item, change) => {
+    // Only allow quantity updates for finalized items
+    if (!item.isFinalized) {
+      console.warn("Cannot update quantity for non-finalized items");
+      return;
+    }
+
+    console.log("Updating quantity for finalized item:", {
+      itemId: item._id,
+      cartItemId: item.cartItemId,
+      currentQuantity: item.orderQuantity,
+      change: change,
+    });
+
+    dispatch(
+      updateFinalizedProductsQuantity({
+        id: item._id,
+        item: item,
+        selectedSizeId: item?.selectedVariant
+          ? item?.selectedVariant[0]?._id
+          : null,
+        change: change,
+      })
+    );
+  };
+
+  // Function to handle item deletion (only finalized items)
   const handleDeleteItem = (item) => {
+    // Only allow deletion of finalized items
+    if (!item.isFinalized) {
+      console.warn("Cannot delete non-finalized items");
+      return;
+    }
+
     showError(
       "Remove Item",
       `Are you sure you want to remove "${item.name}" from your cart?`,
       "Confirm",
       () => {
-        console.log("Retry pressed");
+        console.log("Removing finalized item:", {
+          itemId: item._id,
+          cartItemId: item.cartItemId,
+        });
+
+        // Remove finalized item
         dispatch(
           removeCartItem({
+            cartItemId: item.cartItemId,
             id: item._id,
             selectedSizeId: item?.selectedVariant
               ? item?.selectedVariant[0]?._id
               : null,
+            removeFinalized: true, // Allow removal of finalized items
           })
         );
         hideModal();
@@ -106,14 +157,14 @@ export default function Cart() {
         <View style={styles.itemsSection}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>Cart Items</Text>
-            {cartState.length > 0 && (
+            {finalizedCartItems.length > 0 && (
               <View style={styles.itemCountBadge}>
                 <Text style={styles.itemCountText}>{totalItems}</Text>
               </View>
             )}
           </View>
 
-          {cartState.length === 0 ? (
+          {finalizedCartItems.length === 0 ? (
             <View style={styles.emptyCartContainer}>
               <Ionicons name="cart-outline" size={80} color="#E0E0E0" />
               <Text style={styles.emptyCartTitle}>Your cart is empty</Text>
@@ -123,8 +174,21 @@ export default function Cart() {
             </View>
           ) : (
             <View style={styles.cartItemsContainer}>
-              {cartState.map((item: any, index) => (
-                <View key={item._id + index} style={styles.cartItemCard}>
+              {finalizedCartItems.map((item, index) => (
+                <View
+                  key={`${item.cartItemId || item._id}_${index}`}
+                  style={styles.cartItemCard}
+                >
+                  {/* Finalized Item Indicator */}
+                  <View style={styles.finalizedIndicator}>
+                    <Ionicons
+                      name="checkmark-circle"
+                      size={16}
+                      color="#4CAF50"
+                    />
+                    <Text style={styles.finalizedText}>Added to Cart</Text>
+                  </View>
+
                   {/* Product Image and Details */}
                   <View style={styles.productInfo}>
                     <View style={styles.imageContainer}>
@@ -175,18 +239,7 @@ export default function Cart() {
                     <View style={styles.quantityControls}>
                       <TouchableOpacity
                         style={styles.quantityButton}
-                        onPress={() =>
-                          dispatch(
-                            updateCartQuantity({
-                              id: item._id,
-                              item: item,
-                              selectedSizeId: item?.selectedVariant
-                                ? item?.selectedVariant[0]?._id
-                                : -1,
-                              change: -1,
-                            })
-                          )
-                        }
+                        onPress={() => handleQuantityUpdate(item, -1)}
                       >
                         <Ionicons name="remove" size={18} color={primary} />
                       </TouchableOpacity>
@@ -199,18 +252,7 @@ export default function Cart() {
 
                       <TouchableOpacity
                         style={styles.quantityButton}
-                        onPress={() =>
-                          dispatch(
-                            updateCartQuantity({
-                              id: item._id,
-                              item: item,
-                              selectedSizeId: item?.selectedVariant
-                                ? item?.selectedVariant[0]?._id
-                                : -1,
-                              change: 1,
-                            })
-                          )
-                        }
+                        onPress={() => handleQuantityUpdate(item, 1)}
                       >
                         <Ionicons name="add" size={18} color={primary} />
                       </TouchableOpacity>
@@ -230,7 +272,7 @@ export default function Cart() {
         </View>
 
         {/* Price Summary */}
-        {cartState.length !== 0 && (
+        {finalizedCartItems.length !== 0 && (
           <View style={styles.summarySection}>
             <Text style={styles.summaryTitle}>Order Summary</Text>
 
@@ -269,7 +311,7 @@ export default function Cart() {
       </ScrollView>
 
       {/* Bottom Checkout Section */}
-      {cartState.length !== 0 && (
+      {finalizedCartItems.length !== 0 && (
         <View style={styles.bottomSection}>
           <View style={styles.bottomContent}>
             <View style={styles.totalSummary}>
@@ -368,6 +410,22 @@ const styles = StyleSheet.create({
     shadowRadius: 8,
     elevation: 3,
   },
+  finalizedIndicator: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    backgroundColor: "#F0F8F0",
+    borderRadius: 8,
+    alignSelf: "flex-start",
+  },
+  finalizedText: {
+    fontSize: 12,
+    color: "#4CAF50",
+    fontWeight: "500",
+    marginLeft: 4,
+  },
   productInfo: {
     flexDirection: "row",
     marginBottom: 16,
@@ -405,6 +463,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "500",
     color: primary,
+  },
+  debugText: {
+    fontSize: 10,
+    color: "#999",
+    marginTop: 2,
   },
   deleteButton: {
     padding: 8,

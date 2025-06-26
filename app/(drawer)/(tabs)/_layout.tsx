@@ -17,6 +17,8 @@ import LikedScreen from "@/app/(drawer)/(tabs)/liked";
 import Cart from "@/app/(drawer)/(tabs)/cart";
 import NotificationsScreen from "@/app/(drawer)/(tabs)/notifications";
 import ProfileScreen from "@/app/(drawer)/(tabs)/profile";
+import { useDispatch, useSelector } from "react-redux";
+import { cartSelectors } from "@/store/reducers/cartSlice";
 
 const Tab = createBottomTabNavigator();
 const { width } = Dimensions.get("window");
@@ -148,51 +150,55 @@ const LABEL_MAP = {
 };
 
 // Memoized Cart Tab Component
-const CartTab = memo(({ onPress, animatedValue }) => (
-  <TouchableOpacity
-    onPress={onPress}
-    style={styles.cartTab}
-    activeOpacity={0.8}
-  >
-    <LinearGradient
-      colors={["#691112", "#8B1538", "#691112"]}
-      start={{ x: 0, y: 0 }}
-      end={{ x: 1, y: 1 }}
-      style={styles.cartGradient}
+const CartTab = memo(({ onPress, animatedValue }) => {
+  const finalizedCartItems = useSelector(cartSelectors.getFinalizedCartItems);
+  return (
+    <TouchableOpacity
+      onPress={onPress}
+      style={styles.cartTab}
+      activeOpacity={0.8}
     >
-      <Ionicons name="bag-handle" size={30} color="#ffffff" />
-    </LinearGradient>
+      <LinearGradient
+        colors={["#691112", "#8B1538", "#691112"]}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={styles.cartGradient}
+      >
+        <Ionicons name="bag-handle" size={30} color="#ffffff" />
+      </LinearGradient>
+      {finalizedCartItems.length !== 0 && (
+        <View style={styles.cartBadge}>
+          <Text style={styles.cartBadgeText}>{finalizedCartItems.length}</Text>
+        </View>
+      )}
 
-    <View style={styles.cartBadge}>
-      <Text style={styles.cartBadgeText}>2</Text>
-    </View>
-
-    {/* Simplified floating effect - only when focused */}
-    <Animated.View
-      style={[
-        {
-          position: "absolute",
-          width: 85,
-          height: 85,
-          borderRadius: 42.5,
-          borderWidth: 2,
-          borderColor: "rgba(105, 17, 18, 0.2)",
-        },
-        {
-          opacity: animatedValue,
-          transform: [
-            {
-              scale: animatedValue.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0.8, 1],
-              }),
-            },
-          ],
-        },
-      ]}
-    />
-  </TouchableOpacity>
-));
+      {/* Simplified floating effect - only when focused */}
+      <Animated.View
+        style={[
+          {
+            position: "absolute",
+            width: 85,
+            height: 85,
+            borderRadius: 42.5,
+            borderWidth: 2,
+            borderColor: "rgba(105, 17, 18, 0.2)",
+          },
+          {
+            opacity: animatedValue,
+            transform: [
+              {
+                scale: animatedValue.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: [0.8, 1],
+                }),
+              },
+            ],
+          },
+        ]}
+      />
+    </TouchableOpacity>
+  );
+});
 
 // Memoized Regular Tab Component
 const RegularTab = memo(({ route, isFocused, onPress, animatedValue }) => {

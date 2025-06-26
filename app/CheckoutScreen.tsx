@@ -130,7 +130,6 @@ const CheckoutScreen = () => {
   };
 
   const deliveryDates = getDeliveryDates();
-
   const mapCartToOrderPayload = (
     cartState: any[],
     customerId: string,
@@ -139,7 +138,6 @@ const CheckoutScreen = () => {
     deliveryMethod: "Pickup" | "Delivery" | "Delivery/Pickup",
     globalInstructions: string
   ) => {
-    // 1⃣  Arrays expected by the backend
     const items: { productId: string; uniqueId: string | null }[] = [];
     const quantities: number[] = [];
     const weights: ({ value: number; uom: string } | null)[] = [];
@@ -147,15 +145,23 @@ const CheckoutScreen = () => {
     const productNotes: { product_id: string; note: string }[] = [];
 
     cartState.forEach((cartItem) => {
-      
+      // ⚠️ take the *first* (and only) element if it’s an array
+      const pickedVar = Array.isArray(cartItem.selectedVariant)
+        ? {
+            ...cartItem.selectedVariant[0],
+            uniqueId: cartItem.selectedVariant[0]?._id,
+          }
+        : cartItem.selectedVariant;
+
       items.push({
         productId: cartItem._id,
-        uniqueId: cartItem.selectedVariation?.uniqueId ?? null,
+        // uniqueId: pickedVar?.uniqueId ?? null,
+        uniqueId: cartItem?._id ?? null,
       });
 
       quantities.push(cartItem.orderQuantity);
       weights.push(cartItem.weight ?? null);
-      variations.push(cartItem.selectedVariation ?? null);
+      variations.push(pickedVar ?? null);
 
       if (cartItem.product_note) {
         productNotes.push({
@@ -165,22 +171,71 @@ const CheckoutScreen = () => {
       }
     });
 
-    // 2⃣  Final payload
     return {
-      customer: customerId, // ➜ customers._id
-      items, // ➜ [{ productId, uniqueId }]
-      quantities, // ➜ [4, 2, …] (same length as items)
-      weights, // ➜ [null, {value:2,uom:"kg"}, …]
-      selectedVariations: variations, // ➜ [null, {…}, …]
-      product_notes: productNotes, // ➜ [{product_id, note}, …]
+      customer: customerId,
+      items,
+      quantities,
+      weights,
+      selectedVariations: variations,
+      product_notes: productNotes,
       shipping_address: shippingAddress,
-      shipping_date: shippingDateISO, // ISO string (e.g. "2025-05-24T00:00:00Z")
-      type: deliveryMethod, // "Pickup" | "Delivery" | "Delivery/Pickup"
+      shipping_date: shippingDateISO,
+      type: deliveryMethod,
       instructions: globalInstructions || "",
       tax: 0,
       status: "Pending",
     };
   };
+
+  // const mapCartToOrderPayload = (
+  //   cartState: any[],
+  //   customerId: string,
+  //   shippingAddress: string,
+  //   shippingDateISO: string,
+  //   deliveryMethod: "Pickup" | "Delivery" | "Delivery/Pickup",
+  //   globalInstructions: string
+  // ) => {
+  //   // 1⃣  Arrays expected by the backend
+  //   const items: { productId: string; uniqueId: string | null }[] = [];
+  //   const quantities: number[] = [];
+  //   const weights: ({ value: number; uom: string } | null)[] = [];
+  //   const variations: (object | null)[] = [];
+  //   const productNotes: { product_id: string; note: string }[] = [];
+
+  //   cartState.forEach((cartItem) => {
+  //     items.push({
+  //       productId: cartItem._id,
+  //       uniqueId: cartItem.selectedVariant?.uniqueId ?? null,
+  //     });
+
+  //     quantities.push(cartItem.orderQuantity);
+  //     weights.push(cartItem.weight ?? null);
+  //     variations.push(cartItem.selectedVariant?.[0] ?? null);
+  //     console.log("VAriaaaaaaant", cartItem.selectedVariant);
+  //     if (cartItem.product_note) {
+  //       productNotes.push({
+  //         product_id: cartItem.product_note.product_id,
+  //         note: cartItem.product_note.note,
+  //       });
+  //     }
+  //   });
+
+  //   // 2⃣  Final payload
+  //   return {
+  //     customer: customerId, // ➜ customers._id
+  //     items, // ➜ [{ productId, uniqueId }]
+  //     quantities, // ➜ [4, 2, …] (same length as items)
+  //     weights, // ➜ [null, {value:2,uom:"kg"}, …]
+  //     selectedVariations: variations, // ➜ [null, {…}, …]
+  //     product_notes: productNotes, // ➜ [{product_id, note}, …]
+  //     shipping_address: shippingAddress,
+  //     shipping_date: shippingDateISO, // ISO string (e.g. "2025-05-24T00:00:00Z")
+  //     type: deliveryMethod, // "Pickup" | "Delivery" | "Delivery/Pickup"
+  //     instructions: globalInstructions || "",
+  //     tax: 0,
+  //     status: "Pending",
+  //   };
+  // };
   const handlePlaceOrder = async () => {
     if (!selectedDate) {
       Alert.alert("Select Date", "Please select a delivery/pick-up date");
@@ -756,7 +811,7 @@ export default CheckoutScreen;
 //       note: [Object],
 //       product: [Object],
 //       quantity: 2,
-//       selectedVariation: [Object],
+//       selectedVariant: [Object],
 //       total: 33,
 //     },
 //   ],

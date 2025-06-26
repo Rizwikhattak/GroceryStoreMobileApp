@@ -15,7 +15,10 @@ import {
   Pressable,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { updateCartQuantity } from "@/store/reducers/cartSlice";
+import {
+  finalizeCartItem,
+  updateCartQuantity,
+} from "@/store/reducers/cartSlice";
 import * as Haptics from "expo-haptics";
 
 import {
@@ -49,9 +52,14 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
   const cardPressOpacity = useRef(new Animated.Value(1)).current;
   const cardGlow = useRef(new Animated.Value(0)).current;
 
-  // Get quantity from cart state
-  const quantity =
-    cartState.find((cartItem) => cartItem._id === item._id)?.orderQuantity || 0;
+  // 1. Update the quantity calculation to get the cart item object instead of just quantity
+  const cartItem = cartState.find(
+    (cartItem) => cartItem._id === item._id && !cartItem.isFinalized
+  );
+  const quantity = cartItem?.orderQuantity || 0;
+  const isFinalized = cartState.some(
+    (cartItem) => cartItem._id === item._id && cartItem.isFinalized
+  );
   const isFavorite = favorites[item._id] || false;
 
   // Get unit from product data or use default
@@ -72,14 +80,14 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
       setInputValue(quantity.toString());
     }
   }, [quantity, isEditing]);
-
-  // Show/hide quantity controls based on quantity
+  // 2. Update the showQuantityControls logic to only show for non-finalized items
   useEffect(() => {
     const shouldShow = quantity > 0;
+    console.log("WOwwwwww", shouldShow, quantity, isFinalized);
     if (shouldShow !== showQuantityControls) {
       setShowQuantityControls(shouldShow);
     }
-  }, [quantity]);
+  }, [quantity, isFinalized]);
 
   // Animation effect when quantity controls visibility changes
   useEffect(() => {
@@ -214,8 +222,9 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
   };
 
   // Handle direct quantity input
+  // 4. Update the handleQuantityInputFocus to prevent editing finalized items
   const handleQuantityInputFocus = () => {
-    if (hasSubmitted.current) return;
+    if (hasSubmitted.current || isFinalized) return;
     hasSubmitted.current = true;
     setIsEditing(true);
 
@@ -232,8 +241,9 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
     }
   };
 
+  // 3. Update the handleQuantitySubmit function to only work with non-finalized items
   const handleQuantitySubmit = () => {
-    if (!isEditing) return;
+    if (!isEditing || isFinalized) return;
 
     let newQuantity = Number.parseInt(inputValue, 10);
     if (isNaN(newQuantity)) {
@@ -280,9 +290,48 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
       handleCardPress();
     }
   };
-
+  const getActiveCartItem = () => {
+    if (!item?.variations || item?.variations?.length === 0) {
+      // For items without variations, get the active (non-finalized) item
+      console.log("1 nigga");
+      return cartState?.find(
+        (cartItem) => cartItem?._id === item?._id && !cartItem?.isFinalized
+      );
+    } else {
+      console.log("2 nigga");
+      // For items with variations, get the active (non-finalized) cartItem with matching variant
+      // Note: This assumes you have a way to determine the selected variant in this component
+      // You might need to modify this based on how you handle variant selection in ProductItemCard
+      return cartState?.find(
+        (cartItem) =>
+          cartItem?._id === item?._id &&
+          cartItem?.selectedVariant?.[0]?._id && // This needs to be properly defined
+          !cartItem?.isFinalized
+      );
+    }
+  };
   // Handle adding more quantity when already in cart
+  // 5. Update the handleAddMoreToCart to check finalization status
   const handleAddMoreToCart = () => {
+    const currentItem = getActiveCartItem();
+
+    if (currentItem) {
+      // Finalize the existing unfinalized item
+      return dispatch(
+        finalizeCartItem({
+          id: item._id,
+          cartItemId: currentItem.cartItemId,
+          // Only include selectedSizeId if the item has variations
+          ...(item?.variations &&
+            item?.variations?.length > 0 && {
+              selectedSizeId: currentItem.selectedVariant?.[0]?._id,
+            }),
+        })
+      );
+    }
+
+    // If no current item exists, this shouldn't happen in normal flow
+    // but we can add fallback behavior
     Animated.sequence([
       Animated.timing(scaleAnim, {
         toValue: 1.1,
@@ -296,7 +345,7 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
       }),
     ]).start();
 
-    // Navigate to product details for more options
+    // Navigate to item details for more options
     handleCardPress();
   };
 
@@ -450,7 +499,7 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
             ) : (
               <TouchableOpacity
                 style={styles.addToCartButton}
-                onPress={handleAddToCart}
+                onPress={handleCardPress}
                 activeOpacity={0.9}
               >
                 <Ionicons

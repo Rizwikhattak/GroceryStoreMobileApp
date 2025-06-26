@@ -96,15 +96,6 @@ export const checkAuthStatus = createAsyncThunk(
         return rejectWithValue("No token found");
       }
 
-      // Here you could validate the token with your backend if needed
-      // For now, we'll assume the token is valid if it exists
-
-      // You may need to fetch the user data from your API using the token
-      // For example:
-      // const userData = await fetchUserData(token);
-      // return { user: userData, token };
-
-      // For simplicity, returning a basic structure
       return {
         isAuthenticated: true,
         token: token,

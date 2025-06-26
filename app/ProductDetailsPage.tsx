@@ -41,7 +41,11 @@ import {
   getPantryProducts,
   makeProductPantry,
 } from "@/store/actions/pantryActions";
-import { updateCartQuantity } from "@/store/reducers/cartSlice";
+import {
+  updateCartQuantity,
+  finalizeCartItem,
+  updateCartItemNotes,
+} from "@/store/reducers/cartSlice";
 
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
@@ -99,11 +103,13 @@ const ProductDetailPage = () => {
     product?.variations ? product?.variations[0] : {}
   );
 
-  // Get current cart item for the selected size
+  // 1. Update the getCurrentCartItem function to also get finalized items for notes
   const getCurrentCartItem = () => {
     if (!product?.variations || product?.variations?.length === 0) {
+      // For products without variations, get any item (active or finalized)
       return cart?.data?.find((item) => item?._id === product?._id);
     } else {
+      // For products with variations, get any item with matching variant
       return cart?.data?.find(
         (item) =>
           item?._id === product?._id &&
@@ -111,12 +117,53 @@ const ProductDetailPage = () => {
       );
     }
   };
+  // 2. Add a separate function to get active cart item for quantity operations
+  const getActiveCartItem = () => {
+    if (!product?.variations || product?.variations?.length === 0) {
+      // For products without variations, get the active (non-finalized) item
+      return cart?.data?.find(
+        (item) => item?._id === product?._id && !item?.isFinalized
+      );
+    } else {
+      // For products with variations, get the active (non-finalized) item with matching variant
+      return cart?.data?.find(
+        (item) =>
+          item?._id === product?._id &&
+          item?.selectedVariant?.[0]?._id === selectedSize?._id &&
+          !item?.isFinalized
+      );
+    }
+  };
 
+  // 3. Update the getFinalizedItemsCount function to get total finalized quantity
+  const getFinalizedItemsCount = () => {
+    if (!product?.variations || product?.variations?.length === 0) {
+      return (
+        cart?.data
+          ?.filter((item) => item?._id === product?._id && item?.isFinalized)
+          ?.reduce((total, item) => total + (item?.orderQuantity || 0), 0) || 0
+      );
+    } else {
+      return (
+        cart?.data
+          ?.filter(
+            (item) =>
+              item?._id === product?._id &&
+              item?.selectedVariant?.[0]?._id === selectedSize?._id &&
+              item?.isFinalized
+          )
+          ?.reduce((total, item) => total + (item?.orderQuantity || 0), 0) || 0
+      );
+    }
+  };
   const currentCartItem = getCurrentCartItem();
   const [selectedQuantity, setSelectedQuantity] = useState(
     currentCartItem?.orderQuantity || 0
   );
-
+  const isItemFinalized = () => {
+    const cartItem = getCurrentCartItem();
+    return cartItem?.isFinalized || false;
+  };
   const [isFavorite, setIsFavorite] = useState(
     product?.inPantry || product?.isFavorite || false
   );
@@ -129,10 +176,11 @@ const ProductDetailPage = () => {
   const notesInputRef = useRef(null);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [imageError, setImageError] = useState(false);
-  const [showQuantityControls, setShowQuantityControls] = useState(
-    selectedQuantity !== 0
-  );
+
   const [showQuantityModal, setShowQuantityModal] = useState(false);
+  const [showQuantityControls, setShowQuantityControls] = useState(
+    selectedQuantity !== 0 && !isItemFinalized() // Hide if finalized
+  );
   const [tempQuantity, setTempQuantity] = useState(selectedQuantity.toString());
   const [isEditing, setIsEditing] = useState(false);
   const inputRef = useRef(null);
@@ -146,9 +194,34 @@ const ProductDetailPage = () => {
     setShowNotesModal(true);
   };
 
+  // 5. Update the handleNotesSubmit function to update notes for all matching items
   const handleNotesSubmit = () => {
     setProductNotes(tempNotes);
     setShowNotesModal(false);
+
+    // Find all items (active and finalized) that match the current product/variant
+    const matchingItems = cart?.data?.filter((item) => {
+      if (!product?.variations || product?.variations?.length === 0) {
+        return item?._id === product?._id;
+      } else {
+        return (
+          item?._id === product?._id &&
+          item?.selectedVariant?.[0]?._id === selectedSize?._id
+        );
+      }
+    });
+
+    // Update notes for all matching items
+    matchingItems?.forEach((item) => {
+      dispatch(
+        updateCartItemNotes({
+          id: product._id,
+          selectedSizeId: selectedSize?._id,
+          notes: tempNotes,
+          cartItemId: item.cartItemId, // Use specific cart item ID
+        })
+      );
+    });
   };
 
   const handleNotesCancel = () => {
@@ -156,12 +229,21 @@ const ProductDetailPage = () => {
     setShowNotesModal(false);
   };
 
-  // Update selected quantity when size changes
   useEffect(() => {
-    const newCartItem = getCurrentCartItem();
-    const newQuantity = newCartItem?.orderQuantity || 0;
+    const activeItem = getActiveCartItem();
+    const anyItem = getCurrentCartItem(); // This gets any item for notes
+    const newQuantity = activeItem?.orderQuantity || 0;
+
+    // Get notes from any available item (prioritize active, then finalized)
+    const existingNotes =
+      activeItem?.product_note?.note || anyItem?.product_note?.note || "";
+
     setSelectedQuantity(newQuantity);
-    setShowQuantityControls(newQuantity !== 0);
+    setProductNotes(existingNotes);
+
+    // Show controls if there's an active quantity OR if there are finalized items
+    const finalizedCount = getFinalizedItemsCount();
+    setShowQuantityControls(newQuantity > 0 || finalizedCount > 0);
   }, [selectedSize, cart.data]);
 
   // Animation effect when quantity controls visibility changes
@@ -243,12 +325,15 @@ const ProductDetailPage = () => {
     ? Math.round(((currentPrice - discountedPrice) / currentPrice) * 100)
     : 0;
 
+  // 7. Update the handleQuantityChange function
   const handleQuantityChange = (change: number) => {
-    const newQuantity = selectedQuantity + change;
-    if (
-      newQuantity >= 0 &&
-      (product.is_unlimited || newQuantity <= product.quantity)
-    ) {
+    const currentItem = getActiveCartItem(); // Use active item for quantity operations
+    const currentQuantity = currentItem?.orderQuantity || 0;
+    const newQuantity = currentQuantity + change;
+
+    if (newQuantity < 0) return; // Don't allow negative quantities
+
+    if (product.is_unlimited || newQuantity <= product.quantity) {
       setSelectedQuantity(newQuantity);
 
       const itemToUpdate =
@@ -279,8 +364,13 @@ const ProductDetailPage = () => {
     }
   };
 
+  // 7. Update the handleAddToCart function to use getActiveCartItem
   const handleAddToCart = () => {
-    if (selectedQuantity === 0) {
+    const currentItem = getActiveCartItem(); // Use active item for cart operations
+    const finalizedCount = getFinalizedItemsCount();
+
+    if (!currentItem || currentItem?.orderQuantity === 0) {
+      // No active item in cart OR quantity is 0 - add new item
       setSelectedQuantity(1);
       setShowQuantityControls(true);
 
@@ -304,19 +394,63 @@ const ProductDetailPage = () => {
         })
       );
     } else {
+      // Active item exists with quantity > 0 - finalize it
+      dispatch(
+        finalizeCartItem({
+          id: product._id,
+          selectedSizeId: selectedSize?._id,
+          cartItemId: currentItem.cartItemId,
+        })
+      );
+
+      // Reset UI state but keep controls visible for next addition
+      setSelectedQuantity(0);
+
       console.log(
-        "Adding to cart:",
+        "Item finalized in cart:",
         product.name,
         "Quantity:",
-        selectedQuantity,
+        currentItem.orderQuantity,
         "Size:",
         selectedSize?.size || "No size",
         "Notes:",
-        productNotes
+        productNotes,
+        "Total finalized items:",
+        finalizedCount + 1
       );
     }
   };
 
+  const getAddToCartButtonText = () => {
+    const currentItem = getActiveCartItem(); // Use active item for button text
+    const finalizedCount = getFinalizedItemsCount();
+
+    if (isOutOfStock) {
+      return "Out of Stock";
+    }
+
+    if (!currentItem || currentItem?.orderQuantity === 0) {
+      if (finalizedCount > 0) {
+        return `Add More (${finalizedCount} in cart)`;
+      }
+      return "Add to Cart";
+    }
+
+    return `Add ${currentItem.orderQuantity} • $${(
+      discountedPrice * currentItem.orderQuantity
+    ).toFixed(2)}`;
+  };
+
+  // 5. Update the getAddToCartButtonStyle function
+  const getAddToCartButtonStyle = () => {
+    const currentItem = getCurrentCartItem();
+
+    return [
+      styles.addToCartButton,
+      isOutOfStock && styles.disabledButton,
+      showQuantityControls && styles.addToCartButtonWithQuantity,
+    ];
+  };
   const handleBack = () => {
     router.back();
   };
@@ -815,9 +949,11 @@ const ProductDetailPage = () => {
                 ]}
               >
                 <Text style={styles.quantityText}>{selectedQuantity}</Text>
-                <View style={styles.editIndicator}>
-                  <Edit3 color="#666" size={12} />
-                </View>
+                {selectedQuantity > 0 && (
+                  <View style={styles.editIndicator}>
+                    <Edit3 color="#666" size={12} />
+                  </View>
+                )}
               </Animated.View>
             </TouchableOpacity>
 
@@ -846,24 +982,12 @@ const ProductDetailPage = () => {
         ) : null}
 
         <TouchableOpacity
-          style={[
-            styles.addToCartButton,
-            isOutOfStock && styles.disabledButton,
-            showQuantityControls && styles.addToCartButtonWithQuantity,
-          ]}
+          style={getAddToCartButtonStyle()}
           onPress={handleAddToCart}
           disabled={isOutOfStock}
         >
           <ShoppingCart color="#fff" size={20} />
-          <Text style={styles.addToCartText}>
-            {selectedQuantity === 0
-              ? isOutOfStock
-                ? "Out of Stock"
-                : "Add to Cart"
-              : `Add ${selectedQuantity} • $${(
-                  discountedPrice * selectedQuantity
-                ).toFixed(2)}`}
-          </Text>
+          <Text style={styles.addToCartText}>{getAddToCartButtonText()}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -1521,6 +1645,10 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 12,
     fontWeight: "700",
+  },
+  finalizedButton: {
+    backgroundColor: "#28a745", // Green color to indicate success
+    opacity: 0.8,
   },
 });
 
