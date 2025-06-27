@@ -13,6 +13,9 @@ import {
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import HeaderCommon from "@/components/ui/HeaderCommon";
+import { contactUs } from "@/store/actions/authActions";
+import { ToastHelper } from "@/utils/ToastHelper";
+import { TOAST_MESSAGES } from "@/constants/constants";
 
 const ContactUsScreen = () => {
   const [formData, setFormData] = useState({
@@ -35,6 +38,7 @@ const ContactUsScreen = () => {
     if (!formData.firstName.trim())
       newErrors.firstName = "First name is required";
     if (!formData.lastName.trim()) newErrors.lastName = "Last name is required";
+    if (!formData.address.trim()) newErrors.address = "Address is required";
     if (!formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
@@ -51,29 +55,18 @@ const ContactUsScreen = () => {
     if (!validateForm()) return;
 
     setIsSubmitting(true);
+    const payload = {
+      first_name: formData.firstName,
+      last_name: formData.lastName,
+      phone: formData.phone,
+      email: formData.email,
+      address: formData.address,
+      message: formData.message,
+    };
 
-    setTimeout(() => {
-      setIsSubmitting(false);
-      Alert.alert(
-        "Message Sent!",
-        "Thank you for contacting us. We'll get back to you within 24 hours.",
-        [
-          {
-            text: "OK",
-            onPress: () => {
-              setFormData({
-                firstName: "",
-                lastName: "",
-                email: "",
-                phone: "",
-                address: "",
-                message: "",
-              });
-            },
-          },
-        ]
-      );
-    }, 2000);
+    // const resp = await dispatch(contactUs(payload));
+    ToastHelper.showSuccess({ title: TOAST_MESSAGES.CONTACT_US.title });
+    setIsSubmitting(false);
   };
 
   const handleCall = (phoneNumber) => {
@@ -226,7 +219,7 @@ const ContactUsScreen = () => {
             false,
             "phone-pad"
           )}
-          {renderInput("address", "Address (Optional)", "location-outline")}
+          {renderInput("address", "Address", "location-outline")}
           {renderInput("message", "Message", "chatbubble-outline", true)}
 
           <TouchableOpacity
@@ -472,6 +465,7 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     minHeight: 52,
   },
+
   inputIcon: {
     marginRight: 12,
   },

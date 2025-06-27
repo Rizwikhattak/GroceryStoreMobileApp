@@ -1,6 +1,7 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import { API_COMMON } from "../../utils/ApiCommon";
 import {
+  CONTACT_US_API,
   loginAPI,
   REGISTRATION_CREDIT_API,
   REGISTRATION_STEP_API,
@@ -102,6 +103,26 @@ export const checkAuthStatus = createAsyncThunk(
       };
     } catch (error) {
       return rejectWithValue(error.message);
+    }
+  }
+);
+export const contactUs = createAsyncThunk(
+  "auth/contactUs",
+  async (data, { rejectWithValue }) => {
+    try {
+      console.log("Woww what a data", data);
+      const response = await API_COMMON(
+        "post",
+        "json",
+        CONTACT_US_API,
+        "Error in contact us",
+        data
+      );
+      return response;
+    } catch (err) {
+      console.log("err", err);
+
+      return rejectWithValue(err?.message || "Error in contact us");
     }
   }
 );

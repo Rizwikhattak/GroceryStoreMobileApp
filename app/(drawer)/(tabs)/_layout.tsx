@@ -25,7 +25,7 @@ const { width } = Dimensions.get("window");
 
 // Pre-calculate static values
 const TAB_WIDTH = (width - 120) / 4;
-const CART_SIZE = 75;
+const CART_SIZE = 60;
 const REGULAR_ICON_SIZE = 45;
 
 // Static styles to prevent recreation
@@ -164,7 +164,7 @@ const CartTab = memo(({ onPress, animatedValue }) => {
         end={{ x: 1, y: 1 }}
         style={styles.cartGradient}
       >
-        <Ionicons name="bag-handle" size={30} color="#ffffff" />
+        <Ionicons name="bag-handle" size={20} color="#ffffff" />
       </LinearGradient>
       {finalizedCartItems.length !== 0 && (
         <View style={styles.cartBadge}>
@@ -177,8 +177,8 @@ const CartTab = memo(({ onPress, animatedValue }) => {
         style={[
           {
             position: "absolute",
-            width: 85,
-            height: 85,
+            width: 70,
+            height: 70,
             borderRadius: 42.5,
             borderWidth: 2,
             borderColor: "rgba(105, 17, 18, 0.2)",
@@ -245,7 +245,7 @@ const RegularTab = memo(({ route, isFocused, onPress, animatedValue }) => {
           />
         </Animated.View>
 
-        <Animated.Text
+        {/* <Animated.Text
           style={[
             styles.tabLabel,
             {
@@ -258,7 +258,7 @@ const RegularTab = memo(({ route, isFocused, onPress, animatedValue }) => {
           ]}
         >
           {label}
-        </Animated.Text>
+        </Animated.Text> */}
 
         <Animated.View
           style={[

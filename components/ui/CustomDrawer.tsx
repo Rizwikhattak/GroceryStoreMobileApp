@@ -9,11 +9,6 @@ import {
   StatusBar,
   ScrollView,
 } from "react-native";
-// Remove the DrawerContentScrollView import since we're using Expo Router
-// import {
-//   DrawerContentScrollView,
-//   DrawerItemList,
-// } from '@react-navigation/drawer';
 import { Ionicons } from "@expo/vector-icons";
 import { useSelector, useDispatch } from "react-redux";
 import { logout } from "@/store/reducers/authSlice";
@@ -48,51 +43,79 @@ const CustomDrawerContent = (props) => {
       id: 1,
       title: "Home",
       icon: "home-outline",
-      screen: "Home",
-    },
-    {
-      id: 2,
-      title: "Categories",
-      icon: "grid-outline",
-      screen: "Categories",
-    },
-    {
-      id: 3,
-      title: "Featured Products",
-      icon: "star-outline",
-      screen: "Home", // Navigate to home and scroll to featured
-    },
-    {
-      id: 4,
-      title: "My Orders",
-      icon: "receipt-outline",
-      screen: "Orders",
+      screen: "/(drawer)/(tabs)",
     },
     {
       id: 5,
       title: "Contact Us",
       icon: "mail-outline",
-      screen: "ContactUs",
+      screen: "/ContactUs",
     },
     {
       id: 6,
       title: "About Us",
       icon: "information-circle-outline",
-      screen: "AboutUs",
+      screen: "/AboutUs",
     },
     {
       id: 7,
       title: "Settings",
       icon: "settings-outline",
-      screen: "Settings",
+      screen: "/(drawer)/(tabs)/profile", // This should work now
     },
-    // {
-    //   id: 8,
-    //   title: "Help & Support"[],
-    //   icon: "help-circle-outline",
-    //   screen: "Support",
-    // },
   ];
+
+  const handleNavigation = (screenPath) => {
+    try {
+      // Close the drawer first
+      props.navigation?.closeDrawer?.();
+
+      // Add a small delay to ensure drawer closes before navigation
+      setTimeout(() => {
+        if (screenPath.includes("/(drawer)/(tabs)/")) {
+          // For tab screens, use replace to ensure proper navigation
+          router.replace(screenPath);
+        } else {
+          // For other screens, use push
+          router.push(screenPath);
+        }
+      }, 100);
+    } catch (error) {
+      console.error("Navigation error:", error);
+      // Fallback navigation
+      try {
+        router.replace(screenPath);
+      } catch (fallbackError) {
+        console.error("Fallback navigation also failed:", fallbackError);
+      }
+    }
+  };
+
+  // Alternative navigation method specifically for profile
+  const handleProfileNavigation = () => {
+    try {
+      props.navigation?.closeDrawer?.();
+
+      // Navigate to the tabs navigator first, then to profile
+      setTimeout(() => {
+        // This ensures we're in the tab navigator context
+        router.push("/(drawer)/(tabs)");
+
+        // Then navigate to the profile tab
+        setTimeout(() => {
+          // If your tab navigator has a method to switch tabs
+          props.navigation?.navigate?.("(tabs)", {
+            screen: "Profile",
+            initial: false,
+          });
+        }, 200);
+      }, 100);
+    } catch (error) {
+      console.error("Profile navigation error:", error);
+      // Fallback: just go to profile directly
+      router.replace("/(drawer)/(tabs)/profile");
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -101,7 +124,7 @@ const CustomDrawerContent = (props) => {
         <View style={styles.header}>
           <Logo width={200} height={60} style={{ alignSelf: "center" }} />
           <TouchableOpacity
-            onPress={() => props.navigation.closeDrawer()}
+            onPress={() => props.navigation?.closeDrawer?.()}
             style={styles.closeButton}
           >
             <Ionicons name="close" size={24} color="#8B1538" />
@@ -131,8 +154,12 @@ const CustomDrawerContent = (props) => {
               key={item.id}
               style={styles.menuItem}
               onPress={() => {
-                props.navigation.navigate(item.screen);
-                props.navigation.closeDrawer();
+                // Special handling for Settings/Profile
+                if (item.id === 7) {
+                  handleProfileNavigation();
+                } else {
+                  handleNavigation(item.screen);
+                }
               }}
             >
               <Ionicons name={item.icon} size={22} color="#666" />

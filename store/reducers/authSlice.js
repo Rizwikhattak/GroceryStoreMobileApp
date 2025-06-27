@@ -1,6 +1,7 @@
 import { createSlice } from "@reduxjs/toolkit";
 import {
   checkAuthStatus,
+  contactUs,
   loginUser,
   registrationStep1,
   registrationStep2,
@@ -133,6 +134,20 @@ const authSlice = createSlice({
         state.isAuthenticated = true;
       })
       .addCase(checkAuthStatus.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+        state.isAuthenticated = false;
+      })
+      .addCase(contactUs.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(contactUs.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+        
+      })
+      .addCase(contactUs.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
         state.isAuthenticated = false;

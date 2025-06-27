@@ -213,7 +213,11 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
   const toggleFavorite = async (id) => {
     try {
       setFavorites((prev) => {
-        if (!prev[id])
+        if (inPantry) {
+          ToastHelper.showWarning({
+            title: TOAST_MESSAGES.REMOVED_FROM_WISH_LIST.title,
+          });
+        } else if (!prev[id])
           ToastHelper.showSuccess({
             title: TOAST_MESSAGES.ADDED_TO_WISH_LIST.title,
           });

@@ -23,4 +23,8 @@ export const TOAST_MESSAGES = {
     title: "Product removed from wish list",
     message: "You can view your cart anytime",
   },
+  CONTACT_US: {
+    title: "Thanks for reaching out! We’ll get back to you shortly.",
+    message: "You can view your cart anytime",
+  },
 };

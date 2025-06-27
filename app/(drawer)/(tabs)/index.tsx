@@ -24,6 +24,7 @@ import {
   Text,
   Button,
   InteractionManager,
+  RefreshControl,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import Logo from "../../assets/images/premium-meats-logo.svg";
@@ -32,6 +33,7 @@ import { logout } from "@/store/reducers/authSlice";
 import { getPantryProducts } from "@/store/actions/pantryActions";
 import { useFocusEffect } from "@react-navigation/native";
 import Navbar from "@/components/ui/Navbar";
+import { getAllCategories } from "@/store/actions/categoriesActions";
 
 // Pre-defined styles to prevent recreation
 const styles = StyleSheet.create({
@@ -74,15 +76,10 @@ export default function HomeScreen() {
   // Local state for loading and error handling
   const [isLoadingPantry, setIsLoadingPantry] = useState(false);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
-  const [lastFetchTime, setLastFetchTime] = useState(0);
+  const [refreshing, setRefreshing] = useState(false);
 
-  // Refs to prevent unnecessary re-fetching
-  const pantryFetchedRef = useRef(false);
-  const productsFetchedRef = useRef(false);
+  // Ref to track component mount status
   const isMountedRef = useRef(true);
-
-  // Cache time (5 minutes)
-  const CACHE_DURATION = 5 * 60 * 1000;
 
   // Memoized favourite IDs computation
   const favouriteIds = useMemo(() => {
@@ -97,90 +94,139 @@ export default function HomeScreen() {
     return ids;
   }, [pantry?.data]);
 
-  // Optimized fetch functions with caching and error handling
-  const fetchPantryProducts = useCallback(
-    async (force = false) => {
-      const now = Date.now();
+  // Optimized fetch functions with error handling
+  const fetchPantryProducts = useCallback(async () => {
+    if (isLoadingPantry) return; // Prevent duplicate requests
 
-      // Skip if recently fetched and not forced
-      if (
-        !force &&
-        pantryFetchedRef.current &&
-        now - lastFetchTime < CACHE_DURATION
-      ) {
-        return;
+    try {
+      setIsLoadingPantry(true);
+      console.log("Fetching pantry products...");
+
+      await dispatch(getPantryProducts()).unwrap();
+    } catch (err) {
+      console.log("Error fetching pantry products:", err);
+    } finally {
+      if (isMountedRef.current) {
+        setIsLoadingPantry(false);
       }
+    }
+  }, [dispatch, isLoadingPantry]);
 
-      if (isLoadingPantry) return; // Prevent duplicate requests
+  const fetchFeaturedProducts = useCallback(async () => {
+    if (isLoadingProducts) return; // Prevent duplicate requests
 
-      try {
-        setIsLoadingPantry(true);
-        console.log("Fetching pantry products...");
+    try {
+      setIsLoadingProducts(true);
+      console.log("Fetching featured products...");
 
-        await dispatch(getPantryProducts()).unwrap();
-
-        if (isMountedRef.current) {
-          pantryFetchedRef.current = true;
-          setLastFetchTime(now);
-        }
-      } catch (err) {
-        console.log("Error fetching pantry products:", err);
-        // Don't throw here to prevent app crashes
-      } finally {
-        if (isMountedRef.current) {
-          setIsLoadingPantry(false);
-        }
+      await dispatch(getFeaturedProducts()).unwrap();
+    } catch (err) {
+      console.log("Error fetching featured products:", err);
+    } finally {
+      if (isMountedRef.current) {
+        setIsLoadingProducts(false);
       }
-    },
-    [dispatch, isLoadingPantry, lastFetchTime]
-  );
+    }
+  }, [dispatch, isLoadingProducts]);
 
-  const fetchFeaturedProducts = useCallback(
-    async (force = false) => {
-      const now = Date.now();
+  // Add other API fetch functions here
+  const fetchCategories = useCallback(async () => {
+    try {
+      console.log("Fetching categories...");
+      await dispatch(getAllCategories()).unwrap();
+    } catch (err) {
+      console.log("Error fetching categories:", err);
+    }
+  }, [dispatch]);
 
-      // Skip if recently fetched and not forced
-      if (
-        !force &&
-        productsFetchedRef.current &&
-        now - lastFetchTime < CACHE_DURATION
-      ) {
-        return;
-      }
+  const fetchPromotions = useCallback(async () => {
+    try {
+      console.log("Fetching promotions...");
+      // Replace with your actual promotions action
+      // await dispatch(getPromotions()).unwrap();
+    } catch (err) {
+      console.log("Error fetching promotions:", err);
+    }
+  }, [dispatch]);
 
-      if (isLoadingProducts) return; // Prevent duplicate requests
+  const fetchUserProfile = useCallback(async () => {
+    try {
+      console.log("Fetching user profile...");
+      // Replace with your actual user profile action
+      // await dispatch(getUserProfile()).unwrap();
+    } catch (err) {
+      console.log("Error fetching user profile:", err);
+    }
+  }, [dispatch]);
 
-      try {
-        setIsLoadingProducts(true);
-        console.log("Fetching featured products...");
+  const fetchCartItems = useCallback(async () => {
+    try {
+      console.log("Fetching cart items...");
+      // Replace with your actual cart action
+      // await dispatch(getCartItems()).unwrap();
+    } catch (err) {
+      console.log("Error fetching cart items:", err);
+    }
+  }, [dispatch]);
 
-        await dispatch(getFeaturedProducts()).unwrap();
+  // Comprehensive refresh function that calls ALL APIs
+  const refreshAllData = useCallback(async () => {
+    console.log("Refreshing all data...");
+    try {
+      // Call all your API functions here
+      const results = await Promise.allSettled([
+        fetchPantryProducts(),
+        fetchFeaturedProducts(),
+        fetchCategories(),
+        fetchPromotions(),
+        fetchUserProfile(),
+        fetchCartItems(),
+        // Add any other API calls you need
+      ]);
 
-        if (isMountedRef.current) {
-          productsFetchedRef.current = true;
-          setLastFetchTime(now);
+      // Log any failed requests for debugging
+      results.forEach((result, index) => {
+        if (result.status === "rejected") {
+          const apiNames = [
+            "pantry",
+            "products",
+            "categories",
+            "promotions",
+            "profile",
+            "cart",
+          ];
+          console.log(`Failed to fetch ${apiNames[index]}:`, result.reason);
         }
-      } catch (err) {
-        console.log("Error fetching featured products:", err);
-        // Don't throw here to prevent app crashes
-      } finally {
-        if (isMountedRef.current) {
-          setIsLoadingProducts(false);
-        }
-      }
-    },
-    [dispatch, isLoadingProducts, lastFetchTime]
-  );
+      });
+    } catch (error) {
+      console.log("Error during comprehensive refresh:", error);
+    }
+  }, [
+    fetchPantryProducts,
+    fetchFeaturedProducts,
+    fetchCategories,
+    fetchPromotions,
+    fetchUserProfile,
+    fetchCartItems,
+  ]);
+
+  // Updated pull to refresh handler
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refreshAllData();
+    } catch (error) {
+      console.log("Error during refresh:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [refreshAllData]);
 
   // Initial data loading with InteractionManager for better performance
   useEffect(() => {
     const loadInitialData = () => {
       InteractionManager.runAfterInteractions(() => {
-        // Load both in parallel for better performance
-        Promise.all([
-          fetchPantryProducts(true),
-          fetchFeaturedProducts(true),
-        ]).catch((err) => {
+        refreshAllData().catch((err) => {
           console.log("Error loading initial data:", err);
         });
       });
@@ -192,26 +238,18 @@ export default function HomeScreen() {
     return () => {
       isMountedRef.current = false;
     };
-  }, [fetchPantryProducts, fetchFeaturedProducts]);
+  }, [refreshAllData]);
 
-  // Optimized focus effect - only refresh if data is stale
+  // Focus effect - refresh data when screen comes into focus
   useFocusEffect(
     useCallback(() => {
-      const now = Date.now();
-      const shouldRefresh = now - lastFetchTime > CACHE_DURATION;
-
-      if (shouldRefresh) {
-        // Use InteractionManager to delay non-critical updates
-        InteractionManager.runAfterInteractions(() => {
-          Promise.all([
-            fetchPantryProducts(false),
-            fetchFeaturedProducts(false),
-          ]).catch((err) => {
-            console.log("Error refreshing data on focus:", err);
-          });
+      // Use InteractionManager to delay non-critical updates
+      InteractionManager.runAfterInteractions(() => {
+        refreshAllData().catch((err) => {
+          console.log("Error refreshing data on focus:", err);
         });
-      }
-    }, [fetchPantryProducts, fetchFeaturedProducts, lastFetchTime])
+      });
+    }, [refreshAllData])
   );
 
   // Memoized handlers
@@ -278,6 +316,16 @@ export default function HomeScreen() {
             removeClippedSubviews={true} // Optimize for large lists
             scrollEventThrottle={16} // Optimize scroll performance
             onScrollBeginDrag={dismissKeyboard} // Dismiss keyboard on scroll
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[primary]}
+                tintColor={primary}
+                title="Pull to refresh"
+                titleColor="#666"
+              />
+            }
           >
             {renderPromoSlider}
             {renderCategorySlider}

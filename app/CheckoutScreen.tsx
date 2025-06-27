@@ -167,10 +167,20 @@ const CheckoutScreen = () => {
       variations.push(pickedVar ?? null);
 
       if (cartItem.product_note) {
-        productNotes.push({
-          product_id: cartItem.product_note.product_id,
-          note: cartItem.product_note.note,
-        });
+        //doing for the chicken variants
+        const existingProdIndex = productNotes.findIndex(
+          (prod: any) => prod.product_id === cartItem.product_note.product_id
+        );
+        if (existingProdIndex !== -1) {
+          productNotes[existingProdIndex] = {
+            ...productNotes[existingProdIndex],
+            note: `${productNotes[existingProdIndex]?.note} ${cartItem.product_note.note}`,
+          };
+        } else
+          productNotes.push({
+            product_id: cartItem.product_note.product_id,
+            note: cartItem.product_note.note,
+          });
       }
     });
 
@@ -260,14 +270,14 @@ const CheckoutScreen = () => {
         deliveryMethod === "delivery" ? "Delivery" : "Pickup",
         orderInstructions
       );
-      console.log("Order Payload", payload);
-      // const resp = await dispatch(placeCustomerOrder(payload)).unwrap();
-      // console.log("Response", resp);
+      // console.log("Order Payload", payload);
+      const resp = await dispatch(placeCustomerOrder(payload)).unwrap();
+      console.log("Response", resp);
       ToastHelper.showSuccess({
         title: TOAST_MESSAGES.ORDER_PLACED.title,
       });
       await dispatch(resetCartState());
-      router.push("/(tabs)");
+      router.push("/(drawer)/(tabs)");
     } catch (err) {
       console.error(err);
       Alert.alert("Error", "Failed to place order. Please try again.");
