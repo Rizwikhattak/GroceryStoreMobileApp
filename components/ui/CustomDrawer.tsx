@@ -15,27 +15,32 @@ import { logout } from "@/store/reducers/authSlice";
 import { Alert } from "react-native";
 import { useRouter } from "expo-router";
 import Logo from "../../assets/images/premium-meats-logo.svg";
+import { useModal } from "@/utils/useModal";
+import CustomModal from "@/components/ui/CustomModak";
 
 const CustomDrawerContent = (props) => {
   const user = useSelector((state) => state.auth);
   const dispatch = useDispatch();
   const router = useRouter();
-
+  const {
+    modalState,
+    hideModal,
+    showSuccess,
+    showError,
+    showWarning,
+    showConfirmation,
+  } = useModal();
   const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Logout",
-        onPress: () => {
-          dispatch(logout());
-          console.log("User logged out");
-        },
-        style: "destructive",
-      },
-    ]);
+    showError(
+      "Remove Item",
+      `Are you sure you want to logout?`,
+      "Logout",
+      () => {
+        console.log("User logged out");
+        dispatch(logout());
+        hideModal();
+      }
+    );
   };
 
   const menuItems = [
@@ -119,6 +124,19 @@ const CustomDrawerContent = (props) => {
 
   return (
     <View style={styles.container}>
+      <CustomModal
+        isVisible={modalState.isVisible}
+        onClose={hideModal}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        primaryButtonText={modalState.primaryButtonText}
+        secondaryButtonText={modalState.secondaryButtonText}
+        onPrimaryPress={modalState.onPrimaryPress}
+        onSecondaryPress={modalState.onSecondaryPress}
+        animationType="slide"
+        size="medium"
+      />
       <SafeAreaView style={styles.safeArea}>
         {/* Custom Header */}
         <View style={styles.header}>

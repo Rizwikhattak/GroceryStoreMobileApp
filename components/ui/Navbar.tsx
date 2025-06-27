@@ -10,10 +10,11 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import Logo from "../../assets/images/premium-meats-logo.svg";
 import { useNavigation } from "@react-navigation/native";
+import { useRouter } from "expo-router";
 
 const Navbar = ({ title = "Premium meats" }) => {
   const navigation = useNavigation();
-
+  const router = useRouter();
   const openDrawer = () => {
     navigation.openDrawer();
   };
@@ -30,7 +31,11 @@ const Navbar = ({ title = "Premium meats" }) => {
           <Logo width={200} height={50} style={{ alignSelf: "center" }} />
         </View>
 
-        <TouchableOpacity style={[styles.actionButton]} activeOpacity={0.7}>
+        <TouchableOpacity
+          style={[styles.actionButton]}
+          activeOpacity={0.7}
+          onPress={() => router.push("/SearchPage")}
+        >
           <View style={styles.iconContainer}>
             <Ionicons name="search" size={22} color={"#666"} />
           </View>

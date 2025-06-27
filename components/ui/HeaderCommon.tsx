@@ -10,6 +10,8 @@ import Constants from "expo-constants";
 import { Heart } from "lucide-react-native";
 import { ToastHelper } from "@/utils/ToastHelper";
 import { TOAST_MESSAGES } from "@/constants/constants";
+import { useModal } from "@/utils/useModal";
+import CustomModal from "@/components/ui/CustomModak";
 
 const HeaderCommon = ({
   title,
@@ -26,26 +28,42 @@ const HeaderCommon = ({
   const router = useRouter();
   const [showSearch, setShowSearch] = useState(false);
   const dispatch = useDispatch();
-
+  const {
+    modalState,
+    hideModal,
+    showSuccess,
+    showError,
+    showWarning,
+    showConfirmation,
+  } = useModal();
   const handleLogout = () => {
-    Alert.alert("Logout", "Are you sure you want to logout?", [
-      {
-        text: "Cancel",
-        style: "cancel",
-      },
-      {
-        text: "Logout",
-        onPress: () => {
-          console.log("User logged out");
-          dispatch(logout());
-        },
-        style: "destructive",
-      },
-    ]);
+    showError(
+      "Remove Item",
+      `Are you sure you want to logout?`,
+      "Logout",
+      () => {
+        console.log("User logged out");
+        dispatch(logout());
+        hideModal();
+      }
+    );
   };
 
   return (
     <View>
+      <CustomModal
+        isVisible={modalState.isVisible}
+        onClose={hideModal}
+        title={modalState.title}
+        message={modalState.message}
+        type={modalState.type}
+        primaryButtonText={modalState.primaryButtonText}
+        secondaryButtonText={modalState.secondaryButtonText}
+        onPrimaryPress={modalState.onPrimaryPress}
+        onSecondaryPress={modalState.onSecondaryPress}
+        animationType="slide"
+        size="medium"
+      />
       <View style={styles.header}>
         {/* Enhanced gradient background overlay */}
         <View style={styles.gradientOverlay} />

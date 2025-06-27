@@ -33,13 +33,15 @@ export const useModal = () => {
   const showSuccess = (
     title: string,
     message?: string,
+    primaryButtonText?: string,
+
     onPress?: () => void
   ) => {
     showModal({
       type: "success",
       title,
       message,
-      primaryButtonText: "Great!",
+      primaryButtonText: primaryButtonText,
       onPrimaryPress: onPress,
     });
   };
@@ -62,13 +64,14 @@ export const useModal = () => {
   const showWarning = (
     title: string,
     message?: string,
+    primaryButtonText?: string,
     onConfirm?: () => void
   ) => {
     showModal({
       type: "warning",
       title,
       message,
-      primaryButtonText: "Continue",
+      primaryButtonText: primaryButtonText,
       secondaryButtonText: "Cancel",
       onPrimaryPress: onConfirm,
     });
@@ -77,6 +80,7 @@ export const useModal = () => {
   const showConfirmation = (
     title: string,
     message?: string,
+    primaryButtonText?: string,
     onConfirm?: () => void,
     onCancel?: () => void
   ) => {
@@ -84,7 +88,7 @@ export const useModal = () => {
       type: "confirmation",
       title,
       message,
-      primaryButtonText: "Confirm",
+      primaryButtonText: primaryButtonText,
       secondaryButtonText: "Cancel",
       onPrimaryPress: onConfirm,
       onSecondaryPress: onCancel,

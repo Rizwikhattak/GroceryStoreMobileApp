@@ -115,6 +115,7 @@ function AppContent() {
         <Stack.Screen name="Category" options={{ headerShown: false }} />
         <Stack.Screen name="AboutUs" options={{ headerShown: false }} />
         <Stack.Screen name="ContactUs" options={{ headerShown: false }} />
+        <Stack.Screen name="SearchPage" options={{ headerShown: false }} />
         <Stack.Screen
           name="OrderConfirmation"
           options={{ headerShown: false }}
