@@ -41,7 +41,7 @@ const LoginScreen = () => {
       ).unwrap();
 
       if (response?.user) {
-        router.replace("/(tabs)");
+        router.replace("/(drawer)/(tabs)");
       } else {
       }
     } catch (err) {

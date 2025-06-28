@@ -1,6 +1,6 @@
-/* app/_layout.tsx - Corrected approach with proper routing --------------------------------------------------------- */
-import React, { useCallback, useEffect } from "react";
-import { Platform, Text, UIManager, View, Image } from "react-native";
+/* app/_layout.tsx - Final solution using Redux Persist */
+import React, { useCallback, useEffect, useState } from "react";
+import { Platform, UIManager, View, Image } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Stack } from "expo-router/stack";
 import { useRouter } from "expo-router";
@@ -16,11 +16,12 @@ import { Buffer } from "buffer";
 import { StatusBar } from "expo-status-bar";
 import Toast from "react-native-toast-message";
 import { checkAuthStatus } from "@/store/actions/authActions";
-import LoadingScreen from "@/components/ui/LoadingSpinner";
 import { toastConfig } from "@/components/ui/CustomToast";
 
-// ---------------------------------------------------------------------
-// Enable LayoutAnimation on Android (nice little UX boost for lists)
+// Keep splash screen visible
+SplashScreen.preventAutoHideAsync();
+
+// Enable LayoutAnimation on Android
 if (
   Platform.OS === "android" &&
   UIManager.setLayoutAnimationEnabledExperimental
@@ -28,54 +29,92 @@ if (
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-global.Buffer = Buffer; // polyfill for some libs that need Buffer
+global.Buffer = Buffer;
 
-/* ------------------------- Wrapper to use Redux hooks ------------------ */
+/* ------------------------- Loading Component ---------------------------- */
+function LoadingComponent() {
+  return (
+    <View
+      style={{
+        flex: 1,
+        backgroundColor: "white",
+        justifyContent: "center",
+        alignItems: "center",
+      }}
+    >
+      <Image
+        source={require("../assets/images/premium-meats-logo.png")}
+        style={{ width: 120, height: 120 }}
+        resizeMode="contain"
+      />
+    </View>
+  );
+}
+
+/* ------------------------- App Content with Redux ---------------------- */
 function AppContent() {
   const dispatch = useDispatch();
   const router = useRouter();
   const authSlice = useSelector((state: any) => state.auth);
+  const [isAppReady, setIsAppReady] = useState(false);
 
-  // 👉 1. Load custom fonts (optional – remove if you don't use them)
+  // Load fonts
   const [fontsLoaded] = useFonts({
-    // eg. "Inter-Black": require("../assets/fonts/Inter-Black.ttf"),
+    // your fonts here
   });
 
-  // 👉 2. Kick off auth status check once
+  // 👉 Check if we need to validate the persisted token
   useEffect(() => {
-    dispatch<any>(checkAuthStatus());
+    const initializeAuth = async () => {
+      if (authSlice.token) {
+        // If we have a persisted token, validate it
+        await dispatch<any>(checkAuthStatus());
+      }
+      // Always mark app as ready after initial check
+      setIsAppReady(true);
+    };
+
+    initializeAuth();
   }, [dispatch]);
 
-  // 👉 3. Handle navigation after auth check completes
+  // 👉 Handle navigation after everything is ready
   useEffect(() => {
-    if (!authSlice.isLoading) {
-      if (authSlice.isAuthenticated) {
-        router.replace("/(drawer)");
-      } else {
-        router.replace("/(auth)");
-      }
-    }
-  }, [authSlice.isLoading, authSlice.isAuthenticated, router]);
+    if (
+      fontsLoaded &&
+      !authSlice.isLoading &&
+      (isAppReady || authSlice.hasCheckedAuth)
+    ) {
+      const navigateToApp = async () => {
+        // Hide splash screen
+        await SplashScreen.hideAsync();
 
-  // 👉 4. Show logo while checking auth status
-  // if (authSlice.isLoading) {
-  //   return (
-  //     <View
-  //       style={{
-  //         flex: 1,
-  //         backgroundColor: "white",
-  //         justifyContent: "center",
-  //         alignItems: "center",
-  //       }}
-  //     >
-  //       {/* Replace with your actual logo component or image */}
-  //       <Image
-  //         source={require("../assets/images/premium-meats-logo.png")} // Update path to your logo
-  //         style={{ width: 120, height: 120 }}
-  //         resizeMode="contain"
-  //       />
-  //     </View>
-  //   );
+        // Navigate based on auth status
+        if (authSlice.isAuthenticated) {
+          router.replace("/(drawer)/(tabs)");
+        } else {
+          // router.replace("/(auth)");
+        }
+      };
+
+      // Small delay for smooth transition
+      navigateToApp();
+    }
+  }, [
+    fontsLoaded,
+    authSlice.isLoading,
+    authSlice.isAuthenticated,
+    authSlice.hasCheckedAuth,
+    isAppReady,
+    router,
+  ]);
+
+  // Show loading while app is initializing
+  // if (
+  //   !fontsLoaded ||
+  //   authSlice.isLoading ||
+  //   (!isAppReady && !authSlice.hasCheckedAuth)
+  // ) {
+  //   return <LoadingComponent />;
   // }
 
   return (
@@ -85,24 +124,19 @@ function AppContent() {
         screenOptions={{
           headerShown: false,
           animation: "slide_from_right",
-          animationDuration: 280,
+          animationDuration: 200,
           gestureEnabled: true,
           gestureDirection: "horizontal",
         }}
       >
-        {/* Define all screens first */}
         <Stack.Screen
-          name="(auth)"
+          name="SplashScreen"
           options={{
             headerShown: false,
           }}
         />
-        <Stack.Screen
-          name="(drawer)"
-          options={{
-            headerShown: false,
-          }}
-        />
+        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
+        <Stack.Screen name="(drawer)" options={{ headerShown: false }} />
         <Stack.Screen name="CheckoutScreen" options={{ headerShown: false }} />
         <Stack.Screen
           name="ProductDetailsPage"
@@ -112,7 +146,7 @@ function AppContent() {
           name="TermsAndConditions"
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="Category" options={{ headerShown: false }} />
+        <Stack.Screen name="Category" options={{ headerShrown: false }} />
         <Stack.Screen name="AboutUs" options={{ headerShown: false }} />
         <Stack.Screen name="ContactUs" options={{ headerShown: false }} />
         <Stack.Screen name="SearchPage" options={{ headerShown: false }} />
@@ -126,12 +160,12 @@ function AppContent() {
   );
 }
 
-/* ------------------------ Root export with providers ------------------- */
+/* ------------------------ Root Layout ----------------------------------- */
 export default function RootLayout() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
+        <PersistGate loading={<LoadingComponent />} persistor={persistor}>
           <AppContent />
         </PersistGate>
       </Provider>

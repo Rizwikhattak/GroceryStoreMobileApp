@@ -17,15 +17,26 @@ import settingsReducer from "./reducers/settingsSlice";
 import orderReducer from "./reducers/orderSlice";
 import cartReducer from "./reducers/cartSlice";
 import pantryReducer from "./reducers/pantrySlice";
+const authPersistConfig = {
+  key: "auth",
+  storage: AsyncStorage,
+  whitelist: ["isAuthenticated", "token", "data"], // Only persist these fields
+  blacklist: ["isLoading", "error"], // Don't persist loading/error states
+};
 
+// 👉 If you want to persist cart as well
+const cartPersistConfig = {
+  key: "cart",
+  storage: AsyncStorage,
+};
 // Create a root reducer by combining your slices
 const rootReducer = combineReducers({
-  auth: authReducer,
+  auth: persistReducer(authPersistConfig, authReducer),
+  cart: persistReducer(cartPersistConfig, cartReducer),
   products: productsReducer,
   categories: categoriesReducer,
   settings: settingsReducer,
   order: orderReducer,
-  cart: cartReducer,
   pantry: pantryReducer,
 });
 
@@ -34,7 +45,7 @@ const persistConfig = {
   key: "root",
   storage: AsyncStorage,
   // Optionally, you can whitelist specific reducers:
-  whitelist: ["auth", "cart"],
+  whitelist: [],
 };
 
 // Wrap your root reducer with persistReducer

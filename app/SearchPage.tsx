@@ -3,18 +3,28 @@ import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ScrollView,
   StyleSheet,
   SafeAreaView,
-  Animated,
   RefreshControl,
   Dimensions,
   Image,
+  FlatList,
 } from "react-native";
 import Icon from "react-native-vector-icons/MaterialIcons";
 import logoImage from "../assets/images/premium-meats-logo.png";
+import HeaderCommon from "@/components/ui/HeaderCommon";
+import SearchInput from "@/components/ui/SearchInput";
+import { useSelector, useDispatch } from "react-redux";
+import { ProductsSkeleton } from "@/components/ui/Skeletons";
+import ProductItemCard from "@/components/ui/ProductItemCard";
+import { getProducts } from "@/store/actions/productsActions";
+import Logo from "@/assets/images/premium-meats-logo.svg";
+import { getAllCategories } from "@/store/actions/categoriesActions";
+import { useRouter } from "expo-router";
+import { setSelectedCategory } from "@/store/reducers/categoriesSlice";
+
 const { width } = Dimensions.get("window");
 
 interface SearchPageProps {
@@ -25,67 +35,167 @@ interface SearchPageProps {
   recentSearches?: string[];
   isLoading?: boolean;
 }
+// Fallback category icons mapping
+const categoryIcons: { [key: string]: string } = {
+  // core categories you asked about
+  food: "🍽️", // plate & cutlery
+  groceries: "🛒", // shopping cart :contentReference[oaicite:0]{index=0}
+  packaging: "📦", // cardboard package / parcel :contentReference[oaicite:1]{index=1}
+  cleaning: "🧹", // broom for sweeping & tidying :contentReference[oaicite:2]{index=2}
+  produce: "🥦", // fresh broccoli as a universal veg icon :contentReference[oaicite:3]{index=3}
+  "meat & poultry": "🥩",
+  // existing mappings that already make sense
+  home: "🏠",
+  travel: "✈️",
+  health: "🏥",
+  automotive: "🚗",
 
+  // catch-all for anything uncategorised
+  default: "📦",
+};
 const SearchPage: React.FC<SearchPageProps> = ({
   onSearch,
   onFilterPress,
   onExploreMenuPress,
   popularSearches = [
-    "Chicken Mushroom",
-    "Chicken Piece",
-    "Cheese Burger",
-    "Pizza Special",
+    "Boneless lamb leg",
+    "Whole chicken",
+    "Chicken Legs",
+    "Chicken Liver",
   ],
   recentSearches = [],
   isLoading = false,
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
-  const [showRecentSearches, setShowRecentSearches] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
-  const fadeAnim = new Animated.Value(0);
-  const slideAnim = new Animated.Value(50);
+  const [hasSearched, setHasSearched] = useState(false);
+  const router = useRouter();
+  const products = useSelector((state: any) => state.products);
+  const categories = useSelector((state: any) => state.categories);
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    Animated.parallel([
-      Animated.timing(fadeAnim, {
-        toValue: 1,
-        duration: 800,
-        useNativeDriver: true,
-      }),
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 600,
-        useNativeDriver: true,
-      }),
-    ]).start();
-  }, []);
+  // Determine what to show based on search state
+  const showInitialSections =
+    !isSearching && !hasSearched && searchQuery.length === 0;
+  const showProducts = hasSearched && products.data && products.data.length > 0;
+  const showNoResults =
+    hasSearched &&
+    !products.isLoading &&
+    (!products.data || products.data.length === 0);
+  const fetchCategories = async () => {
+    try {
+      console.log("Fetching categories...");
+      await dispatch(getAllCategories()).unwrap();
+    } catch (err) {
+      console.log("Error fetching categories:", err);
+    }
+  };
 
-  const handleSearch = (query: string) => {
+  const getCategoryIcon = (categoryName: string) => {
+    const name = categoryName.toLowerCase();
+    console.log(name);
+    return categoryIcons[name] || categoryIcons.default;
+  };
+  const handleSearchInput = async (query: string) => {
     setSearchQuery(query);
+
     if (query.length > 0) {
-      setShowRecentSearches(false);
-      onSearch?.(query);
+      setIsSearching(true);
+      setHasSearched(true);
+
+      try {
+        const filtersPayload = {
+          search: query.toLowerCase(),
+          limit: 20,
+        };
+
+        await dispatch(getProducts(filtersPayload)).unwrap();
+        onSearch?.(query);
+      } catch (error) {
+        console.error("Search error:", error);
+      } finally {
+        setIsSearching(false);
+      }
     } else {
-      setShowRecentSearches(true);
+      // Reset when search is cleared
+      setIsSearching(false);
+      setHasSearched(false);
     }
   };
 
   const handlePopularSearchPress = (search: string) => {
     setSearchQuery(search);
-    onSearch?.(search);
+    handleSearchInput(search);
   };
 
   const clearSearch = () => {
     setSearchQuery("");
-    setShowRecentSearches(true);
+    setIsSearching(false);
+    setHasSearched(false);
   };
 
   const onRefresh = () => {
     setRefreshing(true);
-    // Simulate refresh
+    // Reset search state on refresh
+    setSearchQuery("");
+    setIsSearching(false);
+    setHasSearched(false);
+
     setTimeout(() => {
       setRefreshing(false);
     }, 1000);
+  };
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+  // Render the main content based on state
+  const renderMainContent = () => {
+    // Show loading when searching
+    if (isSearching || products.isLoading) {
+      return <ProductsSkeleton />;
+    }
+
+    // Show products if we have search results
+    if (showProducts) {
+      return (
+        <FlatList
+          data={products.data}
+          renderItem={({ item }) => (
+            <ProductItemCard item={item} favouriteIds={[]} />
+          )}
+          keyExtractor={(item) => item._id.toString()}
+          numColumns={2}
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.productsGrid}
+          columnWrapperStyle={styles.productRow}
+          scrollEnabled={false}
+        />
+      );
+    }
+
+    // Show no results message
+    if (showNoResults) {
+      return (
+        <View style={styles.emptyStateContainer}>
+          <Logo width={300} height={80} />
+
+          <Text style={styles.emptyStateTitle}>No Products Found</Text>
+          <Text style={styles.emptyStateSubtitle}>
+            No products found for "{searchQuery}". Try searching with different
+            keywords.
+          </Text>
+          <TouchableOpacity
+            style={[styles.exploreButton, { backgroundColor: primary }]}
+            onPress={clearSearch}
+          >
+            <Text style={styles.exploreButtonText}>Clear Search</Text>
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    return null;
   };
 
   return (
@@ -98,191 +208,104 @@ const SearchPage: React.FC<SearchPageProps> = ({
         }
       >
         {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Search</Text>
-          <TouchableOpacity onPress={onFilterPress} style={styles.filterButton}>
-            <Icon name="tune" size={24} color="#666" />
-          </TouchableOpacity>
-        </View>
+        <HeaderCommon title="Search" />
+
         {/* Search Bar */}
-        <Animated.View
-          style={[
-            styles.searchContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <View style={styles.searchInputContainer}>
-            <Icon
-              name="search"
-              size={20}
-              color="#999"
-              style={styles.searchIcon}
-            />
-            <TextInput
-              style={styles.searchInput}
-              placeholder="Search your favorite items"
-              placeholderTextColor="#999"
-              value={searchQuery}
-              onChangeText={handleSearch}
-              onFocus={() => setShowRecentSearches(true)}
-              returnKeyType="search"
-              onSubmitEditing={() => onSearch?.(searchQuery)}
-            />
-            {searchQuery.length > 0 && (
-              <TouchableOpacity
-                onPress={clearSearch}
-                style={styles.clearButton}
-              >
-                <Icon name="close" size={18} color="#999" />
-              </TouchableOpacity>
-            )}
-          </View>
-        </Animated.View>
-        {/* Recent Searches */}
-        // Replace the Recent Searches section with this:
-        {showRecentSearches && (
-          <Animated.View style={[styles.section, { opacity: fadeAnim }]}>
-            {recentSearches.length > 0 ? (
-              <>
-                <View style={styles.sectionHeader}>
-                  <Text style={styles.sectionTitle}>Recent Searches</Text>
-                  <TouchableOpacity>
-                    <Text style={[styles.clearAllText, { color: primary }]}>
-                      Clear All
-                    </Text>
-                  </TouchableOpacity>
-                </View>
-                <View style={styles.recentSearches}>
-                  {recentSearches.map((search, index) => (
-                    <TouchableOpacity
-                      key={index}
-                      style={styles.recentSearchItem}
-                      onPress={() => handlePopularSearchPress(search)}
-                    >
-                      <Icon name="history" size={16} color="#666" />
-                      <Text style={styles.recentSearchText}>{search}</Text>
+        <View style={styles.searchContainer}>
+          <SearchInput
+            enableDropdown={false}
+            handleSearchInput={handleSearchInput}
+            searchValue={searchQuery}
+            onClear={clearSearch}
+          />
+        </View>
+
+        {/* Show initial sections only when not searching */}
+        {showInitialSections && (
+          <>
+            {/* Recent Searches */}
+            {/* <View style={styles.section}>
+              {recentSearches.length > 0 ? (
+                <>
+                  <View style={styles.sectionHeader}>
+                    <Text style={styles.sectionTitle}>Recent Searches</Text>
+                    <TouchableOpacity>
+                      <Text style={[styles.clearAllText, { color: primary }]}>
+                        Clear All
+                      </Text>
                     </TouchableOpacity>
-                  ))}
+                  </View>
+                  <View style={styles.recentSearches}>
+                    {recentSearches.map((search, index) => (
+                      <TouchableOpacity
+                        key={index}
+                        style={styles.recentSearchItem}
+                        onPress={() => handlePopularSearchPress(search)}
+                      >
+                        <Icon name="history" size={16} color="#666" />
+                        <Text style={styles.recentSearchText}>{search}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </>
+              ) : (
+                <View style={styles.emptyRecentContainer}>
+                  <Text style={styles.emptyRecentText}>
+                    No recent searches
+                  </Text>
                 </View>
-              </>
-            ) : (
-              <View style={styles.emptyRecentContainer}>
-                <Text style={styles.emptyRecentText}>No recent searches</Text>
-              </View>
-            )}
-          </Animated.View>
-        )}
-        {/* Popular Searches */}
-        <Animated.View
-          style={[
-            styles.section,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <Text style={styles.sectionTitle}>Popular Searches</Text>
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.popularSearchesContainer}
-          >
-            {popularSearches.map((search, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.popularSearchChip}
-                onPress={() => handlePopularSearchPress(search)}
-                activeOpacity={0.7}
+              )}
+            </View> */}
+
+            {/* Popular Searches */}
+            <View>
+              <Text style={styles.sectionTitle}>Popular Searches</Text>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.popularSearchesContainer}
               >
-                <Text style={styles.popularSearchText}>{search}</Text>
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </Animated.View>
-        {/* Explore Menu */}
-        {/* <Animated.View
-          style={[
-            styles.section,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <TouchableOpacity
-            style={styles.exploreMenuCard}
-            onPress={onExploreMenuPress}
-            activeOpacity={0.8}
-          >
-            <View style={styles.exploreMenuContent}>
-              <View>
-                <Text style={styles.exploreMenuTitle}>Explore Menu</Text>
-                <Text style={styles.exploreMenuSubtitle}>
-                  Discover our full range of delicious items
-                </Text>
-              </View>
-              <View style={styles.exploreMenuIconContainer}>
-                <Icon name="arrow-forward" size={24} color={primary} />
+                {popularSearches.map((search, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.popularSearchChip}
+                    onPress={() => handlePopularSearchPress(search)}
+                    activeOpacity={0.7}
+                  >
+                    <Text style={styles.popularSearchText}>{search}</Text>
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* Browse Categories */}
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Browse Categories</Text>
+              <View style={styles.categoriesGrid}>
+                {categories.data.map((category, index) => (
+                  <TouchableOpacity
+                    key={index}
+                    style={styles.categoryCard}
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      dispatch(setSelectedCategory(category));
+
+                      router.push(`/Category/${category?.name}`);
+                    }}
+                  >
+                    <Text style={styles.iconEmoji}>
+                      {getCategoryIcon(category?.name)}
+                    </Text>
+                    <Text style={styles.categoryText}>{category?.name}</Text>
+                  </TouchableOpacity>
+                ))}
               </View>
             </View>
-          </TouchableOpacity>
-        </Animated.View> */}
-        {/* Categories */}
-        <Animated.View
-          style={[
-            styles.section,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          <Text style={styles.sectionTitle}>Browse Categories</Text>
-          <View style={styles.categoriesGrid}>
-            {[
-              "🍔 Burgers",
-              "🍕 Pizza",
-              "🍗 Chicken",
-              "🥤 Beverages",
-              "🍰 Desserts",
-              "🥗 Salads",
-            ].map((category, index) => (
-              <TouchableOpacity
-                key={index}
-                style={styles.categoryCard}
-                activeOpacity={0.7}
-              >
-                <Text style={styles.categoryText}>{category}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </Animated.View>
-        {/* Empty State */}
-        <Animated.View
-          style={[
-            styles.emptyStateContainer,
-            {
-              opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }],
-            },
-          ]}
-        >
-          {/* Logo instead of “Your Custom Illustration Here” */}
-          <Image
-            source={logoImage} // ⬅️ dummy URL
-            style={{ width: 200, height: 100 }}
-            resizeMode="contain"
-          />
+          </>
+        )}
 
-          <Text style={styles.emptyStateTitle}>No Products Found</Text>
-          <Text style={styles.emptyStateSubtitle}>
-            Try searching with different keywords or explore our menu
-          </Text>
-        </Animated.View>
+        {/* Main Content Area */}
+        {renderMainContent()}
       </ScrollView>
     </SafeAreaView>
   );
@@ -295,6 +318,9 @@ const styles = StyleSheet.create({
   },
   scrollView: {
     flex: 1,
+  },
+  iconEmoji: {
+    fontSize: 16,
   },
   header: {
     flexDirection: "row",
@@ -319,8 +345,7 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   searchContainer: {
-    paddingHorizontal: 20,
-    marginBottom: 24,
+    padding: 20,
   },
   searchInputContainer: {
     flexDirection: "row",
@@ -349,6 +374,15 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 32,
+  },
+  productsGrid: {
+    paddingHorizontal: 12,
+    paddingTop: 16,
+    paddingBottom: 20,
+  },
+  productRow: {
+    justifyContent: "space-between",
+    marginBottom: 12,
   },
   sectionHeader: {
     flexDirection: "row",
@@ -395,6 +429,8 @@ const styles = StyleSheet.create({
   },
   popularSearchesContainer: {
     paddingHorizontal: 20,
+    paddingBottom: 20,
+    paddingTop: 3,
   },
   popularSearchChip: {
     backgroundColor: "#FFFFFF",
@@ -456,6 +492,10 @@ const styles = StyleSheet.create({
   },
   categoryCard: {
     width: (width - 60) / 2,
+    justifyContent: "center",
+    alignItems: "center",
+    flexDirection: "row",
+    gap: 3,
     backgroundColor: "#FFFFFF",
     borderRadius: 12,
     padding: 16,
@@ -467,7 +507,7 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   categoryText: {
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: "500",
     color: "#333",
     textAlign: "center",

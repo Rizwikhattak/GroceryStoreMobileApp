@@ -128,10 +128,10 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(checkAuthStatus.fulfilled, (state, action) => {
-        state.isLoading = false;
-        // state.data = action.payload.user;
         state.token = action.payload.token;
         state.isAuthenticated = true;
+        state.isLoading = false;
+        // state.data = action.payload.user;
       })
       .addCase(checkAuthStatus.rejected, (state, action) => {
         state.isLoading = false;
@@ -145,7 +145,6 @@ const authSlice = createSlice({
       .addCase(contactUs.fulfilled, (state, action) => {
         state.isLoading = false;
         state.error = null;
-        
       })
       .addCase(contactUs.rejected, (state, action) => {
         state.isLoading = false;

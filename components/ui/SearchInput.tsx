@@ -1,7 +1,7 @@
 "use client";
 
 import type React from "react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   View,
   TextInput,
@@ -9,19 +9,17 @@ import {
   StyleSheet,
   Text,
   Image,
-  KeyboardAvoidingView,
-  Platform,
   ActivityIndicator,
 } from "react-native";
 import { ScrollView } from "react-native-gesture-handler";
-import { Search } from "lucide-react-native";
+import { Search, X } from "lucide-react-native";
 import { getProducts } from "@/store/actions/productsActions";
 import { useDispatch } from "react-redux";
 import { primary } from "@/constants/colors";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
+
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
-// Sample grocery products data
 
 interface Product {
   id: number;
@@ -30,43 +28,66 @@ interface Product {
   image: string;
 }
 
-const SearchInput = ({
+interface SearchInputProps {
+  onProductSelect?: (product: any) => void;
+  searchFilters?: any;
+  enableDropdown?: boolean;
+  handleSearchInput?: (text: string) => void;
+  searchValue?: string;
+  onClear?: () => void;
+}
+
+const SearchInput: React.FC<SearchInputProps> = ({
   onProductSelect,
   searchFilters = {},
   enableDropdown = true,
   handleSearchInput,
-}: any) => {
-  const [searchText, setSearchText] = useState("");
+  searchValue = "",
+  onClear,
+}) => {
+  const [searchText, setSearchText] = useState(searchValue);
   const [showDropdown, setShowDropdown] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
   const dispatch = useDispatch();
   const router = useRouter();
+
+  // Sync with external searchValue
+  useEffect(() => {
+    setSearchText(searchValue);
+  }, [searchValue]);
+
   const handleSearchChange = async (text: string) => {
     try {
       setSearchText(text);
-      handleSearchInput && handleSearchInput(text);
-      setIsLoading(true);
-      setShowDropdown(true);
-      if (text.length > 0) {
-        // const filtered = groceryProducts.filter((product) =>
-        //   product.name.toLowerCase().includes(text.toLowerCase())
-        // );
-        // setFilteredProducts(filtered);
-        const filtersPayload = {
-          search: text.toLowerCase(),
-          limit: 20,
-          ...searchFilters,
-        };
-        console.log("Wowwwww gogo ogog", filtersPayload);
-        const filtered = await dispatch(getProducts(filtersPayload)).unwrap();
-        setFilteredProducts(filtered.list);
-      } else {
-        setShowDropdown(false);
-        setFilteredProducts([]);
+
+      // Call parent handler immediately for UI updates
+      if (handleSearchInput) {
+        handleSearchInput(text);
+      }
+
+      // Handle dropdown logic for SearchInput's own dropdown
+      if (enableDropdown) {
+        setIsLoading(true);
+        setShowDropdown(true);
+
+        if (text.length > 0) {
+          const filtersPayload = {
+            search: text.toLowerCase(),
+            limit: 20,
+            ...searchFilters,
+          };
+
+          const filtered = await dispatch(getProducts(filtersPayload)).unwrap();
+          setFilteredProducts(filtered.list || []);
+        } else {
+          setShowDropdown(false);
+          setFilteredProducts([]);
+        }
       }
     } catch (err) {
-      console.error(err);
+      console.error("Search error:", err);
+      setFilteredProducts([]);
     } finally {
       setIsLoading(false);
     }
@@ -82,6 +103,20 @@ const SearchInput = ({
     setSearchText("");
     setShowDropdown(false);
     onProductSelect?.(product);
+  };
+
+  const handleClearSearch = () => {
+    setSearchText("");
+    setShowDropdown(false);
+    setFilteredProducts([]);
+
+    if (onClear) {
+      onClear();
+    }
+
+    if (handleSearchInput) {
+      handleSearchInput("");
+    }
   };
 
   const renderProductItem = (item: any) => {
@@ -117,7 +152,7 @@ const SearchInput = ({
           onChangeText={handleSearchChange}
           style={styles.input}
           onFocus={() => {
-            if (searchText.length > 0) {
+            if (searchText.length > 0 && enableDropdown) {
               setShowDropdown(true);
             }
           }}
@@ -126,25 +161,37 @@ const SearchInput = ({
             setTimeout(() => setShowDropdown(false), 150);
           }}
         />
+        {searchText.length > 0 && (
+          <TouchableOpacity
+            onPress={handleClearSearch}
+            style={styles.clearButton}
+          >
+            <X color="#888" size={18} />
+          </TouchableOpacity>
+        )}
       </View>
 
-      {/* Inline Dropdown - Fixed rendering */}
+      {/* Inline Dropdown - Only show when enableDropdown is true */}
       {showDropdown && enableDropdown && (
-        <View style={styles.dropdownContainer /* now overflow hidden */}>
+        <View style={styles.dropdownContainer}>
           {isLoading ? (
-            <View style={{ padding: 20 }}>
+            <View style={styles.loadingContainer}>
               <ActivityIndicator size="large" color={primary} />
             </View>
-          ) : (
+          ) : filteredProducts.length > 0 ? (
             <ScrollView
               style={styles.dropdown}
               keyboardShouldPersistTaps="handled"
-              nestedScrollEnabled // lets the inner view keep the gesture on Android
+              nestedScrollEnabled
               showsVerticalScrollIndicator
             >
               {filteredProducts.map(renderProductItem)}
             </ScrollView>
-          )}
+          ) : searchText.length > 0 ? (
+            <View style={styles.noResultsContainer}>
+              <Text style={styles.noResultsText}>No products found</Text>
+            </View>
+          ) : null}
         </View>
       )}
     </View>
@@ -164,12 +211,15 @@ const styles = StyleSheet.create({
     backgroundColor: "#e5e7eb",
     paddingHorizontal: 20,
     paddingVertical: 3,
-    gap: 2,
+    gap: 8,
   },
   input: {
     flex: 1,
     fontSize: 16,
     color: "#000000",
+  },
+  clearButton: {
+    padding: 4,
   },
   dropdownContainer: {
     position: "absolute",
@@ -178,8 +228,8 @@ const styles = StyleSheet.create({
     right: 0,
     backgroundColor: "#fff",
     borderRadius: 10,
-    maxHeight: 250, // 🔒 gives the ScrollView a bounded height
-    overflow: "hidden", // 🔒 avoids touch “holes”
+    maxHeight: 250,
+    overflow: "hidden",
     elevation: 5,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -189,6 +239,10 @@ const styles = StyleSheet.create({
   },
   dropdown: {
     maxHeight: 250,
+  },
+  loadingContainer: {
+    padding: 20,
+    alignItems: "center",
   },
   dropdownItem: {
     flexDirection: "row",
@@ -215,11 +269,6 @@ const styles = StyleSheet.create({
   productPrice: {
     fontSize: 14,
     color: "#666",
-  },
-  weightText: {
-    fontSize: 12,
-    color: "#666",
-    marginBottom: 8,
   },
   noResultsContainer: {
     padding: 20,

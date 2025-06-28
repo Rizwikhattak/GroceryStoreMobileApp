@@ -32,7 +32,7 @@ const categoryIcons: { [key: string]: string } = {
   packaging: "📦", // cardboard package / parcel :contentReference[oaicite:1]{index=1}
   cleaning: "🧹", // broom for sweeping & tidying :contentReference[oaicite:2]{index=2}
   produce: "🥦", // fresh broccoli as a universal veg icon :contentReference[oaicite:3]{index=3}
-
+  Meat:"🥩",
   // existing mappings that already make sense
   home: "🏠",
   travel: "✈️",
