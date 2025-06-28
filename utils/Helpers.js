@@ -18,3 +18,16 @@ export function parseISOString(isoString) {
     time: `${hour}:${minute}:${second}`, // e.g. "22:57:38"
   };
 }
+
+export const tagPantryProducts = (normalProducts, pantryProducts) => {
+  const favouriteIds = new Set(
+    pantryProducts.map((item) => item?.product?._id)
+  );
+  const filteredProducts = normalProducts.map((item) => ({
+    ...item,
+    isPantry: favouriteIds.has(item._id),
+  }));
+  console.log("favouriteIds", favouriteIds);
+  console.log("Filtered prods", filteredProducts);
+  return filteredProducts;
+};

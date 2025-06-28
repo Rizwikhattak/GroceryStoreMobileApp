@@ -11,7 +11,7 @@ export const makeProductPantry = createAsyncThunk(
         "post",
         "json",
         `${PANTRY_API.PANTRY}`,
-        // `${fetchFeturedProductsAPI}`,
+        // `${FEATURED_PRODUCTS_API}`,
         "Error in fetching products",
         data
       );
@@ -30,7 +30,7 @@ export const getPantryProducts = createAsyncThunk(
         "getAll",
         "json",
         `${PANTRY_API.PANTRY}`,
-        // `${fetchFeturedProductsAPI}`,
+        // `${FEATURED_PRODUCTS_API}`,
         "Error in fetching products",
         data
       );

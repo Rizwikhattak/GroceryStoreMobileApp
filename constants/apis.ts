@@ -9,7 +9,7 @@ export const GET_CUSTOMER_DETAILS_API = "customer_by_user/";
 export const CUSTOMER_DETAILS_API = "customers/";
 
 // Products //
-export const fetchFeturedProductsAPI = "featured-products/";
+export const FEATURED_PRODUCTS_API = "featured-products/";
 export const fetchCategoriesApi = "categories/";
 export const PRODUCTS_API = "products/";
 

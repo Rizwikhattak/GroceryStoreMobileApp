@@ -1,5 +1,5 @@
 import { primary } from "@/constants/colors";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -24,6 +24,7 @@ import Logo from "@/assets/images/premium-meats-logo.svg";
 import { getAllCategories } from "@/store/actions/categoriesActions";
 import { useRouter } from "expo-router";
 import { setSelectedCategory } from "@/store/reducers/categoriesSlice";
+import { getPantryProducts } from "@/store/actions/pantryActions";
 
 const { width } = Dimensions.get("window");
 
@@ -72,9 +73,21 @@ const SearchPage: React.FC<SearchPageProps> = ({
   const [hasSearched, setHasSearched] = useState(false);
   const router = useRouter();
   const products = useSelector((state: any) => state.products);
+  const pantry = useSelector((state: any) => state.pantry);
   const categories = useSelector((state: any) => state.categories);
   const dispatch = useDispatch();
-
+  const favouriteIds = useMemo(() => {
+    const ids = {};
+    if (pantry?.data && Array.isArray(pantry.data)) {
+      pantry.data.forEach((item) => {
+        if (item?.product?._id) {
+          ids[item.product._id] = true;
+        }
+      });
+    }
+    return ids;
+  }, [pantry?.data]);
+  console.log("favouriteIds", favouriteIds);
   // Determine what to show based on search state
   const showInitialSections =
     !isSearching && !hasSearched && searchQuery.length === 0;
@@ -91,7 +104,14 @@ const SearchPage: React.FC<SearchPageProps> = ({
       console.log("Error fetching categories:", err);
     }
   };
-
+  // Optimized fetch functions with error handling
+  const fetchPantryProducts = async () => {
+    try {
+      await dispatch(getPantryProducts()).unwrap();
+    } catch (err) {
+      console.log("Error fetching pantry products:", err);
+    }
+  };
   const getCategoryIcon = (categoryName: string) => {
     const name = categoryName.toLowerCase();
     console.log(name);
@@ -148,6 +168,7 @@ const SearchPage: React.FC<SearchPageProps> = ({
   };
   useEffect(() => {
     fetchCategories();
+    fetchPantryProducts();
   }, []);
   // Render the main content based on state
   const renderMainContent = () => {
@@ -162,7 +183,7 @@ const SearchPage: React.FC<SearchPageProps> = ({
         <FlatList
           data={products.data}
           renderItem={({ item }) => (
-            <ProductItemCard item={item} favouriteIds={[]} />
+            <ProductItemCard item={item} favouriteIds={favouriteIds} />
           )}
           keyExtractor={(item) => item._id.toString()}
           numColumns={2}

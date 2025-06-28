@@ -1,23 +1,38 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 import {
-  fetchFeturedProductsAPI,
+  FEATURED_PRODUCTS_API,
   PANTRY_PRODUCTS_API,
   PRODUCTS_API,
 } from "../../constants/apis";
 import { API_COMMON } from "@/utils/ApiCommon";
+import { tagPantryProducts } from "../../utils/Helpers";
+
 export const getFeaturedProducts = createAsyncThunk(
   "products/getFeaturedProducts",
-  async (data, { rejectWithValue }) => {
+  async (data, { dispatch, rejectWithValue }) => {
     try {
-      const response = await API_COMMON(
-        "getAll",
-        "json",
-        `${fetchFeturedProductsAPI}`,
-        // `${fetchFeturedProductsAPI}`,
-        "Error in fetching products",
-        data
-      );
-      return response;
+      const [featuredProdResp, pantryProdResp] = await Promise.all([
+        API_COMMON(
+          "getAll",
+          "json",
+          `${FEATURED_PRODUCTS_API}`,
+          // `${FEATURED_PRODUCTS_API}`,
+          "Error in fetching products",
+          data
+        ),
+        API_COMMON(
+          "getAll",
+          "json",
+          `${PANTRY_PRODUCTS_API}`,
+          // `${FEATURED_PRODUCTS_API}`,
+          "Error in fetching products",
+          data
+        ),
+      ]);
+      featuredProdResp.list = featuredProdResp?.list
+        ? tagPantryProducts(featuredProdResp.list, pantryProdResp.list)
+        : [];
+      return featuredProdResp;
     } catch (err) {
       return rejectWithValue(err?.message || "Error in fetching products");
     }
@@ -32,7 +47,7 @@ export const getAllFeaturedProducts = createAsyncThunk(
       const response = await API_COMMON(
         "getAll",
         "json",
-        `${fetchFeturedProductsAPI}?limit=${limit}`,
+        `${FEATURED_PRODUCTS_API}?limit=${limit}`,
         "Error in fetching products",
         null
       );
