@@ -1,4 +1,12 @@
 export const TOAST_MESSAGES = {
+  RESET_PASSWORD_MAIL_SENT: {
+    title: "A password reset link has been sent to your Gmail account.",
+    message: "You can view your cart anytime",
+  },
+  RESET_PASSWORD_MAIL_ERROR: {
+    title: "A password reset link has been sent to your Gmail account.",
+    message: "You can view your cart anytime",
+  },
   PRODUCT_ADDED_TO_CART: {
     title: "Product has been added to cart",
     message: "You can view your cart anytime",
@@ -25,6 +33,10 @@ export const TOAST_MESSAGES = {
   },
   CONTACT_US: {
     title: "Thanks for reaching out! We’ll get back to you shortly.",
+    message: "You can view your cart anytime",
+  },
+  PROFILE_DETAILS_UPDATED: {
+    title: "Profile details updated",
     message: "You can view your cart anytime",
   },
 };

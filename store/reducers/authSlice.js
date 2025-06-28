@@ -6,6 +6,7 @@ import {
   registrationStep1,
   registrationStep2,
   registrationStep3,
+  resetPassword,
 } from "../actions/authActions";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Toast } from "toastify-react-native";
@@ -147,6 +148,19 @@ const authSlice = createSlice({
         state.error = null;
       })
       .addCase(contactUs.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
+        state.isAuthenticated = false;
+      })
+      .addCase(resetPassword.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(resetPassword.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.error = null;
+      })
+      .addCase(resetPassword.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload;
         state.isAuthenticated = false;

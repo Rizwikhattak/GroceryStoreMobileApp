@@ -27,18 +27,54 @@ export const getNotifications = createAsyncThunk(
 );
 export const getCustomerOrders = createAsyncThunk(
   "settings/getCustomerOrders",
-  async (_, { rejectWithValue }) => {
+  async (filters: any = {}, { rejectWithValue }) => {
     try {
+      // Build query string from filters
+      const queryParams = new URLSearchParams();
+
+      // Add each filter parameter if it exists
+      if (filters.status && filters.status !== "All") {
+        queryParams.append("status", filters.status);
+      }
+
+      if (filters.from) {
+        queryParams.append("from", filters.from);
+      }
+
+      if (filters.to) {
+        queryParams.append("to", filters.to);
+      }
+
+      if (filters.order_id) {
+        queryParams.append("order_id", filters.order_id);
+      }
+
+      if (filters.supplier) {
+        queryParams.append("supplier", filters.supplier);
+      }
+
+      // Pagination and sorting
+      queryParams.append("skip", filters.skip?.toString() || "0");
+      queryParams.append("limit", filters.limit?.toString() || "10");
+      queryParams.append("sort", filters.sort || "created_at");
+      queryParams.append("order", filters.order?.toString() || "-1");
+
+      // Build the final URL with query string
+      const queryString = queryParams.toString();
+      const url = queryString
+        ? `${SETTINGS_API.ORDERS}?${queryString}`
+        : SETTINGS_API.ORDERS;
+
       const response = await API_COMMON(
         "getAll",
         "json",
-        `${SETTINGS_API.ORDERS}`,
-        "Error in fetching products",
+        url,
+        "Error in fetching orders",
         null
       );
       return response;
     } catch (err) {
-      return rejectWithValue(err?.message || "Error in fetching products");
+      return rejectWithValue(err?.message || "Error in fetching orders");
     }
   }
 );

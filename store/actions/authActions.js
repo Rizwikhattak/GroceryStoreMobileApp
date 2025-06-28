@@ -5,6 +5,7 @@ import {
   loginAPI,
   REGISTRATION_CREDIT_API,
   REGISTRATION_STEP_API,
+  PASWORT_RESET_API,
 } from "@/constants/apis";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
@@ -115,6 +116,26 @@ export const contactUs = createAsyncThunk(
         "post",
         "json",
         CONTACT_US_API,
+        "Error in contact us",
+        data
+      );
+      return response;
+    } catch (err) {
+      console.log("err", err);
+
+      return rejectWithValue(err?.message || "Error in contact us");
+    }
+  }
+);
+export const resetPassword = createAsyncThunk(
+  "auth/resetPassword",
+  async (data, { rejectWithValue }) => {
+    try {
+      console.log("Woww what a data", data);
+      const response = await API_COMMON(
+        "post",
+        "json",
+        PASWORT_RESET_API,
         "Error in contact us",
         data
       );

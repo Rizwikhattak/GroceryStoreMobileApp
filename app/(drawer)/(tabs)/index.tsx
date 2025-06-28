@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
   },
   scrollViewContent: {
     minHeight: "100%",
-    paddingBottom: 80,
+    paddingBottom: 10,
     overflow: "visible",
   },
   promoSliderContainer: {

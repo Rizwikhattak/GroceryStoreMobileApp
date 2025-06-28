@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
 
   notificationsList: {
     padding: 20,
-    paddingBottom: 100,
+    paddingBottom: 30,
   },
 
   notificationCard: {

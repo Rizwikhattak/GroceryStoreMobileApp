@@ -31,7 +31,7 @@ const OrdersTab = () => {
   const auth = useSelector((state: any) => state.auth);
   const orders = useSelector((state: any) => state.settings.orders || []);
   useEffect(() => {
-    dispatch(getCustomerOrders());
+    dispatch(getCustomerOrders({ order: -1 }));
   }, [dispatch]);
 
   /* ─────────────── Local state ─────────────── */
@@ -84,7 +84,43 @@ const OrdersTab = () => {
       ? { uri: apiUrl + order.enrichedItems[0].product.photo }
       : null;
 
-  const toggleFilters = () => setShowFilters((p) => !p);
+  const toggleFilters = () => {
+    setShowFilters((p) => !p);
+  };
+
+  const handleApplyFilters = async () => {
+    setShowFilters(false);
+    // Create payload that matches backend expectations
+    const payload: any = {
+      skip: 0,
+      limit: 10,
+      sort: "created_at",
+      order: -1, // -1 for descending (newest first), 1 for ascending
+    };
+
+    // Add status filter if not "All"
+    if (orderStatus !== "All") {
+      payload.status = orderStatus;
+    }
+
+    // Add date filters
+    if (fromDate) {
+      payload.from = moment(fromDate).format("YYYY-MM-DD");
+    }
+
+    if (toDate) {
+      payload.to = moment(toDate).format("YYYY-MM-DD");
+    }
+
+    // Optional: Add other filters if needed
+    // payload.order_id = ""; // if you want to filter by specific order ID
+    // payload.supplier = ""; // if you want to filter by supplier
+
+    console.log("Filter payload:", payload);
+
+    // Dispatch action with the payload
+    dispatch(getCustomerOrders(payload));
+  };
 
   /* ─────────────── Calendar buttons ─────────────── */
   const DateButton = ({
@@ -255,7 +291,7 @@ const OrdersTab = () => {
 
           <TouchableOpacity
             style={styles.applyFilterButton}
-            onPress={() => setShowFilters(false)}
+            onPress={handleApplyFilters}
           >
             <Text style={styles.applyFilterText}>Apply Filters</Text>
           </TouchableOpacity>

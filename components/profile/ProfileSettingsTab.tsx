@@ -20,6 +20,8 @@ import * as DocumentPicker from "expo-document-picker";
 import * as FileSystem from "expo-file-system";
 import { saveAndOpenFile } from "@/utils/downloadFile";
 import { SettingsSkeleton } from "@/components/ui/Skeletons";
+import { ToastHelper } from "@/utils/ToastHelper";
+import { TOAST_MESSAGES } from "@/constants/constants";
 
 const ProfileSettingsTab = () => {
   /* ---- redux ---- */
@@ -153,7 +155,9 @@ const ProfileSettingsTab = () => {
 
       // Refresh profile data
       await dispatch(getUserProfileDetails(auth.data._id)).unwrap();
-      Alert.alert("Success", "Profile updated");
+      ToastHelper.showSuccess({
+        title: TOAST_MESSAGES.PROFILE_DETAILS_UPDATED.title,
+      });
     } catch (err: any) {
       console.error("Profile update error:", err);
       Alert.alert("Error", err?.message || "Update failed");

@@ -7,14 +7,15 @@ const _layout = () => {
     <Stack
       screenOptions={{
         headerShown: false,
-        // animation: "slide_from_right", // preset
-        // animationDuration: 280, // ms
-        // gestureEnabled: true, // keeps swipes responsive
-        // gestureDirection: "horizontal",
+        animation: "slide_from_right", // preset
+        animationDuration: 280, // ms
+        gestureEnabled: true, // keeps swipes responsive
+        gestureDirection: "horizontal",
       }}
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="signup" />
+      <Stack.Screen name="ForgetPassword" />
     </Stack>
   );
 };

@@ -38,6 +38,7 @@ const CustomDrawerContent = (props) => {
       () => {
         console.log("User logged out");
         dispatch(logout());
+        router.replace("/(auth)");
         hideModal();
       }
     );
