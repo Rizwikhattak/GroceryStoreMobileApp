@@ -23,7 +23,6 @@ import {
   ProductsSkeleton,
   SubcategorySkeleton,
 } from "@/components/ui/Skeletons";
-import { getPantryProducts } from "@/store/actions/pantryActions";
 
 const CategoryScreen = () => {
   const dispatch = useDispatch();
@@ -34,17 +33,8 @@ const CategoryScreen = () => {
   };
 
   const categories = useSelector((state: any) => state.categories);
-  const pantry = useSelector((state) => state.pantry);
   const cartState = useSelector((state: any) => state.cart.data);
-  const pantryData = pantry?.data;
-
-  const favouriteIds = {};
-  pantryData &&
-    pantryData?.forEach((item) => {
-      if (item.product) {
-        favouriteIds[item.product._id] = true;
-      }
-    });
+  const pantry = useSelector((state: any) => state.pantry);
 
   const subcategories = useSelector(
     (state: any) => state.categories.SubCategories
@@ -88,17 +78,6 @@ const CategoryScreen = () => {
   }, [categories.selectedCategory?._id, dispatch]);
 
   useEffect(() => {
-    const fetchPantryProducts = async () => {
-      try {
-        await dispatch(getPantryProducts()).unwrap();
-      } catch (err) {
-        console.log("Error fetching pantry products", err);
-      }
-    };
-    fetchPantryProducts();
-  }, []);
-
-  useEffect(() => {
     const fetchProducts = async () => {
       try {
         const prodFilters = {
@@ -115,7 +94,7 @@ const CategoryScreen = () => {
       }
     };
     fetchProducts();
-  }, [selectedSubcategory, dispatch, prodLimit]);
+  }, [selectedSubcategory, pantry.data, dispatch, prodLimit]);
 
   const renderSubcategoryItem = ({ item }) => (
     <TouchableOpacity
@@ -190,14 +169,12 @@ const CategoryScreen = () => {
           )}
         </View>
 
-        {products.isLoading || pantry.isLoading ? (
+        {products.isLoading ? (
           <ProductsSkeleton />
         ) : filteredProducts.length > 0 ? (
           <FlatList
             data={filteredProducts}
-            renderItem={({ item }) => (
-              <ProductItemCard item={item} favouriteIds={favouriteIds} />
-            )}
+            renderItem={({ item }) => <ProductItemCard item={item} />}
             keyExtractor={(item) => item._id.toString()}
             numColumns={2}
             showsVerticalScrollIndicator={false}

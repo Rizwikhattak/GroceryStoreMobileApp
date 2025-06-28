@@ -26,11 +26,11 @@ import { ProductsSkeleton } from "@/components/ui/Skeletons";
 
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
-const ProductsList = ({ products, pantryData,favouriteIds }) => {
+const ProductsList = ({ products }) => {
   const dispatch = useDispatch();
   // Render each product item
   const renderProductItem = ({ item }) => {
-    return <ProductItemCard item={item}  favouriteIds={favouriteIds} />;
+    return <ProductItemCard item={item} />;
   };
 
   // Main render

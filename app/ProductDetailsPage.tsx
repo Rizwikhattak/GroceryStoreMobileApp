@@ -98,6 +98,9 @@ const ProductDetailPage = () => {
     console.error("Error parsing product data:", error);
   }
 
+  console.log("is pantry", product?.isPantry);
+  console.log("is pantry", product);
+
   const router = useRouter();
   const cart = useSelector((state) => state.cart);
   // Size dropdown states
@@ -167,7 +170,7 @@ const ProductDetailPage = () => {
     return cartItem?.isFinalized || false;
   };
   const [isFavorite, setIsFavorite] = useState(
-    product?.inPantry || product?.isFavorite || false
+    product?.inPantry || product?.isPantry || false
   );
   const [showSizeDropdown, setShowSizeDropdown] = useState(false);
 

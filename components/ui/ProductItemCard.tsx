@@ -41,6 +41,7 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [showQuantityControls, setShowQuantityControls] = useState(false);
+  const [isPantry, setIsPantry] = useState(item?.isPantry || false);
   const inputRef = useRef(null);
 
   // Animation values
@@ -62,7 +63,6 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
   const isFinalized = cartState.some(
     (cartItem) => cartItem._id === item._id && cartItem.isFinalized
   );
-  const isFavorite = favorites[item._id] || false;
 
   // Get unit from product data or use default
   const unit = item?.uom?.slug || "kg";
@@ -204,20 +204,20 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
     router.push({
       pathname: "/ProductDetailsPage",
       params: {
-        productParam: JSON.stringify({ ...item, inPantry, isFavorite }),
+        productParam: JSON.stringify({ ...item, inPantry }),
       },
     });
   };
 
   // Toggle favorite WITHOUT animation
-  const toggleFavorite = async (id) => {
+  const toggleFavorite = async () => {
     try {
-      setFavorites((prev) => {
+      setIsPantry((prev) => {
         if (inPantry) {
           ToastHelper.showWarning({
             title: TOAST_MESSAGES.REMOVED_FROM_WISH_LIST.title,
           });
-        } else if (!prev[id])
+        } else if (!prev)
           ToastHelper.showSuccess({
             title: TOAST_MESSAGES.ADDED_TO_WISH_LIST.title,
           });
@@ -225,13 +225,10 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
           ToastHelper.showWarning({
             title: TOAST_MESSAGES.REMOVED_FROM_WISH_LIST.title,
           });
-        return {
-          ...prev,
-          [id]: !prev[id],
-        };
+        return !prev;
       });
 
-      await dispatch(makeProductPantry({ product: id })).unwrap();
+      await dispatch(makeProductPantry({ product: item._id })).unwrap();
       await dispatch(getPantryProducts()).unwrap();
     } catch (err) {
       console.log("Error toggling favorite", err);
@@ -396,15 +393,15 @@ const ProductItemCard = ({ item, inPantry, favouriteIds }) => {
       <TouchableOpacity
         style={[
           styles.favoriteButton,
-          (inPantry || isFavorite) && styles.favoriteButtonActive,
+          (inPantry || isPantry) && styles.favoriteButtonActive,
         ]}
-        onPress={() => toggleFavorite(item._id)}
+        onPress={() => toggleFavorite()}
         activeOpacity={0.8}
       >
         <Ionicons
-          name={inPantry ? "heart" : isFavorite ? "heart" : "heart-outline"}
+          name={inPantry ? "heart" : isPantry ? "heart" : "heart-outline"}
           size={18}
-          color={isFavorite || inPantry ? "#fff" : "#666"}
+          color={isPantry || inPantry ? "#fff" : "#666"}
         />
       </TouchableOpacity>
 

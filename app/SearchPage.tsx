@@ -76,18 +76,7 @@ const SearchPage: React.FC<SearchPageProps> = ({
   const pantry = useSelector((state: any) => state.pantry);
   const categories = useSelector((state: any) => state.categories);
   const dispatch = useDispatch();
-  const favouriteIds = useMemo(() => {
-    const ids = {};
-    if (pantry?.data && Array.isArray(pantry.data)) {
-      pantry.data.forEach((item) => {
-        if (item?.product?._id) {
-          ids[item.product._id] = true;
-        }
-      });
-    }
-    return ids;
-  }, [pantry?.data]);
-  console.log("favouriteIds", favouriteIds);
+
   // Determine what to show based on search state
   const showInitialSections =
     !isSearching && !hasSearched && searchQuery.length === 0;
@@ -104,14 +93,7 @@ const SearchPage: React.FC<SearchPageProps> = ({
       console.log("Error fetching categories:", err);
     }
   };
-  // Optimized fetch functions with error handling
-  const fetchPantryProducts = async () => {
-    try {
-      await dispatch(getPantryProducts()).unwrap();
-    } catch (err) {
-      console.log("Error fetching pantry products:", err);
-    }
-  };
+
   const getCategoryIcon = (categoryName: string) => {
     const name = categoryName.toLowerCase();
     console.log(name);
@@ -168,7 +150,6 @@ const SearchPage: React.FC<SearchPageProps> = ({
   };
   useEffect(() => {
     fetchCategories();
-    fetchPantryProducts();
   }, []);
   // Render the main content based on state
   const renderMainContent = () => {
@@ -182,9 +163,7 @@ const SearchPage: React.FC<SearchPageProps> = ({
       return (
         <FlatList
           data={products.data}
-          renderItem={({ item }) => (
-            <ProductItemCard item={item} favouriteIds={favouriteIds} />
-          )}
+          renderItem={({ item }) => <ProductItemCard item={item} />}
           keyExtractor={(item) => item._id.toString()}
           numColumns={2}
           showsVerticalScrollIndicator={false}

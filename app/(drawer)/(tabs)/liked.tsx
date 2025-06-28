@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -22,6 +22,7 @@ import ProductItemCard from "@/components/ui/ProductItemCard";
 import { ProductsSkeleton } from "@/components/ui/Skeletons";
 import { StatusBar } from "expo-status-bar";
 import HeaderCommon from "@/components/ui/HeaderCommon";
+import { useFocusEffect } from "@react-navigation/native";
 
 const { width } = Dimensions.get("window");
 
@@ -44,9 +45,11 @@ const LikedScreen = () => {
   };
 
   /* ---------- fetch once ---------- */
-  useEffect(() => {
-    dispatch(getPantryProducts());
-  }, [dispatch]);
+  useFocusEffect(
+    useCallback(() => {
+      dispatch(getPantryProducts());
+    }, [])
+  );
 
   /* ---------- Animations ---------- */
   useEffect(() => {
@@ -153,7 +156,7 @@ const LikedScreen = () => {
 
       {/* Header */}
       <HeaderCommon
-        title="Liked Products"
+        title="My Wish List"
         subtitle={`${pantryItems.length} items in your collection`}
         isSearchEnabled={true}
         enableDropdown={false}

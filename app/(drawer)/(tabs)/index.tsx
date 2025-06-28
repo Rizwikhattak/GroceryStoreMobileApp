@@ -81,37 +81,6 @@ export default function HomeScreen() {
   // Ref to track component mount status
   const isMountedRef = useRef(true);
 
-  // Memoized favourite IDs computation
-  const favouriteIds = useMemo(() => {
-    const ids = {};
-    if (pantry?.data && Array.isArray(pantry.data)) {
-      pantry.data.forEach((item) => {
-        if (item?.product?._id) {
-          ids[item.product._id] = true;
-        }
-      });
-    }
-    return ids;
-  }, [pantry?.data]);
-
-  // Optimized fetch functions with error handling
-  const fetchPantryProducts = useCallback(async () => {
-    if (isLoadingPantry) return; // Prevent duplicate requests
-
-    try {
-      setIsLoadingPantry(true);
-      console.log("Fetching pantry products...");
-
-      await dispatch(getPantryProducts()).unwrap();
-    } catch (err) {
-      console.log("Error fetching pantry products:", err);
-    } finally {
-      if (isMountedRef.current) {
-        setIsLoadingPantry(false);
-      }
-    }
-  }, [dispatch, isLoadingPantry]);
-
   const fetchFeaturedProducts = useCallback(async () => {
     if (isLoadingProducts) return; // Prevent duplicate requests
 
@@ -139,49 +108,14 @@ export default function HomeScreen() {
     }
   }, [dispatch]);
 
-  const fetchPromotions = useCallback(async () => {
-    try {
-      console.log("Fetching promotions...");
-      // Replace with your actual promotions action
-      // await dispatch(getPromotions()).unwrap();
-    } catch (err) {
-      console.log("Error fetching promotions:", err);
-    }
-  }, [dispatch]);
-
-  const fetchUserProfile = useCallback(async () => {
-    try {
-      console.log("Fetching user profile...");
-      // Replace with your actual user profile action
-      // await dispatch(getUserProfile()).unwrap();
-    } catch (err) {
-      console.log("Error fetching user profile:", err);
-    }
-  }, [dispatch]);
-
-  const fetchCartItems = useCallback(async () => {
-    try {
-      console.log("Fetching cart items...");
-      // Replace with your actual cart action
-      // await dispatch(getCartItems()).unwrap();
-    } catch (err) {
-      console.log("Error fetching cart items:", err);
-    }
-  }, [dispatch]);
-
   // Comprehensive refresh function that calls ALL APIs
   const refreshAllData = useCallback(async () => {
     console.log("Refreshing all data...");
     try {
       // Call all your API functions here
       const results = await Promise.allSettled([
-        fetchPantryProducts(),
         fetchFeaturedProducts(),
         fetchCategories(),
-        fetchPromotions(),
-        fetchUserProfile(),
-        fetchCartItems(),
-        // Add any other API calls you need
       ]);
 
       // Log any failed requests for debugging
@@ -201,14 +135,7 @@ export default function HomeScreen() {
     } catch (error) {
       console.log("Error during comprehensive refresh:", error);
     }
-  }, [
-    fetchPantryProducts,
-    fetchFeaturedProducts,
-    fetchCategories,
-    fetchPromotions,
-    fetchUserProfile,
-    fetchCartItems,
-  ]);
+  }, [fetchFeaturedProducts, fetchCategories]);
 
   // Updated pull to refresh handler
   const onRefresh = useCallback(async () => {
@@ -222,34 +149,17 @@ export default function HomeScreen() {
     }
   }, [refreshAllData]);
 
-  // Initial data loading with InteractionManager for better performance
-  useEffect(() => {
-    const loadInitialData = () => {
-      InteractionManager.runAfterInteractions(() => {
-        refreshAllData().catch((err) => {
-          console.log("Error loading initial data:", err);
-        });
-      });
-    };
-
-    loadInitialData();
-
-    // Cleanup function
-    return () => {
-      isMountedRef.current = false;
-    };
-  }, [refreshAllData]);
-
   // Focus effect - refresh data when screen comes into focus
   useFocusEffect(
     useCallback(() => {
       // Use InteractionManager to delay non-critical updates
-      InteractionManager.runAfterInteractions(() => {
-        refreshAllData().catch((err) => {
-          console.log("Error refreshing data on focus:", err);
-        });
-      });
-    }, [refreshAllData])
+      refreshAllData();
+      // InteractionManager.runAfterInteractions(() => {
+      //   refreshAllData().catch((err) => {
+      //     console.log("Error refreshing data on focus:", err);
+      //   });
+      // });
+    }, [pantry.data])
   );
 
   // Memoized handlers
@@ -289,14 +199,10 @@ export default function HomeScreen() {
           title="Featured Products"
           onViewAll={handleViewAllProducts}
         />
-        <ProductsList
-          products={products}
-          pantryData={pantry?.data}
-          favouriteIds={favouriteIds}
-        />
+        <ProductsList products={products} />
       </View>
     ),
-    [products, pantry?.data, favouriteIds, handleViewAllProducts]
+    [products, handleViewAllProducts]
   );
 
   return (
