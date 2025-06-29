@@ -28,7 +28,6 @@ const SigupStep3 = () => {
   const auth = useSelector((state: any) => state.auth);
   const router = useRouter();
   const { _id } = useLocalSearchParams();
-  console.log("Received woww _id:", _id);
   const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
 
   // Adjust form fields to match "Credit Reference 1" and "Credit Reference 2"
@@ -70,15 +69,12 @@ const SigupStep3 = () => {
 
       const formObj = new FormData();
       Object.entries(formData).forEach(([key, value]) => {
-        console.log(key, value);
         formObj.append(key, value);
       });
-      console.log("Form obj", formObj);
       // Dispatch to Redux or handle as needed
       const response = await dispatch(
         registrationStep3({ formData: formObj, _id })
       ).unwrap();
-      console.log("third response:", response);
       router.push("/(auth)");
       // Navigate or do something after success
       // router.push("(auth)/");

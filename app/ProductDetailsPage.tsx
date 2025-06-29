@@ -98,8 +98,6 @@ const ProductDetailPage = () => {
     console.error("Error parsing product data:", error);
   }
 
-  console.log("is pantry", product?.isPantry);
-  console.log("is pantry", product);
 
   const router = useRouter();
   const cart = useSelector((state) => state.cart);

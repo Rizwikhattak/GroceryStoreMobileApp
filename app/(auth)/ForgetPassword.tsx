@@ -6,7 +6,6 @@ import {
   TouchableOpacity,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
@@ -32,7 +31,9 @@ const ForgotPasswordScreen = () => {
   const handleSendResetEmail = async () => {
     try {
       if (!emailOk(email)) {
-        return Alert.alert("Invalid", "Please enter a valid email address");
+        return ToastHelper.showError({
+          title: TOAST_MESSAGES.INVALID_EMAIL.title,
+        });
       }
 
       setIsLoading(true);

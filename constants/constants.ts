@@ -7,6 +7,27 @@ export const TOAST_MESSAGES = {
     title: "A password reset link has been sent to your Gmail account.",
     message: "You can view your cart anytime",
   },
+  INVALID_EMAIL: {
+    title: "E-mail is not valid",
+    message: "You can view your cart anytime",
+  },
+  INVALID_EMAIL_PASSWORD: {
+    title: "Invalid Credentials,Enter valid email and password",
+    message: "You can view your cart anytime",
+  },
+  EMAIL_ALREADY_REGISTERED: {
+    title: "Email Already registered",
+    message: "You can view your cart anytime",
+  },
+  GALLERY_PERMISSION_NEEDED: {
+    title:
+      "We need access to your photo library so you can change your picture.",
+    message: "You can view your cart anytime",
+  },
+  PASSWORD_REQUIRED: {
+    title: "Password is required",
+    message: "You can view your cart anytime",
+  },
   PRODUCT_ADDED_TO_CART: {
     title: "Product has been added to cart",
     message: "You can view your cart anytime",
@@ -17,6 +38,10 @@ export const TOAST_MESSAGES = {
   },
   ORDER_PLACED: {
     title: "Your order has been placed",
+    message: "You can view your cart anytime",
+  },
+  ORDER_FAILED: {
+    title: "Failed to place order. Please try again.",
     message: "You can view your cart anytime",
   },
   SELECT_DELIVERY_DATE: {

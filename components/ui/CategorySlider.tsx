@@ -157,7 +157,7 @@ const CategorySlider = () => {
             keyExtractor={(item, index) => index.toString()}
             contentContainerStyle={styles.flatListContent}
             style={styles.flatList}
-            decelerationRate="fast"
+            // decelerationRate="fast"
             snapToInterval={itemWidth + 12}
             snapToAlignment="start"
           />

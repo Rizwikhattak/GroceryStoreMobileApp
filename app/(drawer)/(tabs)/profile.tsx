@@ -29,6 +29,8 @@ import { logout } from "@/store/reducers/authSlice";
 import Constants from "expo-constants";
 import HeaderCommon from "@/components/ui/HeaderCommon";
 import { ProfileHeaderSkeleton } from "@/components/ui/Skeletons";
+import { ToastHelper } from "@/utils/ToastHelper";
+import { TOAST_MESSAGES } from "@/constants/constants";
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
 
 const ProfileScreen = () => {
@@ -41,7 +43,6 @@ const ProfileScreen = () => {
   const router = useRouter();
   // Orders tab state
   // console.log("customer", customer);
-  console.log("auth", auth);
   const [showFilters, setShowFilters] = useState(false);
 
   const toggleFilters = () => {
@@ -70,10 +71,9 @@ const ProfileScreen = () => {
     /* 1️⃣  Ask the user for gallery permission (iOS + Android) */
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert(
-        "Permission needed",
-        "We need access to your photo library so you can change your picture."
-      );
+      ToastHelper.showError({
+        title: TOAST_MESSAGES.GALLERY_PERMISSION_NEEDED.title,
+      });
       return;
     }
 
@@ -143,7 +143,6 @@ const ProfileScreen = () => {
 
     /* 4️⃣  Fire the Redux thunk – it already sets multipart headers for "form" */
     try {
-      console.log("Uploading photo...");
       await dispatch(
         updateUserProfileDetails({ _id: customer.data._id, formData: formData })
       ).unwrap();
@@ -166,7 +165,6 @@ const ProfileScreen = () => {
         onPress: () => {
           // Dispatch logout action
           // dispatch({ type: 'LOGOUT' });
-          console.log("User logged out");
           dispatch(logout());
 
           // Navigate to login screen

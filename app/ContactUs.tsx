@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   SafeAreaView,
   StatusBar,
-  Alert,
   Linking,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";

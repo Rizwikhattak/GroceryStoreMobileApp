@@ -20,7 +20,6 @@ import {
   Keyboard,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   Text,
   Button,
   InteractionManager,
@@ -86,7 +85,6 @@ export default function HomeScreen() {
 
     try {
       setIsLoadingProducts(true);
-      console.log("Fetching featured products...");
 
       await dispatch(getFeaturedProducts()).unwrap();
     } catch (err) {
@@ -101,7 +99,6 @@ export default function HomeScreen() {
   // Add other API fetch functions here
   const fetchCategories = useCallback(async () => {
     try {
-      console.log("Fetching categories...");
       await dispatch(getAllCategories()).unwrap();
     } catch (err) {
       console.log("Error fetching categories:", err);
@@ -110,7 +107,6 @@ export default function HomeScreen() {
 
   // Comprehensive refresh function that calls ALL APIs
   const refreshAllData = useCallback(async () => {
-    console.log("Refreshing all data...");
     try {
       // Call all your API functions here
       const results = await Promise.allSettled([

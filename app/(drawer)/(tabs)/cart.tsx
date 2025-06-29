@@ -8,7 +8,6 @@ import {
   TouchableOpacity,
   Image,
   ScrollView,
-  Alert,
 } from "react-native";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import Constants from "expo-constants";
@@ -79,12 +78,7 @@ export default function Cart() {
       return;
     }
 
-    console.log("Updating quantity for finalized item:", {
-      itemId: item._id,
-      cartItemId: item.cartItemId,
-      currentQuantity: item.orderQuantity,
-      change: change,
-    });
+
 
     dispatch(
       updateFinalizedProductsQuantity({
@@ -111,10 +105,7 @@ export default function Cart() {
       `Are you sure you want to remove "${item.name}" from your cart?`,
       "Confirm",
       () => {
-        console.log("Removing finalized item:", {
-          itemId: item._id,
-          cartItemId: item.cartItemId,
-        });
+      
 
         // Remove finalized item
         dispatch(

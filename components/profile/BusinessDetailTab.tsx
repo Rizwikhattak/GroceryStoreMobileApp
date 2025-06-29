@@ -1,15 +1,14 @@
-import React, { useState } from "react";
+"use client";
+
+import { useState } from "react";
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
-  TouchableOpacity,
   ScrollView,
   Alert,
-  ActivityIndicator,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useDispatch, useSelector } from "react-redux";
 import { primary } from "@/constants/colors";
 import {
@@ -52,17 +51,11 @@ const BusinessDetailTab = () => {
 
   /* ------------- helpers ------------- */
   const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
+
   const buildFormData = () => {
     const fd = new FormData();
 
-    /* ──────────────────────── primitives ──────────────────────── */
-    // fd.set("_id", customerData._id);
-    // fd.set("first_name", customerData.first_name);
-    // fd.set("last_name", customerData.last_name);
-    // fd.set("email", customerData.email);
-    // fd.set("phone", customerData.phone);
-    // fd.set("address", customerData.address);
-
+    /* ────────────���─────────── primitives ──────────────────────── */
     const requiredFields = [
       "_id",
       "first_name",
@@ -83,6 +76,7 @@ const BusinessDetailTab = () => {
         fd.append(field, customer.data[field]);
       }
     });
+
     fd.set("business_name", businessName.trim());
     fd.set("business_mobile", businessPhone.trim());
     fd.set("business_email", businessEmail.trim());
@@ -92,17 +86,6 @@ const BusinessDetailTab = () => {
     fd.set("account_payable_phone", apPhone.trim());
     fd.set("account_payable_email", apEmail.trim());
 
-    /* ──────────────────────── arrays ───────────────────────────── */
-    // (customerData.billing_addresses ?? []).forEach((v: string) =>
-    //   fd.set("billing_addresses[]", v)
-    // );
-    // (customerData.shipping_addresses ?? []).forEach((v: string) =>
-    //   fd.set("shipping_addresses[]", v)
-    // );
-    // (customerData.addresses ?? []).forEach((v: string) =>
-    //   fd.set("addresses[]", v)
-    // );
-
     return fd;
   };
 
@@ -111,17 +94,16 @@ const BusinessDetailTab = () => {
     if (!businessName.trim()) {
       return Alert.alert("Missing", "Business name is required");
     }
+
     if (!businessEmail.trim() || !emailOk(businessEmail)) {
       return Alert.alert("Missing", "Valid business e-mail is required");
     }
 
     try {
       const form = buildFormData();
-
       await dispatch(
         updateUserProfileDetails({ _id: customer.data._id, formData: form })
       ).unwrap();
-
       await dispatch(getUserProfileDetails(auth.data._id)).unwrap();
       Alert.alert("Success", "Business details updated");
     } catch (err: any) {
@@ -132,168 +114,190 @@ const BusinessDetailTab = () => {
 
   /* ------------- UI ------------- */
   return (
-    <ScrollView style={styles.wrapper}>
-      {/* first row */}
+    <ScrollView style={styles.wrapper} showsVerticalScrollIndicator={false}>
       {customer.isLoading ? (
         <SettingsSkeleton />
       ) : (
-        <View style={{ paddingBottom: 20 }}>
-          <View style={styles.row}>
-            <View style={styles.col}>
-              <Text style={styles.label}>Business Name</Text>
+        <View style={styles.contentContainer}>
+          {/* Business Information Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Business Information</Text>
+
+            <View style={styles.row}>
+              <View style={styles.col}>
+                <Text style={styles.label}>Business Name</Text>
+                <TextInput
+                  editable={false}
+                  style={styles.input}
+                  value={businessName}
+                  onChangeText={setBusinessName}
+                />
+              </View>
+              <View style={styles.col}>
+                <Text style={styles.label}>Business Phone</Text>
+                <TextInput
+                  editable={false}
+                  style={styles.input}
+                  value={businessPhone}
+                  onChangeText={setBusinessPhone}
+                  keyboardType="phone-pad"
+                />
+              </View>
+            </View>
+
+            <View style={styles.row}>
+              <View style={styles.col}>
+                <Text style={styles.label}>Business Email</Text>
+                <TextInput
+                  editable={false}
+                  style={styles.input}
+                  value={businessEmail}
+                  onChangeText={setBusinessEmail}
+                  keyboardType="email-address"
+                />
+              </View>
+              <View style={styles.col}>
+                <Text style={styles.label}>Company Number</Text>
+                <TextInput
+                  editable={false}
+                  style={styles.input}
+                  value={companyNumber}
+                  onChangeText={setCompanyNumber}
+                />
+              </View>
+            </View>
+
+            {/* Delivery Address - Full Width */}
+            <View style={styles.full}>
+              <Text style={styles.label}>Delivery Address</Text>
               <TextInput
                 editable={false}
-                style={styles.input}
-                value={businessName}
-                onChangeText={setBusinessName}
+                style={styles.addressInput}
+                value={deliveryAddress}
+                onChangeText={setDeliveryAddress}
+                multiline
+                numberOfLines={3}
+                textAlignVertical="top"
               />
             </View>
-            <View style={styles.col}>
-              <Text style={styles.label}>Business Phone</Text>
+          </View>
+
+          {/* Accounts Payable Section */}
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Accounts Payable</Text>
+
+            <View style={styles.row}>
+              <View style={styles.col}>
+                <Text style={styles.label}>Contact Name</Text>
+                <TextInput
+                  editable={false}
+                  style={styles.input}
+                  value={apName}
+                  onChangeText={setApName}
+                />
+              </View>
+              <View style={styles.col}>
+                <Text style={styles.label}>Contact Email</Text>
+                <TextInput
+                  editable={false}
+                  style={styles.input}
+                  value={apEmail}
+                  onChangeText={setApEmail}
+                  keyboardType="email-address"
+                />
+              </View>
+            </View>
+
+            <View style={styles.full}>
+              <Text style={styles.label}>Contact Phone</Text>
               <TextInput
                 editable={false}
                 style={styles.input}
-                value={businessPhone}
-                onChangeText={setBusinessPhone}
+                value={apPhone}
+                onChangeText={setApPhone}
                 keyboardType="phone-pad"
               />
             </View>
           </View>
-
-          {/* second row */}
-          <View style={styles.row}>
-            <View style={styles.col}>
-              <Text style={styles.label}>Business Email</Text>
-              <TextInput
-                editable={false}
-                style={styles.input}
-                value={businessEmail}
-                onChangeText={setBusinessEmail}
-                keyboardType="email-address"
-              />
-            </View>
-            <View style={styles.col}>
-              <Text style={styles.label}>Delivery Address</Text>
-              <TextInput
-                editable={false}
-                style={styles.input}
-                value={deliveryAddress}
-                onChangeText={setDeliveryAddress}
-                multiline
-                numberOfLines={2}
-              />
-            </View>
-          </View>
-
-          {/* company number */}
-          <View style={styles.full}>
-            <Text style={styles.label}>Company Number</Text>
-            <TextInput
-              editable={false}
-              style={styles.input}
-              value={companyNumber}
-              onChangeText={setCompanyNumber}
-            />
-          </View>
-
-          {/* accounts payable */}
-          <Text style={[styles.label, { marginTop: 16 }]}>
-            Accounts Payable
-          </Text>
-          <View style={styles.row}>
-            <View style={styles.col}>
-              <Text style={styles.label}>Contact Name</Text>
-              <TextInput
-                editable={false}
-                style={styles.input}
-                value={apName}
-                onChangeText={setApName}
-              />
-            </View>
-            <View style={styles.col}>
-              <Text style={styles.label}>Contact Email</Text>
-              <TextInput
-                editable={false}
-                style={styles.input}
-                value={apEmail}
-                onChangeText={setApEmail}
-                keyboardType="email-address"
-              />
-            </View>
-          </View>
-          <View style={styles.full}>
-            <Text style={styles.label}>Contact Phone</Text>
-            <TextInput
-              editable={false}
-              style={styles.input}
-              value={apPhone}
-              onChangeText={setApPhone}
-              keyboardType="phone-pad"
-            />
-          </View>
         </View>
       )}
-      {/* save btn */}
-      {/* <TouchableOpacity style={styles.saveBtn} onPress={saveBusinessDetails}>
-        {customer.isPostLoading ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Text style={styles.saveTxt}>Save Changes</Text>
-        )}
-      </TouchableOpacity> */}
     </ScrollView>
   );
 };
 
-/* ---------- styles share the same look-and-feel ---------- */
+/* ---------- Enhanced styles ---------- */
 const styles = StyleSheet.create({
-  wrapper: { padding: 16 },
-  row: { flexDirection: "row", marginBottom: 16 },
-  col: { flex: 1, marginRight: 8 },
-  full: { marginBottom: 16 },
-  label: { fontSize: 14, color: "#666", marginBottom: 8 },
-  // input: {
-  //   borderWidth: 1,
-  //   borderColor: "#ddd",
-  //   borderRadius: 8,
-  //   paddingHorizontal: 12,
-  //   paddingVertical: 10,
-  //   fontSize: 16,
-  // },
+  wrapper: {
+    flex: 1,
+    backgroundColor: "#FAFAFA",
+  },
+  contentContainer: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  section: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1F2937",
+    marginBottom: 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  row: {
+    flexDirection: "row",
+    marginBottom: 16,
+    gap: 12,
+  },
+  col: {
+    flex: 1,
+  },
+  full: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    color: "#374151",
+    marginBottom: 8,
+    fontWeight: "500",
+  },
   input: {
     borderWidth: 1,
-    // borderColor: "#ddd",
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    height: 48, // 🔒 keeps height constant
-    backgroundColor: "#F5F6F7", // light-grey fill
-    borderColor: "#ccc", // softer border
-    color: "#9CA3AF",
-  },
-
-  /* optional separate style if you want different width rules for e-mail */
-  inputEmail: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     fontSize: 16,
     height: 48,
+    backgroundColor: "#F9FAFB",
+    borderColor: "#D1D5DB",
+    color: "#6B7280",
   },
-
-  /* address box: still multiline, but fixed height so it won’t expand */
   addressInput: {
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: "#D1D5DB",
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     fontSize: 16,
-    height: 70, // enough for two lines
-    textAlignVertical: "top", // place text at the top of the box
+    minHeight: 80,
+    maxHeight: 120,
+    backgroundColor: "#F9FAFB",
+    color: "#6B7280",
+    textAlignVertical: "top",
   },
   saveBtn: {
     backgroundColor: primary,
@@ -303,7 +307,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 30,
   },
-  saveTxt: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  saveTxt: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
 
 export default BusinessDetailTab;

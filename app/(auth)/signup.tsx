@@ -26,6 +26,8 @@ import { registrationStep1 } from "@/store/actions/authActions";
 import { useDispatch, useSelector } from "react-redux";
 import { primary } from "@/constants/colors";
 import Logo from "../../assets/images/premium-meats-logo.svg";
+import { ToastHelper } from "@/utils/ToastHelper";
+import { TOAST_MESSAGES } from "@/constants/constants";
 
 const SignupScreen = () => {
   const dispatch = useDispatch();
@@ -130,18 +132,17 @@ const SignupScreen = () => {
         formObj.append(key, value.trim());
       });
       formObj.append("driver_license", document.uri);
-      console.log("asdwqeqe", formObj, typeof document.uri);
 
       const response = await dispatch(registrationStep1(formObj)).unwrap();
-      console.log("Resssssssssssssssssss", response);
       const _id = response.item._id;
       // console.log("Doneeeeee", formObj);
       router.push(`/(auth)/signupStep2?_id=${_id}`);
     } catch (err) {
       if (err[0].includes("Field {email} must be a unique value"))
-        Toast.error("Email Already registered", "top");
-
-      console.log("ERrrrrrrooor", err);
+        ToastHelper.showSuccess({
+          title: TOAST_MESSAGES.EMAIL_ALREADY_REGISTERED.title,
+        });
+      console.error("ERrrrrrrooor", err);
     }
   };
 

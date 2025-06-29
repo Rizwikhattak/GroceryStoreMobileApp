@@ -7,7 +7,6 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-  Alert,
   ActivityIndicator,
   StyleSheet,
 } from "react-native";
@@ -21,6 +20,8 @@ import { loginUser } from "@/store/actions/authActions";
 import { Toast } from "toastify-react-native";
 import Logo from "../../assets/images/premium-meats-logo.svg";
 import { primary } from "@/constants/colors";
+import { ToastHelper } from "@/utils/ToastHelper";
+import { TOAST_MESSAGES } from "@/constants/constants";
 
 const LoginScreen = () => {
   const auth = useSelector((state: StoreState) => state.auth);
@@ -33,9 +34,15 @@ const LoginScreen = () => {
 
   const handleLogin = async () => {
     try {
-      if (!emailOk(email)) return Alert.alert("Invalid", "E-mail is not valid");
+      if (!emailOk(email))
+        return ToastHelper.showError({
+          title: TOAST_MESSAGES.INVALID_EMAIL.title,
+        });
       if (!password.trim())
-        return Alert.alert("Missing", "Password is required");
+        return ToastHelper.showError({
+          title: TOAST_MESSAGES.PASSWORD_REQUIRED.title,
+        });
+
       const response = await dispatch(
         loginUser(JSON.stringify({ email: email.trim(), password }))
       ).unwrap();
@@ -45,20 +52,14 @@ const LoginScreen = () => {
       } else {
       }
     } catch (err) {
-      // Alert.alert(
-      //   "Invalid",
-      //   "Invalid Credentials,Enter valid email and password"
-      // );
-      Toast.error("Enter valid email and password", "top");
+      ToastHelper.showError({
+        title: TOAST_MESSAGES.INVALID_EMAIL_PASSWORD.title,
+      });
     }
   };
 
   return (
-    <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      style={styles.keyboardAvoidingView}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 90 : 0}
-    >
+    <>
       <StatusBar style="dark" translucent={true} backgroundColor="white" />
 
       <View style={styles.container}>
@@ -175,7 +176,7 @@ const LoginScreen = () => {
           </View>
         </ScrollView>
       </View>
-    </KeyboardAvoidingView>
+    </>
   );
 };
 

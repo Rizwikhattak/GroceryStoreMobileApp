@@ -10,6 +10,7 @@ import {
   FlatList,
   StatusBar,
   Platform,
+  RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { primary, shades } from "@/constants/colors";
@@ -54,6 +55,7 @@ const CategoryScreen = () => {
 
   const [selectedSubcategory, setSelectedSubcategory] = useState(-10);
   const [prodLimit, setProdLimit] = useState(20);
+  const [refreshing, setRefreshing] = useState(false);
   const filteredProducts = products.data || [];
 
   const searchFilters = {
@@ -62,37 +64,51 @@ const CategoryScreen = () => {
   if (selectedSubcategory !== -10)
     searchFilters.sub_category = `${selectedSubcategory}`;
 
-  useEffect(() => {
-    const fetchSubCategories = async () => {
-      try {
-        if (categories.selectedCategory?._id) {
-          await dispatch(
-            getSubCategories(categories.selectedCategory._id)
-          ).unwrap();
-        }
-      } catch (err) {
-        console.error("Error fetching subcategories:", err);
+  const fetchSubCategories = async () => {
+    try {
+      if (categories.selectedCategory?._id) {
+        await dispatch(
+          getSubCategories(categories.selectedCategory._id)
+        ).unwrap();
       }
-    };
+    } catch (err) {
+      console.error("Error fetching subcategories:", err);
+    }
+  };
+
+  const fetchProducts = async () => {
+    try {
+      const prodFilters = {
+        category_slug: categories.selectedCategory.slug,
+      };
+
+      if (selectedSubcategory !== -10)
+        prodFilters.sub_category = selectedSubcategory;
+      if (prodLimit !== -1) prodFilters.limit = prodLimit;
+
+      await dispatch(getProducts(prodFilters)).unwrap();
+    } catch (err) {
+      console.error("Error fetching products:", err);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Refresh both subcategories and products
+      await Promise.all([fetchSubCategories(), fetchProducts()]);
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+    } finally {
+      setRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
     fetchSubCategories();
   }, [categories.selectedCategory?._id, dispatch]);
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const prodFilters = {
-          category_slug: categories.selectedCategory.slug,
-        };
-
-        if (selectedSubcategory !== -10)
-          prodFilters.sub_category = selectedSubcategory;
-        if (prodLimit !== -1) prodFilters.limit = prodLimit;
-
-        dispatch(getProducts(prodFilters)).unwrap();
-      } catch (err) {
-        console.error("Error fetching products:", err);
-      }
-    };
     fetchProducts();
   }, [selectedSubcategory, pantry.data, dispatch, prodLimit]);
 
@@ -170,7 +186,9 @@ const CategoryScreen = () => {
         </View>
 
         {products.isLoading ? (
-          <ProductsSkeleton />
+          <View style={{ paddingVertical: 20 }}>
+            <ProductsSkeleton />
+          </View>
         ) : filteredProducts.length > 0 ? (
           <FlatList
             data={filteredProducts}
@@ -183,11 +201,22 @@ const CategoryScreen = () => {
               { paddingBottom: cartState.length > 0 ? 80 : 20 },
             ]}
             columnWrapperStyle={styles.productRow}
+            refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={[primary]} // Android
+                tintColor={primary} // iOS
+                title="Pull to refresh" // iOS
+                titleColor={primary} // iOS
+              />
+            }
           />
         ) : (
           <View style={styles.emptyStateContainer}>
             <Ionicons name="basket-outline" size={60} color="#E0E0E0" />
             <Text style={styles.emptyStateTitle}>No products found</Text>
+            <Text style={styles.emptyStateSubtitle}>Pull down to refresh</Text>
           </View>
         )}
       </View>
@@ -294,7 +323,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
 
-  // Simple empty state
+  // Enhanced empty state
   emptyStateContainer: {
     flex: 1,
     justifyContent: "center",
@@ -306,6 +335,11 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     color: "#999",
     marginTop: 12,
+  },
+  emptyStateSubtitle: {
+    fontSize: 14,
+    color: "#CCC",
+    marginTop: 4,
   },
 
   // Compact cart section

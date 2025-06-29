@@ -87,16 +87,14 @@ const SearchPage: React.FC<SearchPageProps> = ({
     (!products.data || products.data.length === 0);
   const fetchCategories = async () => {
     try {
-      console.log("Fetching categories...");
       await dispatch(getAllCategories()).unwrap();
     } catch (err) {
-      console.log("Error fetching categories:", err);
+      console.error("Error fetching categories:", err);
     }
   };
 
   const getCategoryIcon = (categoryName: string) => {
     const name = categoryName.toLowerCase();
-    console.log(name);
     return categoryIcons[name] || categoryIcons.default;
   };
   const handleSearchInput = async (query: string) => {

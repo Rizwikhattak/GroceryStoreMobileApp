@@ -6,12 +6,10 @@ import { StyleSheet, Text, TouchableOpacity, View } from "react-native";
 const DeliveryMethod = ({ deliveryMethod, setDeliveryMethod }) => {
   // Memoize the press handlers to prevent unnecessary re-renders
   const handleDeliveryPress = useCallback(() => {
-    console.log("Delivery method selected:");
     setDeliveryMethod("delivery");
   }, [setDeliveryMethod]);
 
   const handlePickupPress = useCallback(() => {
-    console.log("Delivery method selected:");
 
     setDeliveryMethod("pickup");
   }, [setDeliveryMethod]);

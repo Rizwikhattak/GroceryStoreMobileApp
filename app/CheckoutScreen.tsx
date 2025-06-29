@@ -9,7 +9,6 @@ import {
   SafeAreaView,
   ScrollView,
   TextInput,
-  Alert,
   Platform,
   KeyboardAvoidingView,
   Dimensions,
@@ -280,43 +279,13 @@ const CheckoutScreen = () => {
       router.push("/(drawer)/(tabs)");
     } catch (err) {
       console.error(err);
-      Alert.alert("Error", "Failed to place order. Please try again.");
+      ToastHelper.showError({
+        title: TOAST_MESSAGES.ORDER_FAILED.title,
+      });
     } finally {
       setIsLoading(false);
     }
   };
-
-  // const handlePlaceOrder = async () => {
-  //   try {
-  //     if (!selectedDate) {
-  //       Alert.alert("Select Date", "Please select a delivery/pickup date");
-  //       return;
-  //     }
-
-  //     const orderPayload = {
-  //       customer: customer?.data?._id,
-  //       items: [...cartState],
-  //       type: deliveryMethod,
-  //       shipping_date: deliveryDates.find((date) => date.id === selectedDate)
-  //         ?.fullDate,
-  //       instructions: orderInstructions,
-  //       shipping_address: customer?.data?.delivery_address,
-  //       tax: 0,
-  //       status: "Pending",
-  //     };
-  //     console.log("Order Payload", orderPayload);
-  //     await dispatch(placeCustomerOrder(orderPayload)).unwrap();
-  //     Alert.alert("Order Placed", "Your order has been placed successfully!", [
-  //       {
-  //         text: "OK",
-  //         onPress: () => navigation?.navigate("Home") || router.push("/"),
-  //       },
-  //     ]);
-  //   } catch (err) {
-  //     console.error(err);
-  //     Alert.alert("Error", "Failed to place order. Please try again.");
-  //   }
-  // };
 
   // Handle date selection with immediate visual feedback
   const handleDateSelection = (dateId) => {

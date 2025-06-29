@@ -32,7 +32,6 @@ const SigupStep2 = () => {
   const dispatch = useDispatch();
   const router = useRouter();
   const { _id } = useLocalSearchParams();
-  console.log("Wowww nicee id", _id);
   // Change your form state to match the new fields:
   const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e.trim());
   const [formData, setFormData] = useState({
@@ -93,9 +92,7 @@ const SigupStep2 = () => {
       const response = await dispatch(
         registrationStep2({ formData: formObj, _id: _id })
       ).unwrap();
-      console.log("Second respoinse", response);
       const new_id = response.item._id;
-      console.log("new iddds", new_id);
 
       router.push(`/(auth)/signupStep3?_id=${new_id}`);
     } catch (err) {

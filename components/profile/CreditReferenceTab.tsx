@@ -1,13 +1,13 @@
-import React, { useState } from "react";
+"use client";
+
+import { useState } from "react";
 import {
   View,
   Text,
   TextInput,
   StyleSheet,
   ScrollView,
-  TouchableOpacity,
   Alert,
-  ActivityIndicator,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { primary } from "@/constants/colors";
@@ -35,16 +35,18 @@ const ReferenceBlock = ({
     setPhone: (t: string) => void;
   };
 }) => (
-  <>
-    <Text style={styles.heading}>Credit Reference {prefix}</Text>
+  <View style={styles.section}>
+    <Text style={styles.sectionTitle}>Credit Reference {prefix}</Text>
 
-    <Text style={styles.label}>Name of Business</Text>
-    <TextInput
-      editable={false}
-      style={styles.input}
-      value={values.name}
-      onChangeText={setters.setName}
-    />
+    <View style={styles.full}>
+      <Text style={styles.label}>Name of Business</Text>
+      <TextInput
+        editable={false}
+        style={styles.input}
+        value={values.name}
+        onChangeText={setters.setName}
+      />
+    </View>
 
     <View style={styles.row}>
       <View style={styles.col}>
@@ -67,7 +69,7 @@ const ReferenceBlock = ({
         />
       </View>
     </View>
-  </>
+  </View>
 );
 
 const CreditReferenceTab = () => {
@@ -79,7 +81,7 @@ const CreditReferenceTab = () => {
   /* reference 1 state */
   const [ref1Name, setRef1Name] = useState(customerData.credit_reference1_name);
   const [ref1Contact, setRef1Contact] = useState(
-    customerData.credit_reference1_email // site shows “contact person” but API stores email & phone separately
+    customerData.credit_reference1_email // site shows "contact person" but API stores email & phone separately
   );
   const [ref1Phone, setRef1Phone] = useState(
     customerData.credit_reference1_phone
@@ -93,6 +95,7 @@ const CreditReferenceTab = () => {
   const [ref2Phone, setRef2Phone] = useState(
     customerData.credit_reference2_phone
   );
+
   const buildFormData = () => {
     const fd = new FormData();
 
@@ -111,15 +114,15 @@ const CreditReferenceTab = () => {
     fd.set("account_payable_name", customerData.account_payable_name);
     fd.set("account_payable_phone", customerData.account_payable_phone);
     fd.set("account_payable_email", customerData.account_payable_email);
-    // asd asd
 
+    // asd asd
     fd.set("credit_reference1_name", ref1Name.trim());
     fd.set("credit_reference1_email", ref1Contact.trim());
     fd.set("credit_reference1_phone", ref1Phone.trim());
-
     fd.set("credit_reference2_name", ref2Name.trim());
     fd.set("credit_reference2_email", ref2Contact.trim());
     fd.set("credit_reference2_phone", ref2Phone.trim());
+
     /* ──────────────────────── arrays ───────────────────────────── */
     (customerData.billing_addresses ?? []).forEach((v: string) =>
       fd.set("billing_addresses[]", v)
@@ -133,6 +136,7 @@ const CreditReferenceTab = () => {
 
     return fd;
   };
+
   /* ------ save handler ------ */
   const saveCreditRefs = async () => {
     if (!ref1Name.trim()) {
@@ -141,10 +145,13 @@ const CreditReferenceTab = () => {
 
     try {
       const form = buildFormData();
+
       await dispatch(
         updateUserProfileDetails({ _id: customer.data._id, formData: form })
       ).unwrap();
+
       await dispatch(getUserProfileDetails(auth.data._id)).unwrap();
+
       Alert.alert("Success", "Credit references updated");
     } catch (err: any) {
       console.error(err);
@@ -153,11 +160,11 @@ const CreditReferenceTab = () => {
   };
 
   return (
-    <ScrollView style={styles.wrapper}>
+    <ScrollView style={styles.wrapper} showsVerticalScrollIndicator={false}>
       {customer.isLoading ? (
         <SettingsSkeleton />
       ) : (
-        <View>
+        <View style={styles.contentContainer}>
           <ReferenceBlock
             prefix="1"
             values={{ name: ref1Name, contact: ref1Contact, phone: ref1Phone }}
@@ -167,8 +174,6 @@ const CreditReferenceTab = () => {
               setPhone: setRef1Phone,
             }}
           />
-
-          <View style={{ height: 24 }} />
 
           <ReferenceBlock
             prefix="2"
@@ -181,6 +186,7 @@ const CreditReferenceTab = () => {
           />
         </View>
       )}
+
       {/* <TouchableOpacity style={styles.saveBtn} onPress={saveCreditRefs}>
         {customer.isPostLoading ? (
           <ActivityIndicator size="small" color="#fff" />
@@ -193,55 +199,65 @@ const CreditReferenceTab = () => {
 };
 
 const styles = StyleSheet.create({
-  wrapper: { padding: 16 },
-  heading: { fontSize: 15, fontWeight: "600", marginBottom: 8 },
-  label: { fontSize: 14, color: "#666", marginBottom: 8 },
-  // input: {
-  //   borderWidth: 1,
-  //   borderColor: "#ddd",
-  //   borderRadius: 8,
-  //   paddingHorizontal: 12,
-  //   paddingVertical: 10,
-  //   fontSize: 16,
-  //   marginBottom: 16,
-  // },
+  wrapper: {
+    flex: 1,
+    backgroundColor: "#FAFAFA",
+  },
+  contentContainer: {
+    padding: 16,
+    paddingBottom: 32,
+  },
+  section: {
+    backgroundColor: "#FFFFFF",
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#1F2937",
+    marginBottom: 16,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: "#E5E7EB",
+  },
+  row: {
+    flexDirection: "row",
+    marginBottom: 16,
+    gap: 12,
+  },
+  col: {
+    flex: 1,
+  },
+  full: {
+    marginBottom: 16,
+  },
+  label: {
+    fontSize: 14,
+    color: "#374151",
+    marginBottom: 8,
+    fontWeight: "500",
+  },
   input: {
     borderWidth: 1,
-    // borderColor: "#ddd",
     borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    height: 48, // 🔒 keeps height constant
-    backgroundColor: "#F5F6F7", // light-grey fill
-    borderColor: "#ccc", // softer border
-    color: "#9CA3AF",
-  },
-
-  /* optional separate style if you want different width rules for e-mail */
-  inputEmail: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     fontSize: 16,
     height: 48,
+    backgroundColor: "#F9FAFB",
+    borderColor: "#D1D5DB",
+    color: "#6B7280",
   },
-
-  /* address box: still multiline, but fixed height so it won’t expand */
-  addressInput: {
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    fontSize: 16,
-    height: 70, // enough for two lines
-    textAlignVertical: "top", // place text at the top of the box
-  },
-  row: { flexDirection: "row", marginBottom: 16 },
-  col: { flex: 1, marginRight: 8 },
   saveBtn: {
     backgroundColor: primary,
     borderRadius: 8,
@@ -250,7 +266,11 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 30,
   },
-  saveTxt: { color: "#fff", fontSize: 16, fontWeight: "bold" },
+  saveTxt: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
 });
 
 export default CreditReferenceTab;
