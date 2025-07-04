@@ -1,5 +1,4 @@
 "use client";
-
 import { useEffect, useMemo, useState } from "react";
 import {
   View,
@@ -22,11 +21,10 @@ import {
   printCustomerOrder,
 } from "@/store/actions/settingsActions";
 import Constants from "expo-constants";
-
 const { apiUrl } = Constants.expoConfig?.extra || { apiUrl: "" };
-
 import { saveAndOpenFile } from "@/utils/downloadFile";
 import { OrdersSkeleton } from "@/components/ui/Skeletons";
+import { useRouter } from "expo-router";
 
 const OrdersTab = () => {
   /* ─────────────── Redux ─────────────── */
@@ -48,6 +46,19 @@ const OrdersTab = () => {
   const [showFromPicker, setShowFromPicker] = useState(false);
   const [showToPicker, setShowToPicker] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
+  // Separate function for viewing order details
+  const handleViewDetails = async (orderId: string) => {
+    try {
+      setIsLoading(true);
+      router.push({ pathname: `/OrderDetails/${orderId}` });
+    } catch (e) {
+      console.warn("View details failed", e);
+      Alert.alert("Error", "Unable to open the order details");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePrintOrder = async (orderId: string) => {
     try {
@@ -102,19 +113,15 @@ const OrdersTab = () => {
       sort: "created_at",
       order: -1,
     };
-
     if (orderStatus !== "All") {
       payload.status = orderStatus;
     }
-
     if (fromDate) {
       payload.from = moment(fromDate).format("YYYY-MM-DD");
     }
-
     if (toDate) {
       payload.to = moment(toDate).format("YYYY-MM-DD");
     }
-
     console.log("Filter payload:", payload);
     dispatch(getCustomerOrders(payload));
   };
@@ -175,7 +182,6 @@ const OrdersTab = () => {
             <Text style={styles.statusText(item.status)}>{item.status}</Text>
           </View>
         </View>
-
         <View style={styles.orderDetails}>
           <View style={styles.detailsGrid}>
             <Info label="Mode" value={item.type} icon="settings-outline" />
@@ -188,7 +194,6 @@ const OrdersTab = () => {
             />
           </View>
         </View>
-
         {item.instructions && (
           <View style={styles.instructionsContainer}>
             <Ionicons
@@ -201,8 +206,20 @@ const OrdersTab = () => {
             </Text>
           </View>
         )}
-
         <View style={styles.orderActions}>
+          <TouchableOpacity
+            style={styles.viewDetailsButton}
+            onPress={() => handleViewDetails(item._id)}
+          >
+            {isLoading ? (
+              <ActivityIndicator size="small" color={primary} />
+            ) : (
+              <>
+                <Ionicons name="eye-outline" size={18} color={primary} />
+                <Text style={styles.viewDetailsButtonText}>View Details</Text>
+              </>
+            )}
+          </TouchableOpacity>
           <TouchableOpacity
             style={styles.printButton}
             onPress={() => handlePrintOrder(item._id)}
@@ -211,7 +228,7 @@ const OrdersTab = () => {
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <>
-                <Ionicons name="document-text-outline" size={18} color="#fff" />
+                <Ionicons name="print-outline" size={18} color="#fff" />
                 <Text style={styles.printButtonText}>Print Order</Text>
               </>
             )}
@@ -257,7 +274,6 @@ const OrdersTab = () => {
             color={primary}
           />
         </TouchableOpacity>
-
         {showFilters && (
           <View style={styles.filterSection}>
             {/* Status Filter */}
@@ -285,7 +301,6 @@ const OrdersTab = () => {
                 ))}
               </View>
             </View>
-
             {/* Date Filter */}
             <View style={styles.filterGroup}>
               <Text style={styles.filterGroupTitle}>Date Range</Text>
@@ -302,7 +317,6 @@ const OrdersTab = () => {
                 />
               </View>
             </View>
-
             {/* Hidden native pickers */}
             {showFromPicker && (
               <DateTimePicker
@@ -316,7 +330,6 @@ const OrdersTab = () => {
                 }}
               />
             )}
-
             {showToPicker && (
               <DateTimePicker
                 value={toDate || new Date()}
@@ -329,7 +342,6 @@ const OrdersTab = () => {
                 }}
               />
             )}
-
             <TouchableOpacity
               style={styles.applyFilterButton}
               onPress={handleApplyFilters}
@@ -616,6 +628,28 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: "#E5E7EB",
     paddingTop: 12,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    gap: 12, // Fixed: Changed from "2" to 12
+  },
+  // New style for View Details button (outline style)
+  viewDetailsButton: {
+    backgroundColor: "transparent",
+    borderWidth: 1,
+    borderColor: primary,
+    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    gap: 8,
+    flex: 1, // Added flex to make buttons equal width
+  },
+  viewDetailsButtonText: {
+    color: primary,
+    fontWeight: "600",
+    fontSize: 14,
   },
   printButton: {
     backgroundColor: primary,
@@ -626,7 +660,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     gap: 8,
-    alignSelf: "flex-start",
+    flex: 1, // Added flex to make buttons equal width
   },
   printButtonText: {
     color: "#FFFFFF",

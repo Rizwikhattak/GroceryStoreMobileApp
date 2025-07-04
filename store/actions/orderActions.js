@@ -22,3 +22,23 @@ export const placeCustomerOrder = createAsyncThunk(
     }
   }
 );
+export const getCustomerOrderByID = createAsyncThunk(
+  "order/getCustomerOrderByID",
+  async (id, { rejectWithValue }) => {
+    try {
+      console.log("id", id);
+      const response = await API_COMMON(
+        "getAll",
+        "json",
+        `${ORDERS_API.ORDERS}${id}`,
+        "Error in placing order",
+        null
+      );
+      // console.log("DATA", response);
+      return response;
+    } catch (err) {
+      console.log("err", err);
+      return rejectWithValue(err?.message || "Error in placing order");
+    }
+  }
+);

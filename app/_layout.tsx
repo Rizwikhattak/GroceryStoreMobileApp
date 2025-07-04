@@ -146,8 +146,9 @@ function AppContent() {
           name="TermsAndConditions"
           options={{ headerShown: false }}
         />
-        <Stack.Screen name="Category" options={{ headerShrown: false }} />
+        <Stack.Screen name="Category" options={{ headerShown: false }} />
         <Stack.Screen name="AboutUs" options={{ headerShown: false }} />
+        <Stack.Screen name="OrderDetails" options={{ headerShown: false }} />
         <Stack.Screen name="ContactUs" options={{ headerShown: false }} />
         <Stack.Screen name="SearchPage" options={{ headerShown: false }} />
         <Stack.Screen
