@@ -98,7 +98,6 @@ const ProductDetailPage = () => {
     console.error("Error parsing product data:", error);
   }
 
-
   const router = useRouter();
   const cart = useSelector((state) => state.cart);
   // Size dropdown states
@@ -423,6 +422,7 @@ const ProductDetailPage = () => {
         "Total finalized items:",
         finalizedCount + 1
       );
+      router.back();
     }
   };
 
