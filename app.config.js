@@ -5,16 +5,16 @@ export default {
   expo: {
     name: "GroceryStore",
     slug: "GroceryStore",
-    owner: "talha4529",
+    owner: "rizwan11493",
     userInterfaceStyle: "automatic",
     version: "1.0.0",
     orientation: "portrait",
-    icon: "./assets/images/premium-meats-logo.png",
+    icon: "./assets/images/premium-meat-logo-1024x1024.png",
     scheme: "myapp",
     newArchEnabled: true,
     extra: {
       eas: {
-        projectId: "82c84da5-cc20-47ed-aba9-ce77b8503374",
+        projectId: "a04e0037-ab95-4038-8cdf-ca5b9f80854b",
       },
       apiUrl: process.env.API_URL || "https://default.api.url",
     },
@@ -24,14 +24,14 @@ export default {
     android: {
       package: "com.premiummeats.grocerystore",
       adaptiveIcon: {
-        foregroundImage: "./assets/images/premium-meats-logo.png",
+        foregroundImage: "./assets/images/premium-meat-logo-1024x1024.png",
         backgroundColor: "#ffffff",
       },
     },
     web: {
       bundler: "metro",
       output: "static",
-      favicon: "./assets/images/premium-meats-logo.png",
+      favicon: "./assets/images/premium-meat-logo-1024x1024.png",
     },
     plugins: [
       "expo-router",
@@ -39,7 +39,7 @@ export default {
       [
         "expo-splash-screen",
         {
-          image: "./assets/images/premium-meats-logo.png",
+          image: "./assets/images/premium-meat-logo-1024x1024.png",
           imageWidth: 200,
           resizeMode: "contain",
           backgroundColor: "#ffffff",
